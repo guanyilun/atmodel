@@ -85,7 +85,7 @@ class atmodel(wx.Frame):
 
         self.dependent_limits_checkbox = wx.CheckBox(panel, label='Manually Input Range of Dependent Axis')
         
-        # Top_left -> fill up contains 
+        # Top_left -> fill up contents 
         parameter_labels[0].SetFont(font)  # set a title font
         top_left_fgs.Add(parameter_labels[0], flag=wx.EXPAND | wx.BOTTOM, border=6)
         top_left_fgs.Add(wx.StaticText(panel), flag=wx.EXPAND)  # empty grid
@@ -111,7 +111,7 @@ class atmodel(wx.Frame):
         # self.parameter_site_combo.Bind(wx.EVT_COMBOBOX, self.onCustom)
 
         # Top_right
-        #drop bars to determine background noise file should be used:
+        #drop bars to determine which background noise file should be used:
         file_choice = ['Last Used', "Default", "Choose New"] #Used for CIB, CMB, Atmospheric Radiance
         #extra details needed for:
         galactic_directions = ['Last Used', 'g_long = 0, g_lat = 0', 'g_long = 0, g_lat = 45', 'g_long = 0, g_lat = +90', 'g_long = 0, g_lat = -90', 'Choose New'] #ecliptic coordinates for Galactic Emission
@@ -155,6 +155,10 @@ class atmodel(wx.Frame):
         self.check_Temp = wx.CheckBox(panel, label="Total Temperature")
         self.check_Signal = wx.CheckBox(panel, label="Total Signal")
         self.check_IntTime = wx.CheckBox(panel, label="Integration Time")
+
+        #drop bars for bottom left
+        BLING_units = ['photons/s-Hz^1/2', 'W/Hz^1/2']
+        self.BLING_units= wx.ComboBox(panel, choices=BLING_units, style=wx.CB_READONLY)
         
         # set default values
         self.check_Noise.SetValue(config.Noise_Default)
@@ -164,8 +168,8 @@ class atmodel(wx.Frame):
 
     # Bottom_left -> Fill up contents
         bottom_left.Add(generate_label, flag=wx.BOTTOM, border=10)
-        
         bottom_left.Add(self.check_Noise, flag=wx.BOTTOM, border=2)
+        bottom_left.Add(self.BLING_units, flag=wx.BOTTOM, border=4)
         bottom_left.Add(self.check_Temp, flag=wx.BOTTOM, border=2)
         bottom_left.Add(self.check_Signal, flag=wx.BOTTOM, border=2)
         bottom_left.Add(self.check_IntTime, flag=wx.BOTTOM, border=2)
@@ -298,7 +302,7 @@ class atmodel(wx.Frame):
                 title_bling.append('Cosmic Microwave Background')                
                 index = self.CMB_file_choice.GetCurrentSelection()  #creates "index"=0, 1, or 2 depending on file for selection               
                 if index == 0:  #if "Last Used" is selected
-                    read_last_used = open("last used CMB file.txt", "r")  #read from "last used GE file.txt"
+                    read_last_used = open("last used CMB file.txt", "r")  #read from "last used CMB file.txt"
                     cmb_file = read_last_used.read()
                 elif index == 1:  #if "Default" is selected, use default file in file_refs.py
                     cmb_file = file_refs.CMB_ref
@@ -469,6 +473,10 @@ class atmodel(wx.Frame):
                 bling_squared += cal.bling_sub(freqNoise, temp, resol)  #calculate and add BLING(squared) of Zodiacal Emission to "bling_squared"
             
             bling_TOT = (bling_squared) ** 0.5  #"bling_squared" is the sum of the squared bling of each background so "bling_TOT" is the radical of "bling_squared" since the result is the BLINGS added in quadrature
+            if self.BLING_units.GetValue() == "photons/s-Hz^1/2": #we can convert W/Hz^1/2 to photons/s-Hz^1/2 by Power(watts)=N(photons/s)*h*nu where nu is in Hz and h is Planck's Constant
+                energy = freqNoise*const.h
+				bling_TOT = np.divide(bling_TOT,energy)
+                ##BLING is, by default, done in W/Hz^1/2 so no extra conversion need be done if W/Hz^1/2 is selected.  We keep it in the drop bar to let user know that is the option.
             end_time = time.time()  #stops clock for calculation time
             print "BLING calculation DONE"
             print "Time used for BLING calculation: ", end_time - start_time, " seconds"
@@ -593,7 +601,7 @@ class atmodel(wx.Frame):
 #if "Atmospheric Radiance" box is checked
             if self.background_checkboxs[4].IsChecked() or self.background_checkboxs[6].IsChecked():
                 title_temp.append('Atmospheric Radiance')  #title depends on name of site chosen
-                if site == "Custom":  #find transmission file from custom site
+                if site == "Choose New":  #if "Choose New" is selected, open browser
                     # create window to let user know to pick the file
                     message_dialog = wx.MessageDialog(self, message='Select file for site radiance')
                     if message_dialog.ShowModal() == wx.ID_OK:
@@ -602,15 +610,26 @@ class atmodel(wx.Frame):
                     # open file browser
                     file_dialog = wx.FileDialog(self, style=wx.FD_OPEN)
                     if file_dialog.ShowModal() == wx.ID_OK:
-                        self.site_rad = file_dialog.GetPath()
-                        ar = ExcelReader(self.site_rad)
+                        ar_file = file_dialog.GetPath()
                     file_dialog.Destroy()
-                else:  #if site not custom, find file
-                    ar = ExcelReader(file_refs.atm_rad_refs[site])  #name excel file to read from, depending on site chosen
-                ar.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-                freqNoise = np.array(ar.read_from_col(1), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                elif site == "Last Used":  #if "Last Used" is selected
+                    read_last_used = open("last used AR file.txt", "r")  #read from "last used AR file.txt"
+                    ar_file = read_last_used.read()
+                else:  #if default file is selected, find file
+                    ar_file = file_refs.atm_rad_refs[site]  #name excel file to read from, depending on site chosen
+                    title_temp.append('[' + str(site) + ']')  #if site is chosen from list of known sites, can include name in plot title
+
+                # save into "last used AR file.txt"
+                write_last_used = open("last used AR file.txt", "w")
+                write_last_used.write(str(ar_file))
+                write_last_used.close()
+
+                # perform calculations
+                AR_temp = ExcelReader(ar_file)
+                AR_temp.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                freqNoise = np.array(AR_temp.read_from_col(1), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
-                rad = np.array(ar.read_from_col(4), dtype='float')  #create array of radiance(W/cm^2/st/cm^-1) from 5th column of excel file, reading as floats
+                rad = np.array(AR_temp.read_from_col(4), dtype='float')  #create array of radiance(W/cm^2/st/cm^-1) from 5th column of excel file, reading as floats
                 temperature += cal.temp_AR(freqNoise, rad)  #calculate and add temperature of Atmospheric Radiance to "temperature"
 
 #if "Zodiacial Emission" box is checked
@@ -771,7 +790,10 @@ class atmodel(wx.Frame):
 
             # draw plot
             loglogplot(freqNoise_THz, bling_TOT)  #plot of BLING is log(base 10)-scaled
-            pylab.ylabel("BLING(W*Hz^(-1/2))")
+            if self.BLING_units == "photons/s-Hz^1/2":
+                pylab.ylabel("BLING(photons/s-Hz^1/2)")
+            elif:
+                pylab.ylabel("BLING(W*Hz^(-1/2))")
             pylab.xlabel("Frequency(THz)")
             title = "Noise" + str(title_bling) + " vs. Frequency at Spectral Resolution of " + str(resol) + ".\nFrequency is from " + str(freq_start) + " to " + str(freq_end) + "THz.  "
             if self.background_checkboxs[3].IsChecked() or self.background_checkboxs[6].IsChecked():  #if "Thermal Mirror Emission" is included, add "mirror_temp" to the title
