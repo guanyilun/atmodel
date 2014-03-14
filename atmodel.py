@@ -475,7 +475,7 @@ class atmodel(wx.Frame):
             bling_TOT = (bling_squared) ** 0.5  #"bling_squared" is the sum of the squared bling of each background so "bling_TOT" is the radical of "bling_squared" since the result is the BLINGS added in quadrature
             if self.BLING_units.GetValue() == "photons/s-Hz^1/2": #we can convert W/Hz^1/2 to photons/s-Hz^1/2 by Power(watts)=N(photons/s)*h*nu where nu is in Hz and h is Planck's Constant
                 energy = freqNoise*const.h
-				bling_TOT = np.divide(bling_TOT,energy)
+		bling_TOT = np.divide(bling_TOT,energy)
                 ##BLING is, by default, done in W/Hz^1/2 so no extra conversion need be done if W/Hz^1/2 is selected.  We keep it in the drop bar to let user know that is the option.
             end_time = time.time()  #stops clock for calculation time
             print "BLING calculation DONE"
@@ -792,7 +792,7 @@ class atmodel(wx.Frame):
             loglogplot(freqNoise_THz, bling_TOT)  #plot of BLING is log(base 10)-scaled
             if self.BLING_units == "photons/s-Hz^1/2":
                 pylab.ylabel("BLING(photons/s-Hz^1/2)")
-            elif:
+            else:
                 pylab.ylabel("BLING(W*Hz^(-1/2))")
             pylab.xlabel("Frequency(THz)")
             title = "Noise" + str(title_bling) + " vs. Frequency at Spectral Resolution of " + str(resol) + ".\nFrequency is from " + str(freq_start) + " to " + str(freq_end) + "THz.  "
