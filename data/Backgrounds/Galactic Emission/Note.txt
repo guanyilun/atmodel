@@ -1,0 +1,13 @@
+NOTE
+
+Working:
+Galactic Emission_glat=0 glong=0.xlsx		
+Galactic Emission_glat=90 glong=180.xlsx
+
+Fake:
+Galactic Emission_glat=45 glong=0.xlsx
+Galactic Emission_glat=-90 glong=0.xlsx
+Galactic Emission_glat=90 glong=0.xlsx
+
+To use it:
+generate files with the same name and replace the excel files.
