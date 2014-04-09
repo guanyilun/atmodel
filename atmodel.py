@@ -62,7 +62,8 @@ class atmodel(wx.Frame):
                  'SouthPole-032g', 'WhiteMountain-115g', 'WhiteMountain-175g', 'Choose New']
     
         # Source galaxies    
-        sources = ["Last Used", 'NGC958_z=1', 'ARP220_z=1', 'MRK231_z=1', 'Choose New']
+        sources = ["Last Used", 'Choose New', '3C219', 'ARP220_z=1', 'M89', 'Maffei2', 'MRK231_z=1', 'NGC0315', 'NGC262', 'NGC958_z=1', 'NGC1052', 'NGC1097',
+				 'NGC1566', 'NGC3351', 'NGC4725', 'NGC6764', 'NGC7793', 'NGC7832', 'PSRB0531-21', 'South America']
     
         # Sources of noise    
         backgrounds = ['Cosmic Infrared Background', 'Cosmic Microwave Background', 'Galactic Emission', 'Thermal Mirror Emission',
@@ -157,7 +158,7 @@ class atmodel(wx.Frame):
         self.check_IntTime = wx.CheckBox(panel, label="Integration Time")
 
         #drop bars for bottom left
-        BLING_units = ['photons/s-Hz^1/2', 'W/Hz^1/2']
+        BLING_units = ['photons/s-Hz^1/2', 'W/Hz^1/2 (Default)']
         self.BLING_units= wx.ComboBox(panel, choices=BLING_units, style=wx.CB_READONLY)
         
         # set default values
@@ -473,10 +474,12 @@ class atmodel(wx.Frame):
                 bling_squared += cal.bling_sub(freqNoise, temp, resol)  #calculate and add BLING(squared) of Zodiacal Emission to "bling_squared"
             
             bling_TOT = (bling_squared) ** 0.5  #"bling_squared" is the sum of the squared bling of each background so "bling_TOT" is the radical of "bling_squared" since the result is the BLINGS added in quadrature
-            if self.BLING_units.GetValue() == "photons/s-Hz^1/2": #we can convert W/Hz^1/2 to photons/s-Hz^1/2 by Power(watts)=N(photons/s)*h*nu where nu is in Hz and h is Planck's Constant
-                energy = freqNoise*const.h
-		bling_TOT = np.divide(bling_TOT,energy)
-                ##BLING is, by default, done in W/Hz^1/2 so no extra conversion need be done if W/Hz^1/2 is selected.  We keep it in the drop bar to let user know that is the option.
+				#BLING_TOT is in W/Hz^1/2
+            
+			#we also convert W/Hz^1/2 to photons/s-Hz^1/2 by Power(watts)=N(photons/s)*h*nu where nu is in Hz and h is Planck's Constant
+            energy = freqNoise*const.h
+            bling_TOT_photon = np.divide(bling_TOT,energy)
+			
             end_time = time.time()  #stops clock for calculation time
             print "BLING calculation DONE"
             print "Time used for BLING calculation: ", end_time - start_time, " seconds"
@@ -676,7 +679,7 @@ class atmodel(wx.Frame):
             
             end_time = time.time()  #stops clock for calculation time
             print "Temperature calculation DONE"
-            print "Time used for temperature calculation: ", end_time - start_time, " seconds"
+            print "Time.GetValue() used for temperature calculation: ", end_time - start_time, " seconds"
 
             if self.background_checkboxs[6].IsChecked():  #setting title to 'Temperature[Total]' if all backgrounds are checked
                 title_temp = '[Total]'
@@ -760,10 +763,11 @@ class atmodel(wx.Frame):
 # instead of having a plotter module, a plotting function is defined here so the y-axis range is adjustable though it may be wiser to define this in a module
         def loglogplot(x, y):
             print "Start plotting..."
-            pos = np.where(np.abs(np.diff(y)) >= .0015)[0] + 1  #jumps over .0015 THz(1.5 GHz) are not connected
-            x = np.insert(x, pos, np.nan)  #replace values in "x" that correspond to nonpositives in "y" with "not a number"s
-            y = np.insert(y, pos, np.nan)  #replace nonpositives in "y" with "not a number"s
-            #for reason yet to be determined, the preceding 3 lines don't work with "Integration Time" so that calculation has its own plotting function            
+##            pos = np.where(np.abs(np.diff(y)) >= .0015)[0] + 1  #jumps over .0015 THz(1.5 GHz) are not connected
+##            #x = np.insert(x, pos, np.nan)  #replace values in "x" that correspond to nonpositives in "y" with "not a number"s
+##            y = np.insert(y, pos, np.nan)  #replace nonpositives in "y" with "not a number"s
+            #for reason yet to be determined, the preceding 3 lines don't work with "Integration Time" so that calculation has its own plotting function
+            #also, these 3 lines didn't work with a noise calculation in photons.  however it did work with the exact same noise calculation in watts.
             
             pylab.plot(x, y)
             pylab.xscale('log')
@@ -787,13 +791,15 @@ class atmodel(wx.Frame):
             xw.write_col('freq(THz)', freqNoise_THz)
             xw.write_col('wavelength(um)', (3 * 10**8) / freqNoise * 10**6) 
             xw.write_col('Total Noise_BLING(W Hz^(-1/2))', bling_TOT)
+			xw.write_col('Total Noise_BLING(Photon/s Hz^(-1/2))', bling_TOT_photon
 
             # draw plot
-            loglogplot(freqNoise_THz, bling_TOT)  #plot of BLING is log(base 10)-scaled
-            if self.BLING_units == "photons/s-Hz^1/2":
+            if self.BLING_units.GetValue() == "photons/s-Hz^1/2": #Noise plot if photon/sec is selected
+				loglogplot(freqNoise_THz, bling_TOT_photon)
                 pylab.ylabel("BLING(photons/s-Hz^1/2)")
-            else:
-                pylab.ylabel("BLING(W*Hz^(-1/2))")
+            else: #Noise plot if Watts is selected
+                loglogplot(freqNoise_THz, bling_TOT)
+				pylab.ylabel("BLING(W*Hz^(-1/2))")
             pylab.xlabel("Frequency(THz)")
             title = "Noise" + str(title_bling) + " vs. Frequency at Spectral Resolution of " + str(resol) + ".\nFrequency is from " + str(freq_start) + " to " + str(freq_end) + "THz.  "
             if self.background_checkboxs[3].IsChecked() or self.background_checkboxs[6].IsChecked():  #if "Thermal Mirror Emission" is included, add "mirror_temp" to the title
@@ -849,12 +855,13 @@ class atmodel(wx.Frame):
 
 #if "Integration Time" is checked
         if self.check_IntTime.IsChecked():
-            ratio = float(self.input_SigNoise.GetValue())  #only need signal to noise ratio input if "Integration Time" is checked
+            ratio = float(self.input_SigNoise.GetValue())  #"Signal to Noise Ratio" is only new input if "Integration Time" is checked(inputs for Signal and Noise are still necessary)
 
             # draw plot
             integration_time = cal.IT(bling_TOT, ratio, ts)  #returns array of integration time after signal and BLING are calculated
             print "Integration Time is " + str(integration_time)            
-            # don't use "loglogplot" function because it doesn't work with "Integration Time"
+            # don't use "loglogplot" function because it doesn't work with "Integration Time"(it puts "not a number" between each value without deleting the old value so the list alternates between data and "not a number"s)
+            loglogplot(freq_THz,integration_time)
             pylab.plot(freq_THz, integration_time)
             pylab.xscale('log')
             pylab.yscale('log')
