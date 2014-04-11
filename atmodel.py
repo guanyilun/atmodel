@@ -791,15 +791,15 @@ class atmodel(wx.Frame):
             xw.write_col('freq(THz)', freqNoise_THz)
             xw.write_col('wavelength(um)', (3 * 10**8) / freqNoise * 10**6) 
             xw.write_col('Total Noise_BLING(W Hz^(-1/2))', bling_TOT)
-			xw.write_col('Total Noise_BLING(Photon/s Hz^(-1/2))', bling_TOT_photon
+            xw.write_col('Total Noise_BLING(Photon/s Hz^(-1/2))', bling_TOT_photon)
 
             # draw plot
             if self.BLING_units.GetValue() == "photons/s-Hz^1/2": #Noise plot if photon/sec is selected
-				loglogplot(freqNoise_THz, bling_TOT_photon)
+                loglogplot(freqNoise_THz, bling_TOT_photon)
                 pylab.ylabel("BLING(photons/s-Hz^1/2)")
             else: #Noise plot if Watts is selected
                 loglogplot(freqNoise_THz, bling_TOT)
-				pylab.ylabel("BLING(W*Hz^(-1/2))")
+                pylab.ylabel("BLING(W*Hz^(-1/2))")
             pylab.xlabel("Frequency(THz)")
             title = "Noise" + str(title_bling) + " vs. Frequency at Spectral Resolution of " + str(resol) + ".\nFrequency is from " + str(freq_start) + " to " + str(freq_end) + "THz.  "
             if self.background_checkboxs[3].IsChecked() or self.background_checkboxs[6].IsChecked():  #if "Thermal Mirror Emission" is included, add "mirror_temp" to the title
