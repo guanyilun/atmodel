@@ -289,12 +289,12 @@ class atmodel(wx.Frame):
                 title_bling.append('Cosmic Infrared Background')
                 cib_excel = file_refs.CIB_ref  #name excel file to read from
                 cib = ExcelReader(cib_excel)
-                cib.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                #cib.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
                 print "Reading array from", cib_excel
-                freqNoise = np.array(cib.read_from_col(1), dtype="float")  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                freqNoise = np.array(cib.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype="float")  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
                 print "len(freq)=", len(freqNoise)
-                temp = np.array(cib.read_from_col(4), dtype="float")  #create array of temperature(K) from 5th column of excel file, reading as floats
+                temp = np.array(cib.read_from_col('K',freq_start * 1e12, freq_end * 1e12), dtype="float")  #create array of temperature(K) from 5th column of excel file, reading as floats
                 print "len(temp)=", len(temp)
                 bling_squared += cal.bling_sub(freqNoise, temp, resol)  #calculate and add BLING(squared) of Cosmic Infrared Background to "bling_squared"
 
@@ -326,9 +326,9 @@ class atmodel(wx.Frame):
                 
                 # perform calculations
                 CMB = ExcelReader(cmb_file)
-                CMB.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                #CMB.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
                 print "Reading array from", cmb
-                freqNoise = np.array(CMB.read_from_col(1), dtype="float")  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                freqNoise = np.array(CMB.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype="float")  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
                 bling_squared += cal.bling_CMB(freqNoise, resol)  #calculate and add BLING(squared) of Cosmic Microwave Background to "bling_squared"
 
@@ -371,10 +371,10 @@ class atmodel(wx.Frame):
 
                 # perform calculations
                 GE = ExcelReader(ge_file)
-                GE.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-                freqNoise = np.array(GE.read_from_col(1), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                #GE.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                freqNoise = np.array(GE.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
-                temp = np.array(GE.read_from_col(8), dtype='float')  #create array of temperature(K) from 9th column of excel file, reading as floats
+                temp = np.array(GE.read_from_col('K',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of temperature(K) from 9th column of excel file, reading as floats
                 bling_squared += cal.bling_sub(freqNoise, temp, resol)  #calculate and add BLING(squared) of Galactic Emission to "bling_squared"
 
 #if "Thermal Mirror Emission" or "Cumulative" box is checked 
@@ -390,11 +390,11 @@ class atmodel(wx.Frame):
                 if index == 3:  #if "Ag" is selected
                     title_bling.append('Thermal Mirror Emission(Silver)')
                 tme = ExcelReader(file_refs.TME_ref)  #name excel file to read from
-                tme.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-                freqNoise = np.array(tme.read_from_col(1), dtype = 'float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                #tme.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                freqNoise = np.array(tme.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype = 'float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
                 sigma = const.sigma[index]  #from file "const", get "Material Constant" depending on which material is selected
-                wavelength = np.array(tme.read_from_col(3), dtype = 'float')  #create array of wavelengths(microns)
+                wavelength = np.array(tme.read_from_col('um',freq_start * 1e12, freq_end * 1e12), dtype = 'float')  #create array of wavelengths(microns)
                 bling_squared += cal.bling_TME(freqNoise, resol, sigma, mirror_temp, wavelength)  #calculate and add BLING(squared) of Thermal Mirror Emission to "bling_sqared"
 
 #if "Atmospheric Radiance" or "Cumulative" box is checked
@@ -425,10 +425,10 @@ class atmodel(wx.Frame):
 
                 # perform calculations
                 AR = ExcelReader(ar_file)
-                AR.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-                freqNoise = np.array(AR.read_from_col(1), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                #AR.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                freqNoise = np.array(AR.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
-                rad = np.array(AR.read_from_col(4), dtype='float')  #create array of radiance(W/cm^2/st/cm^-1) from 5th column of excel file, reading as floats
+                rad = np.array(AR.read_from_col(0,freq_start * 1e12, freq_end * 1e12,'TOTAL RAD'), dtype='float')  #create array of radiance(W/cm^2/st/cm^-1) from 5th column of excel file, reading as floats
                 bling_squared += cal.bling_AR(freqNoise, rad, resol)  #calculate and add BLING(squared) of Atmospheric Radiance to "bling_squared"
 
 #if "Zodiacial Emission" or "Cumulative" box is checked
@@ -467,10 +467,10 @@ class atmodel(wx.Frame):
 
                 # perform calculations
                 ZE = ExcelReader(ze)
-                ZE.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-                freqNoise = np.array(ZE.read_from_col(1), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                #ZE.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                freqNoise = np.array(ZE.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
-                temp = np.array(ZE.read_from_col(4), dtype='float')  #create array of temperature(K) from 5th column of excel file, reading as floats
+                temp = np.array(ZE.read_from_col('K',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of temperature(K) from 5th column of excel file, reading as floats
                 bling_squared += cal.bling_sub(freqNoise, temp, resol)  #calculate and add BLING(squared) of Zodiacal Emission to "bling_squared"
             
             bling_TOT = (bling_squared) ** 0.5  #"bling_squared" is the sum of the squared bling of each background so "bling_TOT" is the radical of "bling_squared" since the result is the BLINGS added in quadrature
@@ -499,11 +499,11 @@ class atmodel(wx.Frame):
                 title_temp.append('Cosmic Infrared Background')
                 cib_excel = file_refs.CIB_ref  #name excel file to read from
                 cib = ExcelReader(cib_excel)
-                cib.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                #cib.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
                 print "Reading array from", cib_excel
-                freqNoise = np.array(cib.read_from_col(1), dtype="float")  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                freqNoise = np.array(cib.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype="float")  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
-                temp = np.array(cib.read_from_col(4), dtype="float")  #create array of temperature(K) from 5th column of excel file, reading as floats
+                temp = np.array(cib.read_from_col('K',freq_start * 1e12, freq_end * 1e12), dtype="float")  #create array of temperature(K) from 5th column of excel file, reading as floats
                 temperature += temp  #no calculations are needed to add temperature of Cosmic Infrared Background to "temperature"
 
 #if "Cosmic Microwave Background" box is checked
@@ -535,9 +535,9 @@ class atmodel(wx.Frame):
                 
                 # perform calculations
                 CMB = ExcelReader(cmb)                
-                CMB.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                #CMB.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
                 print "Reading array from", cmb
-                freqNoise = np.array(CMB.read_from_col(1), dtype="float")  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                freqNoise = np.array(CMB.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype="float")  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
                 temperature += cal.temp_CMB(freqNoise)  #calculate and add temperature of Cosmic Microwave Background to "temperature"
 
@@ -575,10 +575,10 @@ class atmodel(wx.Frame):
 
                 # perform calculations
                 GE = ExcelReader(ge)
-                GE.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-                freqNoise = np.array(GE.read_from_col(1), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                #GE.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                freqNoise = np.array(GE.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
-                temp = np.array(GE.read_from_col(8), dtype='float')  #create array of temperature(K) from 9th column of excel file, reading as floats
+                temp = np.array(GE.read_from_col('K',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of temperature(K) from 9th column of excel file, reading as floats
                 temperature += temp  #no calculations are needed to add temperature of Galactic Emission to "temperature"
 
 #if "Thermal Mirror Emission" box is checked 
@@ -594,11 +594,11 @@ class atmodel(wx.Frame):
                 if index == 3:  #if "Ag" is selected
                     title_temp.append('Thermal Mirror Emission(Silver)')
                 tme = ExcelReader(file_refs.TME_ref)  #name excel file to read from
-                tme.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-                freqNoise = np.array(tme.read_from_col(1), dtype = 'float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                #tme.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                freqNoise = np.array(tme.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype = 'float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
                 sigma = const.sigma[index]  #from file "const", get "Material Constant" depending on which material is selected
-                wavelength = np.array(tme.read_from_col(3), dtype = 'float')  #create array of wavelengths(microns)
+                wavelength = np.array(tme.read_from_col('um',freq_start * 1e12, freq_end * 1e12), dtype = 'float')  #create array of wavelengths(microns)
                 temperature += cal.temp_TME(freqNoise, sigma, mirror_temp, wavelength)  #calculate and add temperature of Thermal Mirror Emission to "temperature"
 
 #if "Atmospheric Radiance" box is checked
@@ -629,10 +629,10 @@ class atmodel(wx.Frame):
 
                 # perform calculations
                 AR_temp = ExcelReader(ar_file)
-                AR_temp.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-                freqNoise = np.array(AR_temp.read_from_col(1), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                #AR_temp.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                freqNoise = np.array(AR_temp.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
-                rad = np.array(AR_temp.read_from_col(4), dtype='float')  #create array of radiance(W/cm^2/st/cm^-1) from 5th column of excel file, reading as floats
+                rad = np.array(AR_temp.read_from_col(0,freq_start * 1e12, freq_end * 1e12,'TOTAL RAD'), dtype='float')  #create array of radiance(W/cm^2/st/cm^-1) from 5th column of excel file, reading as floats
                 temperature += cal.temp_AR(freqNoise, rad)  #calculate and add temperature of Atmospheric Radiance to "temperature"
 
 #if "Zodiacial Emission" box is checked
@@ -671,10 +671,10 @@ class atmodel(wx.Frame):
 
                 # perform calculations
                 ZE = ExcelReader(ze)                
-                ZE.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-                freqNoise = np.array(ZE.read_from_col(1), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
+                #ZE.set_freq_range_Hz(freq_start * 1e12, freq_end * 1e12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+                freqNoise = np.array(ZE.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of frequency(Hz) from 2nd column of excel file, reading as floats
                 freqNoise_THz = freqNoise * 10 ** (-12)  #create array that converts "freqNoise" into THz
-                temp = np.array(ZE.read_from_col(4), dtype='float')  #create array of temperature(K) from 5th column of excel file, reading as floats
+                temp = np.array(ZE.read_from_col('K',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create array of temperature(K) from 5th column of excel file, reading as floats
                 temperature += temp  #no calculations are needed to add temperature of Zodiacal Emission to "temperature"
             
             end_time = time.time()  #stops clock for calculation time
@@ -709,9 +709,9 @@ class atmodel(wx.Frame):
             
             # perform calculations
             SI = ExcelReader(si)
-            SI.set_freq_range_Hz(freq_start*10**12, freq_end*10**12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-            freq = np.array(SI.read_from_col(1), dtype='float')  #create list of frequency(Hz) from 2nd column of excel file
-            inte = np.array(SI.read_from_col(5), dtype='float')  #create list of intensity(Jy) from 6th column of excel file, reading as floats
+            #SI.set_freq_range_Hz(freq_start*10**12, freq_end*10**12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+            freq = np.array(SI.read_from_col('Hz',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create list of frequency(Hz) from 2nd column of excel file
+            inte = np.array(SI.read_from_col('W M-2 Hz-1',freq_start * 1e12, freq_end * 1e12), dtype='float')  #create list of intensity(Jy) from 6th column of excel file, reading as floats
             print "Reading from source. DONE"
             
             # save into "last used SI file.txt"
@@ -740,8 +740,8 @@ class atmodel(wx.Frame):
 
             # perform calculations    
             AT = ExcelReader(at)
-            AT.set_freq_range_Hz(freq_start*10**12, freq_end*10**12)  #set where in excel file to start/stop reading by converting input from THz to Hz
-            tau = np.array(AT.read_from_col(4), dtype='float')  #create array of transmission from 5th column of excel file, reading as floats
+            #AT.set_freq_range_Hz(freq_start*10**12, freq_end*10**12)  #set where in excel file to start/stop reading by converting input from THz to Hz
+            tau = np.array(AT.read_from_col(0,freq_start * 1e12, freq_end * 1e12,'COMBIN TRANS'), dtype='float')  #create array of transmission from 5th column of excel file, reading as floats
             print "Reading from Atmosphere Transmission. DONE"
 
             # save into "last used AT file.txt"

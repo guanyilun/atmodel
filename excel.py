@@ -1,33 +1,28 @@
+from collections import namedtuple
 from xlrd import open_workbook
 from xlwt import Workbook
 from xlsxwriter.workbook import Workbook
 import os
+### add error exceptions: if no useable data type is found, say the name of the file
 
-#to read excel files
+#test file 'C://Users/Max/Desktop/Atmodel2/atmodel/atmodel/python/App/data/Backgrounds/Atmospheric Radiance_sites/13_7Km SOFIA-Radiance-1976Model-45Deg-0-2000cm.xlsx'
+
+c = 2.99792458*(10**8)
+unit_conversions = {'THz':10**12,'Hz':1,'micron':10**(-6),'um':10**(-6),'m':1,'CM-1':c*10**2,'CM^-1':c*10**2}
+unit_types = ['Frequency','frequency','Wavelength','wavelength','FREQ','Freq'] #unit types in order of preference
+
 class ExcelReader:
+
     def __init__(self, file_location):
-        self.book = open_workbook(file_location, on_demand = True)
+        self.file_location = file_location
+        self.book = open_workbook(self.file_location, on_demand = True)
         self.sheet = self.book.sheet_by_index(0)
         self.row_offset = 1
-        self.col_offset = 0
-        self.freq_offset = 0.05
-        self.freq_step_size = 0.1
-        
-    def read_from_col(self, col):
-        result = []
-        for row in range(self.row_start, self.row_end):
-            value = self.sheet.cell(row, col).value
-            result.append(value)
-        return result
-    
-    def set_freq_range(self, freq_start, freq_end):
-        ## Note: we can determine whether or not our allowed range of frequencies is completely
-        ##       outside the range of data by checking Row_End < Row_Start;
-        ##       if Row_End < Row_Start, that means we don't have any data in the file within our
-        ##       specified range of frequencies
-        ####
+
+
+    def set_freq_range_Hz(self,freq_start,freq_end):
         Row = self.row_offset #the first row we will test is the one following the rows skipped
-        Current_Value = self.sheet.cell(Row, 1).value #this is the value from column 1 of the "Row" above
+        Current_Value = self.sheet.cell(Row, int(self.col)).value #this is the value from column 1 of the "Row" above
 
         #NOTE: this technique for determining rows to start and stop reading from assumes the columns have values in ascending order
 
@@ -42,34 +37,46 @@ class ExcelReader:
             #inlcuding the equal sign establishes an inclusive range if one of the cells is equal to the desired ending frequency
             Row = Row + 1
             Current_Value = self.sheet.cell(Row, 1).value
-        self.row_end = Row - 1 #the row we want to end reading from is the last row the while loop iterated through which is one less than the "Row" it will give
+        self.row_end = Row - 1 #the row we want to end reading from is the last row the while loop iterated through which is one less than the "Row" it will give        
 
-        print("row start is " + str(self.row_start))
-        print("row end is " + str(self.row_end))
 
-    def set_freq_range_Hz(self, freq_start, freq_end):
-        self.freq_offset *= 3e10 #1.5e9
-        self.freq_step_size *= 3e10 #3e9
-        self.set_freq_range(freq_start, freq_end)
+    def read_from_col(self, units, freq_start, freq_end, title = ' '): #reads independent variable(freq in Hz) terms to a namedtuple with the data
+        if units != 0:
+            self.col = self.indep_chooser(units)         #finds the first column with the correct units
+        else:
+            self.col = self.indep_chooser(0, title)
+        self.set_freq_range_Hz(freq_start,freq_end)#finds which rows should be read from that column
+        result = []
+        for row in range(self.row_start, self.row_end):
+            value = self.sheet.cell(row, int(self.col)).value
+            if value != None:
+                result.append(value)
+        return result
 
-#to generate XLS excel format
-class ExcelWriter:
-    def __init__(self, path):
-        self.path = path
-        self.book = Workbook()
-        self.sheet = self.book.add_sheet('Sheet1')
-        self.column_to_fill = 0
-        
-    def write_col(self, column_name, column_content):
-        row = 0
-        self.sheet.write(row, self.column_to_fill, column_name)
-        row += 1
-        for x in column_content:
-            self.sheet.write(row, self.column_to_fill, x)
-            row += 1
-        self.column_to_fill += 1
-    def save(self):
-        self.book.save(self.path)
+
+    def indep_chooser(self,units, title = ' '): #looks through all columns and returns the location of the first column with chosen units
+        if units != 0:  #set units to 0 to choose column based on title
+            try:
+                for col in range(0,30):
+                    self.col_title = str(self.sheet.cell(0,col))
+                    self.col_title = self.col_title.strip()
+                    self.col_type = self.col_title[7:self.col_title.find('(')-1]  #col_title looks like "text:u'type (units)'" -- this strips the 'text:u' from the type
+                    self.col_units = self.col_title[self.col_title.find('(')+1:self.col_title.find(')')] #everything inside of parentheses are the units
+                    if self.col_units == units:
+                        return col
+            except:
+                print 'units ' + units + ' not found in file ' + self.file_location
+        else: #if units = 0 check for column based on column type rather than units.
+            try:
+                for col in range(0,30):
+                    self.col_title = str(self.sheet.cell(0,col))
+                    self.col_title = self.col_title.strip()
+                    self.col_type = self.col_title[7:-1]
+                    if self.col_type == title:
+                        return col
+            except:
+                print 'title ' + title + ' not found in file ' + self.file_location
+
 
 #to generate XLSX format excel format
 class ExcelXWriter:
@@ -91,4 +98,10 @@ class ExcelXWriter:
     def save(self):
         self.book.close()
 
-
+        
+def inp_to_freq(entry,units):#takes input and returns equivalent freq in Hz
+    if units == 'micron' or units == 'm' or units == 'um':
+        return (c/(entry*unit_conversions[units]))
+    else:
+        freq_Hz = entry*unit_conversions[units]
+        return freq_Hz
