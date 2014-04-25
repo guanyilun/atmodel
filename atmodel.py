@@ -21,7 +21,7 @@ import config
 
 class atmodel(wx.Frame):
     def __init__(self, parent , title):
-        super(atmodel, self).__init__(parent, title=title, size=(700, 550))
+        super(atmodel, self).__init__(parent, title=title, size=(700, 565))
         self.InitUI()
         self.Centre()
         self.Show()     
@@ -47,7 +47,7 @@ class atmodel(wx.Frame):
         bottom_right = wx.BoxSizer(wx.VERTICAL)
         
     # Top_left
-        top_left_fgs = wx.FlexGridSizer(7, 2, 6, 6)  # declare FlexibleGridSizer
+        top_left_fgs = wx.FlexGridSizer(0, 2, 6, 6)  # declare FlexibleGridSizer
         
     # Top_left -> parameters
         parameters = ['Specify Parameters', 'Spectral Resolution:',
