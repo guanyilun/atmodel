@@ -21,7 +21,7 @@ import config
 
 class atmodel(wx.Frame):
     def __init__(self, parent , title):
-        super(atmodel, self).__init__(parent, title=title, size=(700, 565))
+        super(atmodel, self).__init__(parent, title=title, size=(700, 568))
         self.InitUI()
         self.Centre()
         self.Show()     
