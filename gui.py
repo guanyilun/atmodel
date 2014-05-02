@@ -56,9 +56,11 @@ class gui(QtGui.QWidget):
         noise_tabs.setTabPosition(QtGui.QTabWidget.West)
         noise_layout.addWidget(noise_tabs)
         
-        # Atmospheric Radiance
+        # Atmospheric Radiance / Transmission
         
-        atmos_toplot, atmos_list = self.add_tab(noise_tabs, "Atmospheric", "Atmospheric Radiance")
+        self.atmos_toplot = [QtGui.QCheckBox("Plot Radiance"), QtGui.QCheckBox("Plot Transmission")]
+        ignored_value, atmos_list =  self.add_tab(
+            noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)
         self.atmos_collection = []
         
         atmos_set0 = self.atmos_inputs()
@@ -197,6 +199,7 @@ class gui(QtGui.QWidget):
         # generate graph
         generate = QtGui.QPushButton("Generate Graph")
         buttons.addWidget(generate)
+        QtCore.QObject.connect(generate, QtCore.SIGNAL("clicked()"), self.generate_graph)
         
         ###
         
@@ -207,9 +210,18 @@ class gui(QtGui.QWidget):
         self.setLayout(top)
         
         self.show()
+    
+    # generate a graph with inputs
+    def generate_graph(self):
+        freq_min = self.freq_min.text()
+        freq_max = self.freq_max.text()
+        
+        atmos_site = self.atmos_collection[0]["site"].widget.currentIndex()
+        galactic_lat = self.galactic_collection[0]["latitude"].widget.currentIndex()
+        zodiac_lat = self.zodiac_collection[0]["latitude"].widget.currentIndex()
         
     # add new tab page of inputs
-    def add_tab(self, parent, label, heading):
+    def add_tab(self, parent, label, heading, to_plot_list = {}):
         
         # create actual tab page
         tab = QtGui.QWidget()
@@ -224,9 +236,15 @@ class gui(QtGui.QWidget):
             layout.addWidget(QtGui.QLabel("<h3>" + heading + "</h3>"), 0, QtCore.Qt.AlignHCenter)
         
         # checkbox to plot everything in current tab
-        to_plot = QtGui.QCheckBox("Plot this data")
-        to_plot.setCheckState(QtCore.Qt.Unchecked)
-        layout.addWidget(to_plot, 0, QtCore.Qt.AlignHCenter)
+        if len(to_plot_list) < 1:
+            to_plot = QtGui.QCheckBox("Plot this data")
+            to_plot.setCheckState(QtCore.Qt.Unchecked)
+            layout.addWidget(to_plot, 0, QtCore.Qt.AlignHCenter)
+        
+        else: # show all plotting checkboxes if specified
+            to_plot = None
+            for checkbox in to_plot_list:
+                layout.addWidget(checkbox, 0, QtCore.Qt.AlignHCenter)
         
         # scroll area to contain possible overflow of input controls
         scroll = QtGui.QScrollArea()
