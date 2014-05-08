@@ -5,6 +5,8 @@ from PyQt4 import QtCore, QtGui
 import collections
 
 import dyngui
+import generate
+import graph
 
 class gui(QtGui.QWidget):
     
@@ -28,7 +30,7 @@ class gui(QtGui.QWidget):
     def init_UI(self):
         
         # setup the window
-        self.resize(900, 550)
+        self.resize(950, 580)
         self.center()
         self.setWindowTitle("Atmospheric Modeling")
         
@@ -100,8 +102,8 @@ class gui(QtGui.QWidget):
         
         self.other_toplot, other_list = self.add_tab(noise_tabs, "Other", "Other Noise")
         
-        other_set = self.other_inputs()
-        dyngui.new_group(other_list, other_set)
+        self.other_set = self.other_inputs()
+        dyngui.new_group(other_list, self.other_set)
         
         ## -- SIGNAL -- ##
         
@@ -223,12 +225,37 @@ class gui(QtGui.QWidget):
         freq_min = self.freq_min.text()
         freq_max = self.freq_max.text()
         
-        atmos_site = self.atmos_collection[0]["site"].widget.currentIndex()
-        galactic_lat = self.galactic_collection[0]["glat"].widget.currentIndex()
-        mirror_temp = float(self.mirror_collection[0]["temp"].widget.text())
-        mirror_type = self.mirror_collection[0]["type"].widget.currentIndex()
-        zodiac_lat = self.zodiac_collection[0]["eclat"].widget.currentIndex()
-        other_cmb = self.cmb_collection[0]["cmb"].widget.checkState()
+        atmos_site = self.atmos_collection[0].inputs["site"].widget.currentIndex()
+        galactic_lat = self.galactic_collection[0].inputs["glat"].widget.currentIndex()
+        mirror_temp = self.mirror_collection[0].inputs["temp"].widget.text()
+        mirror_type = self.mirror_collection[0].inputs["type"].widget.currentIndex()
+        zodiac_lat = self.zodiac_collection[0].inputs["eclat"].widget.currentIndex()
+        other_cmb = self.other_set["cmb"].widget.checkState()
+        other_cib = self.other_set["cib"].widget.checkState()
+        
+        new_graph = graph.graph_obj("Atmospheric Model", [])
+        
+        ## Plot Noise
+        
+        # Atmospheric radiance
+        if self.atmos_toplot[0].isChecked():
+            # loop through all selected sites
+            for group in self.atmos_collection:
+                index = group.inputs["site"].widget.currentIndex()
+                # only add to graph if a site is selected
+                if index > 0:
+                    generate.add_radiance(new_graph,
+                        self.sites_list[group.inputs["site"].widget.currentIndex() - 1])
+        
+        # Atmospheric transmission
+        if self.atmos_toplot[1].isChecked():
+            # loop through all selected sites
+            for group in self.atmos_collection:
+                index = group.inputs["site"].widget.currentIndex()
+                # only add to graph if a site is selected
+                if index > 0:
+                    generate.add_trans(new_graph,
+                        self.sites_list[group.inputs["site"].widget.currentIndex() - 1])
         
     # add new tab page of inputs
     def add_tab(self, parent, label, heading, to_plot_list = {}):

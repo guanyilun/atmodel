@@ -77,6 +77,7 @@ def update_list(box, collection):
         box.removeItem(len(collection) - 1)
     
     # fill the elements with the descriptor text for each group of widgets
+    box.setItemText(0, "")
     i = 1 # leave 0th element blank
     for group in collection:
         box.setItemText(i, group_str(group.inputs))
