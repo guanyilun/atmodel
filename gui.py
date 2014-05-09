@@ -7,16 +7,17 @@ import collections
 import dyngui
 import generate
 import graph
+from graph import *
 
 class gui(QtGui.QWidget):
     
-    def __init__(self, sites, sources, glat, elat, mtypes):
+    def __init__(self, sites, source, galactic, mirror, zodiac):
         super(gui, self).__init__()
-        self.sites_list = sites # list of observer sites
-        self.sources_list = sources # list of source galaxies
-        self.glat_list = glat # list of galactic latitudes
-        self.elat_list = elat # list of ecliptic latitudes
-        self.mtypes_list = mtypes # list of mirror types (metals)
+        self.atmos_files = sites # list of observer sites
+        self.source_files = source # list of source galaxies
+        self.galactic_files = galactic # list of galactic emission files
+        self.mirror_files = mirror # list of mirror types (metals)
+        self.zodiac_files = zodiac # list of ecliptic emission files
         self.init_UI()
     
     # center the window
@@ -226,10 +227,10 @@ class gui(QtGui.QWidget):
         freq_max = self.freq_max.text()
         
         atmos_site = self.atmos_collection[0].inputs["site"].widget.currentIndex()
-        galactic_lat = self.galactic_collection[0].inputs["glat"].widget.currentIndex()
+        galactic_crd = self.galactic_collection[0].inputs["gcrd"].widget.currentIndex()
         mirror_temp = self.mirror_collection[0].inputs["temp"].widget.text()
         mirror_type = self.mirror_collection[0].inputs["type"].widget.currentIndex()
-        zodiac_lat = self.zodiac_collection[0].inputs["eclat"].widget.currentIndex()
+        zodiac_crd = self.zodiac_collection[0].inputs["ecrd"].widget.currentIndex()
         other_cmb = self.other_set["cmb"].widget.checkState()
         other_cib = self.other_set["cib"].widget.checkState()
         
@@ -245,7 +246,7 @@ class gui(QtGui.QWidget):
                 # only add to graph if a site is selected
                 if index > 0:
                     generate.add_radiance(new_graph,
-                        self.sites_list[group.inputs["site"].widget.currentIndex() - 1])
+                        self.atmos_files[group.inputs["site"].widget.currentIndex() - 1].file)
         
         # Atmospheric transmission
         if self.atmos_toplot[1].isChecked():
@@ -255,7 +256,17 @@ class gui(QtGui.QWidget):
                 # only add to graph if a site is selected
                 if index > 0:
                     generate.add_trans(new_graph,
-                        self.sites_list[group.inputs["site"].widget.currentIndex() - 1])
+                        self.atmos_files[group.inputs["site"].widget.currentIndex() - 1].file)
+        
+        # Galactic emission
+        if self.galactic_toplot.isChecked():
+            # loop through all selected latitudes
+            for group in self.galactic_collection:
+                index = group.inputs["gcrd"].widget.currentIndex()
+                # only add to graph if a latitude is selected
+                if index > 0:
+                    generate.add_galactic(new_graph,
+                        self.galactic_files[group.inputs["gcrd"].widget.currentIndex() - 1].file)
         
     # add new tab page of inputs
     def add_tab(self, parent, label, heading, to_plot_list = {}):
@@ -297,18 +308,23 @@ class gui(QtGui.QWidget):
     # connect widgets to update function
     def conn_update(self, widget, sig):
         QtCore.QObject.connect(widget, QtCore.SIGNAL(sig), self.update_all)
+    
+    # add file list to drop down list
+    def add_list(self, drop_down, file_list):
+        for item in file_list:
+            drop_down.addItem(item.name)
         
     ###
     ### Various input settings
     ###
     
-    # Atmospheric Radiance
+    # Atmospheric Radiance & Transmission
     def atmos_inputs(self):
         
         inputs = {}
         site = QtGui.QComboBox()
         site.addItem("")
-        site.addItems(self.sites_list)
+        self.add_list(site, self.atmos_files)
         self.conn_update(site, "currentIndexChanged(int)")
         inputs["site"] = dyngui.input_obj("Site", site)
         
@@ -319,11 +335,11 @@ class gui(QtGui.QWidget):
         
         inputs = {}
         
-        latitude = QtGui.QComboBox()
-        latitude.addItem("")
-        latitude.addItems(self.glat_list)
-        self.conn_update(latitude, "currentIndexChanged(int)")
-        inputs["glat"] = dyngui.input_obj("Galactic Latitude", latitude)
+        coord = QtGui.QComboBox()
+        coord.addItem("")
+        self.add_list(coord, self.galactic_files)
+        self.conn_update(coord, "currentIndexChanged(int)")
+        inputs["gcrd"] = dyngui.input_obj("Galactic Coord", coord)
         
         return inputs
     
@@ -337,7 +353,7 @@ class gui(QtGui.QWidget):
         
         mirror_type = QtGui.QComboBox()
         mirror_type.addItem("")
-        mirror_type.addItems(self.mtypes_list)
+        self.add_list(mirror_type, self.mirror_files)
         self.conn_update(mirror_type, "currentIndexChanged(int)")
         inputs["type"] = dyngui.input_obj("Mirror Type", mirror_type)
         
@@ -348,11 +364,11 @@ class gui(QtGui.QWidget):
         
         inputs = {}
         
-        latitude = QtGui.QComboBox()
-        latitude.addItem("")
-        latitude.addItems(self.elat_list)
-        self.conn_update(latitude, "currentIndexChanged(int)")
-        inputs["eclat"] = dyngui.input_obj("Ecliptic Latitude", latitude)
+        coord = QtGui.QComboBox()
+        coord.addItem("")
+        self.add_list(coord, self.zodiac_files)
+        self.conn_update(coord, "currentIndexChanged(int)")
+        inputs["ecrd"] = dyngui.input_obj("Ecliptic Coord", coord)
         
         return inputs
     
@@ -379,13 +395,13 @@ class gui(QtGui.QWidget):
         
         site = QtGui.QComboBox()
         site.addItem("")
-        site.addItems(self.sites_list)
+        self.add_list(site, self.atmos_files)
         self.conn_update(site, "currentIndexChanged(int)")
         inputs["site"] = dyngui.input_obj("Site", site)
         
         source = QtGui.QComboBox()
         source.addItem("")
-        source.addItems(self.sources_list)
+        self.add_list(source, self.source_files)
         self.conn_update(source, "currentIndexChanged(int)")
         inputs["source"] = dyngui.input_obj("Source", source)
         
