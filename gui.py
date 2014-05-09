@@ -8,6 +8,7 @@ import dyngui
 import generate
 import graph
 from graph import *
+import inputs
 
 class gui(QtGui.QWidget):
     
@@ -66,7 +67,7 @@ class gui(QtGui.QWidget):
             noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)
         self.atmos_collection = []
         
-        atmos_set0 = self.atmos_inputs()
+        atmos_set0 = inputs.atmos(self)
         self.atmos_collection.append(dyngui.collect_obj(atmos_set0,
                 dyngui.new_group(self.atmos_list, atmos_set0)))
         
@@ -75,7 +76,7 @@ class gui(QtGui.QWidget):
         self.galactic_toplot, self.galactic_list = self.add_tab(noise_tabs, "Galactic", "Galactic Emission")
         self.galactic_collection = []
         
-        galactic_set0 = self.galactic_inputs()
+        galactic_set0 = inputs.galactic(self)
         self.galactic_collection.append(dyngui.collect_obj(galactic_set0,
                 dyngui.new_group(self.galactic_list, galactic_set0)))
         
@@ -85,7 +86,7 @@ class gui(QtGui.QWidget):
         self.mirror_collection = []
         self.mirror_groups = []
         
-        mirror_set0 = self.mirror_inputs()
+        mirror_set0 = inputs.mirror(self)
         self.mirror_collection.append(dyngui.collect_obj(mirror_set0,
                 dyngui.new_group(self.mirror_list, mirror_set0)))
         
@@ -95,7 +96,7 @@ class gui(QtGui.QWidget):
         self.zodiac_collection = []
         self.zodiac_groups = []
         
-        zodiac_set0 = self.zodiac_inputs()
+        zodiac_set0 = inputs.zodiac(self)
         self.zodiac_collection.append(dyngui.collect_obj(zodiac_set0,
                 dyngui.new_group(self.zodiac_list, zodiac_set0)))
         
@@ -103,7 +104,7 @@ class gui(QtGui.QWidget):
         
         self.other_toplot, other_list = self.add_tab(noise_tabs, "Other", "Other Noise")
         
-        self.other_set = self.other_inputs()
+        self.other_set = inputs.other(self)
         dyngui.new_group(other_list, self.other_set)
         
         ## -- SIGNAL -- ##
@@ -112,7 +113,7 @@ class gui(QtGui.QWidget):
         self.signal_collection = []
         self.signal_groups = []
         
-        signal_set0 = self.signal_inputs()
+        signal_set0 = inputs.signal(self)
         self.signal_collection.append(dyngui.collect_obj(signal_set0,
                 dyngui.new_group(self.signal_list, signal_set0)))
         
@@ -135,7 +136,7 @@ class gui(QtGui.QWidget):
         # collection of widgets
         self.compos_collection = []
         
-        compos_set0 = self.compos_inputs()
+        compos_set0 = inputs.compos(self)
         self.compos_collection.append(dyngui.collect_obj(compos_set0,
             dyngui.new_group(self.compos_clayout, compos_set0)))
         
@@ -260,13 +261,33 @@ class gui(QtGui.QWidget):
         
         # Galactic emission
         if self.galactic_toplot.isChecked():
-            # loop through all selected latitudes
+            # loop through all selected coordinates
             for group in self.galactic_collection:
                 index = group.inputs["gcrd"].widget.currentIndex()
-                # only add to graph if a latitude is selected
+                # only add to graph if a coordinate is selected
                 if index > 0:
                     generate.add_galactic(new_graph,
                         self.galactic_files[group.inputs["gcrd"].widget.currentIndex() - 1].file)
+        
+        # Thermal mirror emission
+        if self.mirror_toplot.isChecked():
+            # loop through all selected mirror types
+            for group in self.galactic_collection:
+                index = group.inputs["type"].widget.currentIndex()
+                # only add to graph if a type is selected
+                if index > 0:
+                    generate.add_mirror(new_graph,
+                        self.mirror_files[group.inputs["type"].widget.currentIndex() - 1].file)
+        
+        # Zodiacal emission
+        if self.zodiac_toplot.isChecked():
+            # loop through all selected coordinates
+            for group in self.galactic_collection:
+                index = group.inputs["ecrd"].widget.currentIndex()
+                # only add to graph if a coordinate is selected
+                if index > 0:
+                    generate.add_zodiac(new_graph,
+                        self.zodiac_files[group.inputs["ecrd"].widget.currentIndex() - 1].file)
         
     # add new tab page of inputs
     def add_tab(self, parent, label, heading, to_plot_list = {}):
@@ -304,161 +325,3 @@ class gui(QtGui.QWidget):
         scroll.setFrameShape(QtGui.QFrame.NoFrame) # don't show the border
         
         return (to_plot, control_list) # allow groups of controls to be added later
-        
-    # connect widgets to update function
-    def conn_update(self, widget, sig):
-        QtCore.QObject.connect(widget, QtCore.SIGNAL(sig), self.update_all)
-    
-    # add file list to drop down list
-    def add_list(self, drop_down, file_list):
-        for item in file_list:
-            drop_down.addItem(item.name)
-        
-    ###
-    ### Various input settings
-    ###
-    
-    # Atmospheric Radiance & Transmission
-    def atmos_inputs(self):
-        
-        inputs = {}
-        site = QtGui.QComboBox()
-        site.addItem("")
-        self.add_list(site, self.atmos_files)
-        self.conn_update(site, "currentIndexChanged(int)")
-        inputs["site"] = dyngui.input_obj("Site", site)
-        
-        return inputs
-    
-    # Galactic Emission
-    def galactic_inputs(self):
-        
-        inputs = {}
-        
-        coord = QtGui.QComboBox()
-        coord.addItem("")
-        self.add_list(coord, self.galactic_files)
-        self.conn_update(coord, "currentIndexChanged(int)")
-        inputs["gcrd"] = dyngui.input_obj("Galactic Coord", coord)
-        
-        return inputs
-    
-    # Thermal Mirror Emission
-    def mirror_inputs(self):
-        
-        inputs = {}
-        
-        inputs["temp"] = dyngui.input_obj("Temperature (K)", QtGui.QLineEdit())
-        self.conn_update(inputs["temp"].widget, "textChanged(QString)")
-        
-        mirror_type = QtGui.QComboBox()
-        mirror_type.addItem("")
-        self.add_list(mirror_type, self.mirror_files)
-        self.conn_update(mirror_type, "currentIndexChanged(int)")
-        inputs["type"] = dyngui.input_obj("Mirror Type", mirror_type)
-        
-        return inputs
-        
-    # Zodiacal Emission
-    def zodiac_inputs(self):
-        
-        inputs = {}
-        
-        coord = QtGui.QComboBox()
-        coord.addItem("")
-        self.add_list(coord, self.zodiac_files)
-        self.conn_update(coord, "currentIndexChanged(int)")
-        inputs["ecrd"] = dyngui.input_obj("Ecliptic Coord", coord)
-        
-        return inputs
-    
-    # Other Noise
-    def other_inputs(self):
-        
-        inputs = {}
-        cib = QtGui.QCheckBox("Cosmic Infrared Background")
-        cib.setCheckState(QtCore.Qt.Checked)
-        cmb = QtGui.QCheckBox("Cosmic Microwave Background")
-        cmb.setCheckState(QtCore.Qt.Checked)
-        inputs["cib"] = dyngui.input_obj("", cib)
-        inputs["cmb"] = dyngui.input_obj("", cmb)
-        
-        return inputs
-        
-    # Signal
-    def signal_inputs(self):
-        
-        inputs = {}
-        
-        inputs["aper"] = dyngui.input_obj("Aperture (m)", QtGui.QLineEdit())
-        self.conn_update(inputs["aper"].widget, "textChanged(QString)")
-        
-        site = QtGui.QComboBox()
-        site.addItem("")
-        self.add_list(site, self.atmos_files)
-        self.conn_update(site, "currentIndexChanged(int)")
-        inputs["site"] = dyngui.input_obj("Site", site)
-        
-        source = QtGui.QComboBox()
-        source.addItem("")
-        self.add_list(source, self.source_files)
-        self.conn_update(source, "currentIndexChanged(int)")
-        inputs["source"] = dyngui.input_obj("Source", source)
-        
-        return inputs
-        
-    # Composite Data Calculations
-    def compos_inputs(self):
-        
-        inputs = {}
-        
-        # initialize drop down boxes
-        atmos = QtGui.QComboBox()
-        dyngui.update_list(atmos, self.atmos_collection)
-        self.conn_update(atmos, "currentIndexChanged(int)")
-        
-        galactic = QtGui.QComboBox()
-        dyngui.update_list(galactic, self.galactic_collection)
-        self.conn_update(galactic, "currentIndexChanged(int)")
-        
-        mirror = QtGui.QComboBox()
-        dyngui.update_list(mirror, self.mirror_collection)
-        self.conn_update(mirror, "currentIndexChanged(int)")
-        
-        zodiac = QtGui.QComboBox()
-        dyngui.update_list(zodiac, self.zodiac_collection)
-        self.conn_update(zodiac, "currentIndexChanged(int)")
-        
-        signal = QtGui.QComboBox()
-        dyngui.update_list(signal, self.signal_collection)
-        self.conn_update(signal, "currentIndexChanged(int)")
-        
-        inputs["n_atmos"] = dyngui.input_obj("Atmospheric", atmos)
-        inputs["n_galactic"] = dyngui.input_obj("Galactic", galactic)
-        inputs["n_mirror"] = dyngui.input_obj("Mirror", mirror)
-        inputs["n_zodiac"] = dyngui.input_obj("Zodiacal", zodiac)
-        inputs["signal"] = dyngui.input_obj("Signal", signal)
-        inputs["snr"] = dyngui.input_obj("Signal:Noise", QtGui.QLineEdit())
-        inputs["z_clear"] = dyngui.input_obj("", QtGui.QPushButton("Clear Fields"))
-        inputs["z_default"] = dyngui.input_obj("", QtGui.QPushButton("Use Default"))
-        
-        return inputs
-        
-    # Propogate changes by updating all dynamic elements
-    def update_all(self):
-        
-        # update all collections of widget groups
-        dyngui.update_collection(self.atmos_collection, self.atmos_list, self.atmos_inputs)
-        dyngui.update_collection(self.galactic_collection, self.galactic_list, self.galactic_inputs)
-        dyngui.update_collection(self.mirror_collection, self.mirror_list, self.mirror_inputs)
-        dyngui.update_collection(self.zodiac_collection, self.zodiac_list, self.zodiac_inputs)
-        dyngui.update_collection(self.signal_collection, self.signal_list, self.signal_inputs)
-        dyngui.update_collection(self.compos_collection, self.compos_clayout, self.compos_inputs)
-        
-        # update composite tab
-        for group in self.compos_collection:
-            dyngui.update_list(group.inputs["n_atmos"].widget, self.atmos_collection)
-            dyngui.update_list(group.inputs["n_galactic"].widget, self.galactic_collection)
-            dyngui.update_list(group.inputs["n_mirror"].widget, self.mirror_collection)
-            dyngui.update_list(group.inputs["n_zodiac"].widget, self.zodiac_collection)
-            dyngui.update_list(group.inputs["signal"].widget, self.signal_collection)

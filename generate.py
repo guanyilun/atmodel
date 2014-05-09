@@ -19,5 +19,13 @@ def add_trans(graph, site_file):
     None
 
 # Add galactic emission to plot
-def add_galactic(graph, gcrd_file):
+def add_galactic(graph, galactic_file):
+    None
+
+# Add thermal mirror emission to plot
+def add_mirror(graph, mirror_file):
+    None
+
+# Add zodiacal emission to plot
+def add_zodiac(graph, zodiac_file):
     None
