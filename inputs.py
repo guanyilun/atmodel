@@ -127,8 +127,32 @@ def compos(gui):
     inputs["n_zodiac"] = dyngui.input_obj("Zodiacal", zodiac)
     inputs["signal"] = dyngui.input_obj("Signal", signal)
     inputs["snr"] = dyngui.input_obj("Signal:Noise", QtGui.QLineEdit())
+    
+    # clear all inputs in this set
+    def clear():
+        inputs["n_atmos"].widget.setCurrentIndex(0)
+        inputs["n_galactic"].widget.setCurrentIndex(0)
+        inputs["n_mirror"].widget.setCurrentIndex(0)
+        inputs["n_zodiac"].widget.setCurrentIndex(0)
+        inputs["signal"].widget.setCurrentIndex(0)
+        inputs["snr"].widget.setText("")
+        update_all(gui)
+    
     inputs["z_clear"] = dyngui.input_obj("", QtGui.QPushButton("Clear Fields"))
+    QtCore.QObject.connect(inputs["z_clear"].widget, QtCore.SIGNAL("clicked()"), clear)
+    
+    # select first item in each input box
+    def default():
+        inputs["n_atmos"].widget.setCurrentIndex(1)
+        inputs["n_galactic"].widget.setCurrentIndex(1)
+        inputs["n_mirror"].widget.setCurrentIndex(1)
+        inputs["n_zodiac"].widget.setCurrentIndex(1)
+        inputs["signal"].widget.setCurrentIndex(1)
+        inputs["snr"].widget.setText("3") # default signal:noise = 3
+        update_all(gui)
+    
     inputs["z_default"] = dyngui.input_obj("", QtGui.QPushButton("Use Default"))
+    QtCore.QObject.connect(inputs["z_default"].widget, QtCore.SIGNAL("clicked()"), default)
     
     return inputs
 

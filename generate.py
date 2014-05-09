@@ -29,3 +29,15 @@ def add_mirror(graph, mirror_file):
 # Add zodiacal emission to plot
 def add_zodiac(graph, zodiac_file):
     None
+
+# Add cosmic infrared background to plot
+def add_cib(graph):
+    None
+
+# Add cosmic microwave background to plot
+def add_cmb(graph):
+    None
+
+# Add signal to plot
+def add_signal(graph, site_file, source_file):
+    None

@@ -237,8 +237,6 @@ class gui(QtGui.QWidget):
         
         new_graph = graph.graph_obj("Atmospheric Model", [])
         
-        ## Plot Noise
-        
         # Atmospheric radiance
         if self.atmos_toplot[0].isChecked():
             # loop through all selected sites
@@ -247,7 +245,7 @@ class gui(QtGui.QWidget):
                 # only add to graph if a site is selected
                 if index > 0:
                     generate.add_radiance(new_graph,
-                        self.atmos_files[group.inputs["site"].widget.currentIndex() - 1].file)
+                        self.atmos_files[index - 1].file)
         
         # Atmospheric transmission
         if self.atmos_toplot[1].isChecked():
@@ -257,7 +255,7 @@ class gui(QtGui.QWidget):
                 # only add to graph if a site is selected
                 if index > 0:
                     generate.add_trans(new_graph,
-                        self.atmos_files[group.inputs["site"].widget.currentIndex() - 1].file)
+                        self.atmos_files[index - 1].file)
         
         # Galactic emission
         if self.galactic_toplot.isChecked():
@@ -267,27 +265,60 @@ class gui(QtGui.QWidget):
                 # only add to graph if a coordinate is selected
                 if index > 0:
                     generate.add_galactic(new_graph,
-                        self.galactic_files[group.inputs["gcrd"].widget.currentIndex() - 1].file)
+                        self.galactic_files[index - 1].file)
         
         # Thermal mirror emission
         if self.mirror_toplot.isChecked():
             # loop through all selected mirror types
-            for group in self.galactic_collection:
+            for group in self.mirror_collection:
+                
+                try: # check if given temperature is a number
+                    aperture = float(group.inputs["temp"].widget.text())
+                except ValueError:
+                    continue # not filled in properly, so skip
+                
                 index = group.inputs["type"].widget.currentIndex()
                 # only add to graph if a type is selected
                 if index > 0:
                     generate.add_mirror(new_graph,
-                        self.mirror_files[group.inputs["type"].widget.currentIndex() - 1].file)
+                        self.mirror_files[index - 1].file)
         
         # Zodiacal emission
         if self.zodiac_toplot.isChecked():
             # loop through all selected coordinates
-            for group in self.galactic_collection:
+            for group in self.zodiac_collection:
                 index = group.inputs["ecrd"].widget.currentIndex()
                 # only add to graph if a coordinate is selected
                 if index > 0:
                     generate.add_zodiac(new_graph,
-                        self.zodiac_files[group.inputs["ecrd"].widget.currentIndex() - 1].file)
+                        self.zodiac_files[index - 1].file)
+        
+        # Cosmic infrared background
+        if self.other_toplot.isChecked() and self.other_set["cib"].widget.isChecked():
+            generate.add_cib(new_graph)
+        
+        # Cosmic microwave background
+        if self.other_toplot.isChecked() and self.other_set["cmb"].widget.isChecked():
+            generate.add_cmb(new_graph)
+        
+        # Signal
+        if self.signal_toplot.isChecked():
+            # loop through all aperture/site/source sets
+            for group in self.signal_collection:
+                
+                try: # check if given aperture is a number
+                    aperture = float(group.inputs["aperture"].widget.text())
+                except ValueError:
+                    continue # not filled in properly, so skip
+                
+                site = group.inputs["site"].widget.currentIndex()
+                source = group.inputs["site"].widget.currentIndex()
+                
+                # only add if all fields are filled in
+                if index > 0:
+                    generate.add_signal(new_graph,
+                        self.atmos_files[site - 1].file,
+                        self.source_files[source - 1].file)
         
     # add new tab page of inputs
     def add_tab(self, parent, label, heading, to_plot_list = {}):
