@@ -23,7 +23,7 @@ def add_galactic(graph, galactic_file):
     None
 
 # Add thermal mirror emission to plot
-def add_mirror(graph, mirror_file):
+def add_mirror(graph, mirror_temp, mirror_file):
     None
 
 # Add zodiacal emission to plot
@@ -40,4 +40,21 @@ def add_cmb(graph):
 
 # Add signal to plot
 def add_signal(graph, site_file, source_file):
+    None
+
+## Composite calculations
+# (note: some parameters passed may be "None" -- these are ignored if possible)
+
+# Add total noise to plot
+def add_noise(graph, galactic_file, mirror_file, mirror_temp, zodiac_file, cib, cmb):
+    None
+
+# Add total temp to plot
+def add_temp(graph, galactic_file, mirror_file, mirror_temp, zodiac_file,
+        cib, cmb, aperture, site_file, source_file):
+    None
+
+# Add integration time to plot
+def add_integ(graph, galactic_file, mirror_file, mirror_temp, zodiac_file,
+        cib, cmb, aperture, site_file, source_file, snr):
     None

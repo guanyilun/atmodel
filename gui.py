@@ -146,13 +146,13 @@ class gui(QtGui.QWidget):
         compos_whatlo = QtGui.QFormLayout()
         compos_what.setLayout(compos_whatlo)
         
-        compos_whatbox = QtGui.QComboBox()
-        compos_whatbox.addItem("None")
-        compos_whatbox.addItem("Total Noise")
-        compos_whatbox.addItem("Total Temperature")
-        compos_whatbox.addItem("Integration Time")
+        self.compos_whatbox = QtGui.QComboBox()
+        self.compos_whatbox.addItem("None")
+        self.compos_whatbox.addItem("Total Noise")
+        self.compos_whatbox.addItem("Total Temperature")
+        self.compos_whatbox.addItem("Integration Time")
         
-        compos_whatlo.addRow("Plot:", compos_whatbox)
+        compos_whatlo.addRow("Plot:", self.compos_whatbox)
         
         ###
         ### Right Side (input settings)
@@ -273,7 +273,7 @@ class gui(QtGui.QWidget):
             for group in self.mirror_collection:
                 
                 try: # check if given temperature is a number
-                    aperture = float(group.inputs["temp"].widget.text())
+                    temp = float(group.inputs["temp"].widget.text())
                 except ValueError:
                     continue # not filled in properly, so skip
                 
@@ -281,7 +281,7 @@ class gui(QtGui.QWidget):
                 # only add to graph if a type is selected
                 if index > 0:
                     generate.add_mirror(new_graph,
-                        self.mirror_files[index - 1].file)
+                        temp, self.mirror_files[index - 1].file)
         
         # Zodiacal emission
         if self.zodiac_toplot.isChecked():
@@ -319,6 +319,83 @@ class gui(QtGui.QWidget):
                     generate.add_signal(new_graph,
                         self.atmos_files[site - 1].file,
                         self.source_files[source - 1].file)
+        
+        # Composite calculations
+        compos_plot = self.compos_whatbox.currentIndex()
+        if compos_plot > 0:
+            
+            # loop through all sets of inputs
+            for group in self.compos_collection:
+                
+                try: # check if given signal:noise is a number
+                    snr = float(group.inputs["snr"].widget.text())
+                except ValueError:
+                    continue # not filled in properly, so skip
+                
+                # fetch all valid selected input values (assume "None" by default)
+                galactic = None
+                mirror_temp = None
+                mirror_type = None
+                zodiac = None
+                aperture = None
+                site = None
+                source = None
+                
+                try: # atmospheric radiance
+                    atmos_index1 = group.inputs["atmos"].widget.currentIndex()
+                    atmos_index2 = self.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
+                    site = self.atmos_files[atmos_index2-1].file
+                except Exception:
+                    pass
+                
+                try: # galactic emission
+                    galactic_index1 = group.inputs["galactic"].widget.currentIndex()
+                    galactic_index2 = self.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
+                    galactic = self.galactic_files[galactic_index2-1].file
+                except Exception:
+                    pass
+                
+                try: # thermal mirror emission
+                    mirror_index = group.inputs["mirror"].widget.currentIndex()
+                    type_index = self.mirror_collection[mirror_index-1].inputs["type"].widget.currentIndex()
+                    
+                    mirror_type = self.mirror_files[type_index-1].file
+                    mirror_temp = float(self.mirror_collection[mirror_index-1].inputs["temp"].widget.text())
+                except Exception:
+                    pass
+                
+                try: # zodiacal emission
+                    zodiac_index1 = group.inputs["zodiac"].widget.currentIndex()
+                    zodiac_index2 = self.zodiac_collection[zodiac_index-1].inputs["ecrd"].widget.currentIndex()
+                    zodiac = self.zodiac_files[zodiac_index2-1].file
+                except Exception:
+                    pass
+                
+                try: # signal
+                    signal_index = group.inputs["signal"].widget.currentIndex()
+                    
+                    site_index = self.signal_collection[signal_index-1].inputs["site"].widget.currentIndex()
+                    source_index = self.signal_collection[signal_index-1].inputs["source"].widget.currentIndex()
+                    
+                    aperture = float(self.signal_collection[signal_index-1].inputs["aperture"].widget.text())
+                    source = self.source_files[source_index-1]
+                    site = self.atmos_files[site_index-1] # override atmospheric radiance site if provided
+                except Exception:
+                    pass
+                
+                cib = self.other_set["cib"].widget.isChecked()
+                cmb = self.other_set["cmb"].widget.isChecked()
+                
+                if compos_plot == 1: # total noise
+                    generate.add_noise(new_graph, galactic, mirror_type, mirror_temp, zodiac, cib, cmb)
+                
+                elif compos_plot == 2: # total temperature
+                    generate.add_temp(new_graph, galactic, mirror_type, mirror_temp, zodiac,
+                            cib, cmb, aperture, site, source)
+                
+                elif compos_plot == 3: # integration time
+                    generate.add_integ(new_graph, galactic, mirror_type, mirror_temp, zodiac,
+                            cib, cmb, aperture, site, source, snr)
         
     # add new tab page of inputs
     def add_tab(self, parent, label, heading, to_plot_list = {}):

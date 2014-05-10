@@ -121,10 +121,18 @@ def compos(gui):
     dyngui.update_list(signal, gui.signal_collection)
     conn_update(gui, signal, "currentIndexChanged(int)")
     
-    inputs["n_atmos"] = dyngui.input_obj("Atmospheric", atmos)
+    # initialize checkboxes
+    cib = QtGui.QCheckBox("Cosmic Infrared Background")
+    cib.setCheckState(QtCore.Qt.Checked)
+    cmb = QtGui.QCheckBox("Cosmic Microwave Background")
+    cmb.setCheckState(QtCore.Qt.Checked)
+    
+    inputs["n_atmos"] = dyngui.input_obj("Atmosphere", atmos)
     inputs["n_galactic"] = dyngui.input_obj("Galactic", galactic)
     inputs["n_mirror"] = dyngui.input_obj("Mirror", mirror)
     inputs["n_zodiac"] = dyngui.input_obj("Zodiacal", zodiac)
+    inputs["o_cib"] = dyngui.input_obj("", cib)
+    inputs["o_cmb"] = dyngui.input_obj("", cmb)
     inputs["signal"] = dyngui.input_obj("Signal", signal)
     inputs["snr"] = dyngui.input_obj("Signal:Noise", QtGui.QLineEdit())
     
@@ -147,6 +155,10 @@ def compos(gui):
         inputs["n_galactic"].widget.setCurrentIndex(1)
         inputs["n_mirror"].widget.setCurrentIndex(1)
         inputs["n_zodiac"].widget.setCurrentIndex(1)
+        
+        inputs["o_cib"].widget.setCheckState(QtCore.Qt.Checked)
+        inputs["o_cmb"].widget.setCheckState(QtCore.Qt.Checked)
+        
         inputs["signal"].widget.setCurrentIndex(1)
         inputs["snr"].widget.setText("3") # default signal:noise = 3
         update_all(gui)
