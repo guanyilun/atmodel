@@ -32,7 +32,9 @@ def generic_noise(file_name, freq_range):
 
 # Add atmospheric radiance to plot
 def add_radiance(graph_obj, site_file, freq_range):
-    None
+    noise_list = generic_noise(site_file, freq_range)
+    data_set = graph.data_set("Atmos Radiance", "Frequency", "Hz", "Noise", "BLING", noise_list)
+    graph_obj,dataset_list.append(data_set)
 
 # Add atmospheric transmission to plot
 def add_trans(graph_obj, site_file, freq_range):
@@ -40,8 +42,8 @@ def add_trans(graph_obj, site_file, freq_range):
 
 # Add galactic emission to plot
 def add_galactic(graph_obj, galactic_file, freq_range):
-    crdlist = generic_noise(galactic_file, freq_range)
-    data_set = graph.data_set("Galactic Emission", "Frequency", "Hz", "Noise", "BLING", crdlist)
+    noise_list = generic_noise(galactic_file, freq_range)
+    data_set = graph.data_set("Galactic Emission", "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj,dataset_list.append(data_set)
 
 # Add thermal mirror emission to plot
@@ -50,7 +52,9 @@ def add_mirror(graph_obj, mirror_temp, mirror_file, freq_range):
 
 # Add zodiacal emission to plot
 def add_zodiac(graph_obj, zodiac_file, freq_range):
-    None
+    noise_list = generic_noise(zodiac_file, freq_range)
+    data_set = graph.data_set("Zodiacal Emission", "Frequency", "Hz", "Noise", "BLING", noise_list)
+    graph_obj,dataset_list.append(data_set)
 
 # Add cosmic infrared background to plot
 def add_cib(graph_obj, freq_range):
