@@ -201,6 +201,10 @@ class gui(QtGui.QWidget):
         self.auto_domain.setCheckState(QtCore.Qt.Checked)
         domain.addWidget(self.auto_domain)
         
+        # canvas widget
+        self.plot = Graph()
+        right.addWidget(self.plot)
+        
         ## buttons
         buttons = QtGui.QHBoxLayout()
         buttons.addStretch(1)
@@ -395,9 +399,11 @@ class gui(QtGui.QWidget):
                             cib, cmb, aperture, site, source, freq_range)
                 
                 elif compos_plot == 3: # integration time
-                    generate.add_integ(new_graph, galactic, mirror_type, mirror_temp, zodiac,
+                    generate.add_integ(new_graph, galactic, mirror_type, mirror_temp, zodiac
                             cib, cmb, aperture, site, source, snr, freq_range)
-        
+
+         self.plot.redraw(new_graph)
+         
     # add new tab page of inputs
     def add_tab(self, parent, label, heading, to_plot_list = {}):
         
