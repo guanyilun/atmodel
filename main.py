@@ -26,19 +26,19 @@ def main():
     
     # create name file pairs
     atmos_files = []
-    add_files(atmos_files, "data/Backgrounds/Atmospheric Radiance_sites")
+    add_files(atmos_files, "data/Backgrounds/Atmospheric Radiance_sites/")
     
     source_files = []
-    add_files(source_files, "data/Sources")
+    add_files(source_files, "data/Sources/")
         
     galactic_files = []
-    add_files(galactic_files, "data/Backgrounds/Galactic Emission")
+    add_files(galactic_files, "data/Backgrounds/Galactic Emission/")
     
     mirror_files = []
-    add_files(mirror_files, "data/Backgrounds/Thermal Mirror Emission")
+    add_files(mirror_files, "data/Backgrounds/Thermal Mirror Emission/")
     
     zodiac_files = []
-    add_files(zodiac_files, "data/Backgrounds/Zodiacal Emission")
+    add_files(zodiac_files, "data/Backgrounds/Zodiacal Emission/")
     
     main_gui = gui(atmos_files, source_files, galactic_files, mirror_files, zodiac_files)
     
