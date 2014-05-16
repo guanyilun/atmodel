@@ -406,7 +406,7 @@ class gui(QtGui.QWidget):
                     generate.add_integ(new_graph, galactic, mirror_type, mirror_temp, zodiac,
                             cib, cmb, aperture, site, source, snr, freq_range)
 
-         self.plot.redraw(new_graph)
+        self.plot.redraw(new_graph)
          
     # add new tab page of inputs
     def add_tab(self, parent, label, heading, to_plot_list = {}):
