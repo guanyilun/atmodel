@@ -1,11 +1,7 @@
-from collections import namedtuple
 from xlrd import open_workbook
 from xlwt import Workbook
 from xlsxwriter.workbook import Workbook
 import os
-### add error exceptions: if no useable data type is found, say the name of the file
-
-#test file 'C://Users/Max/Desktop/Atmodel2/atmodel/atmodel/python/App/data/Backgrounds/Atmospheric Radiance_sites/13_7Km SOFIA-Radiance-1976Model-45Deg-0-2000cm.xlsx'
 
 c = 2.99792458*(10**8)
 unit_conversions = {'THz':10**12,'Hz':1,'micron':10**(-6),'um':10**(-6),'m':1,'CM-1':c*10**2,'CM^-1':c*10**2}
@@ -35,8 +31,11 @@ class ExcelReader:
         #now that we have determined what value row to start reading from, we use the same technique to determine what row to terminate reading from
         while Current_Value <= freq_end: #search through column until we find the frequency we want to end at(the first frequency greater than what we enter)
             #inlcuding the equal sign establishes an inclusive range if one of the cells is equal to the desired ending frequency
-            Row = Row + 1
-            Current_Value = self.sheet.cell(Row, 1).value
+            try:
+                Row = Row + 1
+                Current_Value = self.sheet.cell(Row, 1).value
+            except:
+                self.row_end = Row - 1
         self.row_end = Row - 1 #the row we want to end reading from is the last row the while loop iterated through which is one less than the "Row" it will give        
 
 
