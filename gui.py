@@ -399,7 +399,7 @@ class gui(QtGui.QWidget):
                             cib, cmb, aperture, site, source, freq_range)
                 
                 elif compos_plot == 3: # integration time
-                    generate.add_integ(new_graph, galactic, mirror_type, mirror_temp, zodiac
+                    generate.add_integ(new_graph, galactic, mirror_type, mirror_temp, zodiac,
                             cib, cmb, aperture, site, source, snr, freq_range)
 
          self.plot.redraw(new_graph)
