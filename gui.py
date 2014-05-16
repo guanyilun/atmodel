@@ -9,6 +9,8 @@ import generate
 import graph
 from graph import *
 import inputs
+from matplotlib.backends.backend_qt4agg \
+    import NavigationToolbar2QTAgg as NavigationToolbar
 
 class gui(QtGui.QWidget):
     
@@ -201,9 +203,11 @@ class gui(QtGui.QWidget):
         self.auto_domain.setCheckState(QtCore.Qt.Checked)
         domain.addWidget(self.auto_domain)
         
-        # canvas widget
+        # canvas widget and toolbar
         self.plot = Graph()
+        self.toolbar = NavigationToolbar(self.plot,parent=None)
         right.addWidget(self.plot)
+        right.addWidget(self.toolbar)
         
         ## buttons
         buttons = QtGui.QHBoxLayout()
