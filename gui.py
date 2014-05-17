@@ -238,7 +238,8 @@ class gui(QtGui.QWidget):
             freq_range = generate.interval(0,  1e99)
         else:
             try:
-                freq_range = generate.interval(float(self.freq_min.currentText()), float(self.freq_min.currentText()))
+                freq_range = generate.interval(float(self.freq_min.text()) * 1e12,
+                        float(self.freq_max.text()) * 1e12)
             except Exception:
                 freq_range = generate.interval(0, 1e99)
         
