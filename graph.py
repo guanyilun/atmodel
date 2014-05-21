@@ -47,8 +47,11 @@ class Graph(FigureCanvas):
         self.axes.hold(False)
         
         #placeholder data to check that this works
-        self.x = np.arange(0.0, 3.0, 0.01)
-        self.y = random.random()*np.sin(2*np.pi*self.x)
+        #self.x = np.arange(0.0, 3.0, 0.01)
+        #self.y = random.random()*np.sin(2*np.pi*self.x)
+        list = graph_data.dataset_list[0]
+        self.x = [list.coord_list[i][0] for i in xrange(len(list.coord_list))]
+        self.y = [list.coord_list[i][1] for i in xrange(len(list.coord_list))]
         self.axes.plot(self.x, self.y)
         
         #draw new graph
