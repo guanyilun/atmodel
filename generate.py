@@ -22,6 +22,24 @@ def get_col(file_name, col1, col1n, col2, col2n, freq_range):
     return [numpy.array(data.read_from_col(col1, freq_range.min, freq_range.max, col1n), dtype='float'),
         numpy.array(data.read_from_col(col2, freq_range.min, freq_range.max, col2n), dtype='float')]
 
+# generate list of frequencies (in Hz) with identical form as data
+def generate_freq(freq_range):
+    step = 3e9 # increment (Hz)
+    
+    freq_min = 1.5e9 # minimum frequency
+    freq_max = 1.64955e13 # maximum frequency
+    if freq_range.min > freq_min:
+        freq = int((freq_range.min - freq_min) / step + 1) * step + freq_min
+    else: freq = freq_min
+    
+    freq_list = []
+    while freq <= freq_range.max and freq <= freq_max:
+        freq_list.append(freq)
+        freq += step
+    freq_array = numpy.array(freq_list, dtype="float")
+    
+    return freq_array
+
 # Build generic noise coordinate list
 def generic_noise(file_name, freq_range):
     
@@ -62,32 +80,14 @@ def add_galactic(graph_obj, galactic_file, freq_range):
     graph_obj.dataset_list.append(data_set)
 
 # Add thermal mirror emission to plot
-def add_mirror(graph_obj, mirror_temp, mirror_file, freq_range):
-    None
+def add_mirror(graph_obj, mirror_temp, constant, freq_range):
+    freq_list = generate_freq(freq_range)
 
 # Add zodiacal emission to plot
 def add_zodiac(graph_obj, zodiac_file, freq_range):
     noise_list = generic_noise(zodiac_file, freq_range)
     data_set = graph.data_set("Zodiacal Emission", "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj.dataset_list.append(data_set)
-
-# generate list of frequencies (in Hz) with identical form as data
-def generate_freq(freq_range):
-    step = 3e9 # increment (Hz)
-    
-    freq_min = 1.5e9 # minimum frequency
-    freq_max = 1.64955e13 # maximum frequency
-    if freq_range.min > freq_min:
-        freq = int((freq_range.min - freq_min) / step + 1) * step + freq_min
-    else: freq = freq_min
-    
-    freq_list = []
-    while freq <= freq_range.max and freq <= freq_max:
-        freq_list.append(freq)
-        freq += step
-    freq_array = numpy.array(freq_list, dtype="float")
-    
-    return freq_array
 
 # Add cosmic infrared background to plot
 def add_cib(graph_obj, freq_range):

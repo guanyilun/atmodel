@@ -34,13 +34,16 @@ def main():
     galactic_files = []
     add_files(galactic_files, "data/Backgrounds/Galactic Emission/")
     
-    mirror_files = []
-    add_files(mirror_files, "data/Backgrounds/Thermal Mirror Emission/")
+    # material constants for thermal mirror emission
+    mirror_consts = {"Aluminum (Al)" : 3.538e7,
+                     "Beryllium (Be)": 2.500e7,
+                     "Gold (Au)"     : 4.060e7,
+                     "Silver (Ag)"   : 6.287e7}
     
     zodiac_files = []
     add_files(zodiac_files, "data/Backgrounds/Zodiacal Emission/")
     
-    main_gui = gui(atmos_files, source_files, galactic_files, mirror_files, zodiac_files)
+    main_gui = gui(atmos_files, source_files, galactic_files, mirror_consts, zodiac_files)
     
     sys.exit(app.exec_())
 

@@ -39,6 +39,7 @@ class Graph(FigureCanvas):
 
     #this happens every time Generate is clicked
     def redraw(self, graph_data):
+        
         #define axes
         self.axes = self.figure.add_subplot(111)
         

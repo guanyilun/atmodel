@@ -39,7 +39,8 @@ def mirror(gui):
     
     mirror_type = QtGui.QComboBox()
     mirror_type.addItem("")
-    add_list(mirror_type, gui.mirror_files)
+    for material, const in gui.mirror_consts.items():
+        mirror_type.addItem(material)
     conn_update(gui, mirror_type, "currentIndexChanged(int)")
     inputs["type"] = dyngui.input_obj("Mirror Type", mirror_type)
     
