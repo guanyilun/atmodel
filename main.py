@@ -4,8 +4,8 @@ import os
 import sys
 from PyQt4 import QtGui
 
-import generate
 from gui import *
+import plotdata
 
 def add_files(file_list, directory):
     for obj in os.listdir(directory):
@@ -18,7 +18,7 @@ def add_files(file_list, directory):
         if len(name) > 20:
             name = name[0:17] + "..."
         
-        file_list.append(generate.name_file(name, directory + obj))
+        file_list.append(plotdata.name_file(name, directory + obj))
 
 def main():
     

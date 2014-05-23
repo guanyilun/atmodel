@@ -1,16 +1,17 @@
 # gui.py
 # graphical interface
 
-from PyQt4 import QtCore, QtGui
 import collections
+from PyQt4 import QtCore, QtGui
+from matplotlib.backends.backend_qt4agg \
+    import NavigationToolbar2QTAgg as NavigationToolbar
 
 import dyngui
 import generate
 import graph
 from graph import *
 import inputs
-from matplotlib.backends.backend_qt4agg \
-    import NavigationToolbar2QTAgg as NavigationToolbar
+import plotdata
 
 class gui(QtGui.QWidget):
     
@@ -235,13 +236,13 @@ class gui(QtGui.QWidget):
         
         # frequency range
         if self.auto_domain.isChecked():
-            freq_range = generate.interval(0,  1e99)
+            freq_range = plotdata.interval(0.1e12, 10e12)
         else:
             try:
-                freq_range = generate.interval(float(self.freq_min.text()) * 1e12,
+                freq_range = plotdata.interval(float(self.freq_min.text()) * 1e12,
                         float(self.freq_max.text()) * 1e12)
             except Exception:
-                freq_range = generate.interval(0, 1e99)
+                freq_range = plotdata.interval(0.1e12, 10e12)
         
         new_graph = graph.graph_obj("Atmospheric Model", [])
         
