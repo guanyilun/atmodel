@@ -38,12 +38,8 @@ def generate_freq(freq_range):
     
     return freq_array
 
-# Build generic noise coordinate list
-def generic_noise(file_name, freq_range):
-    
-    # compute noise from frequencies and temperatures
-    freq_list, temp_list = get_col(file_name, "Hz", 0, "K", 0, freq_range)
-    blingsq_list = cal.bling_sub(freq_list, temp_list, 1000)
+# Create noise list from bling squared list
+def noise_list(blingsq_list, freq_list):
     
     # build and return list of coordinates
     crdlist = []
@@ -52,28 +48,31 @@ def generic_noise(file_name, freq_range):
     
     return crdlist
 
+# Build generic noise coordinate list
+def generic_noise(file_name, freq_range):
+    
+    # compute noise from frequencies and temperatures
+    freq_list, temp_list = get_col(file_name, "Hz", 0, "K", 0, freq_range)
+    return cal.bling_sub(freq_list, temp_list, 1000), freq_list
+
 # Atmospheric Radiance
 def radiance(site_file, freq_range):
     
     # compute atmospheric radiance
     freq_list, radiance_list = get_col(site_file, "Hz", 0, 0, "TOTAL RAD", freq_range)
-    blingsq_list = cal.bling_AR(freq_list, radiance_list, 1000)
-    
-    # convert noise into usable graph
-    noise_list = []
-    for i, bling_sq in enumerate(blingsq_list):
-        noise_list.append(graph.coord_obj(freq_list[i], math.sqrt(bling_sq)))
-    
-    return noise_list
+    return cal.bling_AR(freq_list, radiance_list, 1000), freq_list
 
 # Cosmic Microwave Background
 def cmb(freq_range):
     
     # compute CMB noise for a set of frequencies
     freq_list = generate_freq(freq_range)
-    blingsq_list = cal.bling_CMB(freq_list, 1000)
+    return cal.bling_CMB(freq_list, 1000), freq_list
+
+# Thermal Mirror Emission
+def mirror(mirror_temp, constant, freq_range):
     
-    # convert noise into usable graph
-    noise_list = []
-    for i, bling_sq in enumerate(blingsq_list):
-        noise_list.append(graph.coord_obj(freq_list[i], math.sqrt(bling_sq)))
+    # compute thermal noise for a set of frequencies
+    freq_list = generate_freq(freq_range)
+    wavelengths = 299792458. / freq_list
+    return cal.bling_TME(freq_list, 1000, constant, mirror_temp, wavelengths), freq_list

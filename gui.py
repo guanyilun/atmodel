@@ -286,11 +286,12 @@ class gui(QtGui.QWidget):
                 except ValueError:
                     continue # not filled in properly, so skip
                 
-                index = group.inputs["type"].widget.currentIndex()
+                index = str(group.inputs["type"].widget.currentText())
+                
                 # only add to graph if a type is selected
                 if index > 0:
                     generate.add_mirror(new_graph,
-                        temp, self.mirror_consts[index - 1], freq_range)
+                        temp, self.mirror_consts[index], freq_range)
         
         # Zodiacal emission
         if self.zodiac_toplot.isChecked():
