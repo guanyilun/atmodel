@@ -57,15 +57,30 @@ def add_signal(graph_obj, site_file, source_file, freq_range):
 # (note: some parameters passed may be "None" -- these are ignored if possible)
 
 # Add total noise to plot
-def add_noise(graph_obj, galactic_file, mirror_file, mirror_temp, zodiac_file, cib, cmb, freq_range):
-    None
+def add_noise(graph_obj, site_file, galactic_file, mirror_file, mirror_temp,
+        mirror_constant, zodiac_file, cib, cmb, freq_range):
+    
+    # compute all the individual noise sources
+    radiance_bsq, rfreq = plotdata.radiance(site_file, freq_range)
+    galactic_bsq, gfreq = plotdata.generic_noise(galactic_file, freq_range)
+    mirror_bsq, mfreq = plotdata.mirror(mirror_temp, mirror_constant, freq_range)
+    zodiac_bsq, zfreq = plotdata.generic_noise(zodiac_file, freq_range)
+    cib_bsq, cibfreq = plotdata.generic_noise("data/Backgrounds/CIB/cib.xlsx", freq_range)
+    cmb_bsq, cmbfreq = plotdata.cmb(freq_range)
+    
+    # combine the noise
+    blingsq_tot = radiance_bsq + galactic_bsq + mirror_bsq + zodiac_bsq + cib_bsq + cmb_bsq
+    data_set = graph.data_set("Total Noise", "Frequency", "Hz", "Noise", "BLING",
+            plotdata.noise_list(blingsq_tot, mfreq))
+    graph_obj.dataset_list.append(data_set)
+    
 
 # Add total temp to plot
-def add_temp(graph_obj, galactic_file, mirror_file, mirror_temp, zodiac_file,
-        cib, cmb, aperture, site_file, source_file, freq_range):
+def add_temp(graph_obj, galactic_file, mirror_file, mirror_temp, mirror_constant,
+        zodiac_file, cib, cmb, aperture, site_file, source_file, freq_range):
     None
 
 # Add integration time to plot
-def add_integ(graph_obj, galactic_file, mirror_file, mirror_temp, zodiac_file,
-        cib, cmb, aperture, site_file, source_file, snr, freq_range):
+def add_integ(graph_obj, galactic_file, mirror_file, mirror_temp, mirror_constant,
+        zodiac_file, cib, cmb, aperture, site_file, source_file, snr, freq_range):
     None

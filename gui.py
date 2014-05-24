@@ -289,7 +289,7 @@ class gui(QtGui.QWidget):
                 index = str(group.inputs["type"].widget.currentText())
                 
                 # only add to graph if a type is selected
-                if index > 0:
+                if len(index) > 0:
                     generate.add_mirror(new_graph,
                         temp, self.mirror_consts[index], freq_range)
         
@@ -353,34 +353,37 @@ class gui(QtGui.QWidget):
                 source = None
                 
                 try: # atmospheric radiance
-                    atmos_index1 = group.inputs["atmos"].widget.currentIndex()
-                    atmos_index2 = self.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
+                    atmos_index1 = group.inputs["n_atmos"].widget.currentIndex()
+                    atmos_index2 = self.atmos_collection[atmos_index1-1].inputs["site"].widget.currentIndex()
                     site = self.atmos_files[atmos_index2-1].file
                 except Exception:
                     pass
                 
-                try: # galactic emission
-                    galactic_index1 = group.inputs["galactic"].widget.currentIndex()
-                    galactic_index2 = self.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
-                    galactic = self.galactic_files[galactic_index2-1].file
-                except Exception:
-                    pass
+            #try: # galactic emission
+                galactic_index1 = group.inputs["n_galactic"].widget.currentIndex()
+                galactic_index2 = self.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
+                galactic = self.galactic_files[galactic_index2-1].file
+            #except Exception:
+            #    pass
+            
+            #try: # thermal mirror emission
+                mirror_index = group.inputs["n_mirror"].widget.currentIndex()
+                type_index = str(self.mirror_collection[mirror_index-1].inputs["type"].widget.currentText())
                 
-                try: # thermal mirror emission
-                    mirror_index = group.inputs["mirror"].widget.currentIndex()
-                    type_index = self.mirror_collection[mirror_index-1].inputs["type"].widget.currentIndex()
-                    
-                    mirror_constant = self.mirror_consts[type_index-1]
-                    mirror_temp = float(self.mirror_collection[mirror_index-1].inputs["temp"].widget.text())
-                except Exception:
-                    pass
+                mirror_constant = self.mirror_consts[type_index]
+                mirror_temp = float(self.mirror_collection[mirror_index-1].inputs["temp"].widget.text())
+            #except Exception:
+            #    pass
+            
+            #try: # zodiacal emission
+                zodiac_index1 = group.inputs["n_zodiac"].widget.currentIndex()
+                zodiac_index2 = self.zodiac_collection[zodiac_index1-1].inputs["ecrd"].widget.currentIndex()
+                zodiac = self.zodiac_files[zodiac_index2-1].file
+            #except Exception:
+            #    pass
                 
-                try: # zodiacal emission
-                    zodiac_index1 = group.inputs["zodiac"].widget.currentIndex()
-                    zodiac_index2 = self.zodiac_collection[zodiac_index-1].inputs["ecrd"].widget.currentIndex()
-                    zodiac = self.zodiac_files[zodiac_index2-1].file
-                except Exception:
-                    pass
+                cib = group.inputs["o_cib"].widget.isChecked()
+                cmb = group.inputs["o_cmb"].widget.isChecked()
                 
                 try: # signal
                     signal_index = group.inputs["signal"].widget.currentIndex()
@@ -394,20 +397,17 @@ class gui(QtGui.QWidget):
                 except Exception:
                     pass
                 
-                cib = self.other_set["cib"].widget.isChecked()
-                cmb = self.other_set["cmb"].widget.isChecked()
-                
                 if compos_plot == 1: # total noise
-                    generate.add_noise(new_graph, galactic, mirror_type, mirror_temp,
-                            zodiac, cib, cmb, freq_range)
+                    generate.add_noise(new_graph, site, galactic, mirror_type, mirror_temp,
+                            mirror_constant, zodiac, cib, cmb, freq_range)
                 
                 elif compos_plot == 2: # total temperature
-                    generate.add_temp(new_graph, galactic, mirror_const, mirror_temp, zodiac,
-                            cib, cmb, aperture, site, source, freq_range)
+                    generate.add_temp(new_graph, galactic, mirror_const, mirror_temp, mirror_constant,
+                            zodiac, cib, cmb, aperture, site, source, freq_range)
                 
                 elif compos_plot == 3: # integration time
-                    generate.add_integ(new_graph, galactic, mirror_const, mirror_temp, zodiac,
-                            cib, cmb, aperture, site, source, snr, freq_range)
+                    generate.add_integ(new_graph, galactic, mirror_const, mirror_temp, mirror_constant,
+                            zodiac, cib, cmb, aperture, site, source, snr, freq_range)
 
         self.plot.redraw(new_graph)
          

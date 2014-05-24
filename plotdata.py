@@ -15,10 +15,14 @@ interval = collections.namedtuple("interval", "min max")
 # Get column pair from data file
 def get_col(file_name, col1, col1n, col2, col2n, freq_range):
     
-    # read two columns from file and return them as numpy arrays
-    data = ExcelReader(file_name)
-    return [numpy.array(data.read_from_col(col1, freq_range.min, freq_range.max, col1n), dtype='float'),
-        numpy.array(data.read_from_col(col2, freq_range.min, freq_range.max, col2n), dtype='float')]
+    try:
+        # read two columns from file and return them as numpy arrays
+        data = ExcelReader(file_name)
+        return [numpy.array(data.read_from_col(col1, freq_range.min, freq_range.max, col1n), dtype='float'),
+            numpy.array(data.read_from_col(col2, freq_range.min, freq_range.max, col2n), dtype='float')]
+    except Exception:
+        # return blank data
+        return [numpy.array([]), numpy.array([])]
 
 # generate list of frequencies (in Hz) with identical form as data
 def generate_freq(freq_range):
@@ -31,7 +35,7 @@ def generate_freq(freq_range):
     else: freq = freq_min
     
     freq_list = []
-    while freq <= freq_range.max and freq <= freq_max:
+    while freq < freq_range.max - 1e-5 and freq < freq_max - 1e-5:
         freq_list.append(freq)
         freq += step
     freq_array = numpy.array(freq_list, dtype="float")
