@@ -322,11 +322,12 @@ class gui(QtGui.QWidget):
                     continue # not filled in properly, so skip
                 
                 site = group.inputs["site"].widget.currentIndex()
-                source = group.inputs["site"].widget.currentIndex()
+                source = group.inputs["source"].widget.currentIndex()
                 
                 # only add if all fields are filled in
-                if index > 0:
+                if site > 0 and source > 0:
                     generate.add_signal(new_graph,
+                        aperture,
                         self.atmos_files[site - 1].file,
                         self.source_files[source - 1].file, freq_range)
         

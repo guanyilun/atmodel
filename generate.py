@@ -4,13 +4,14 @@
 import math
 import numpy
 
+import bling
 import dyngui
 import graph
-import plotdata
+import sigtrans
 
 # Add atmospheric radiance to plot
 def add_radiance(graph_obj, site_file, freq_range):
-    noise_list = plotdata.noise_list(*plotdata.radiance(site_file, freq_range))
+    noise_list = bling.noise_list(*bling.radiance(site_file, freq_range))
     data_set = graph.data_set("Atmos Radiance", "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj.dataset_list.append(data_set)
 
@@ -20,38 +21,47 @@ def add_trans(graph_obj, site_file, freq_range):
 
 # Add galactic emission to plot
 def add_galactic(graph_obj, galactic_file, freq_range):
-    noise_list = plotdata.noise_list(*plotdata.generic_noise(galactic_file, freq_range))
+    noise_list = bling.noise_list(*bling.generic_noise(galactic_file, freq_range))
     data_set = graph.data_set("Galactic Emission", "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj.dataset_list.append(data_set)
 
 # Add thermal mirror emission to plot
 def add_mirror(graph_obj, mirror_temp, constant, freq_range):
-    noise_list = plotdata.noise_list(*plotdata.mirror(mirror_temp, constant, freq_range))
+    noise_list = bling.noise_list(*bling.mirror(mirror_temp, constant, freq_range))
     data_set = graph.data_set("Thermal Mirror", "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj.dataset_list.append(data_set)
 
 # Add zodiacal emission to plot
 def add_zodiac(graph_obj, zodiac_file, freq_range):
-    noise_list = plotdata.noise_list(*plotdata.generic_noise(zodiac_file, freq_range))
+    noise_list = bling.noise_list(*bling.generic_noise(zodiac_file, freq_range))
     data_set = graph.data_set("Zodiacal Emission", "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj.dataset_list.append(data_set)
 
 # Add cosmic infrared background to plot
 def add_cib(graph_obj, freq_range):
     # TODO: convert to equation fit
-    noise_list = plotdata.noise_list(*plotdata.generic_noise("data/Backgrounds/CIB/cib.xlsx", freq_range))
+    noise_list = bling.noise_list(*bling.generic_noise("data/Backgrounds/CIB/cib.xlsx", freq_range))
     data_set = graph.data_set("Cosmic Infrared Bkgd", "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj.dataset_list.append(data_set)
 
 # Add cosmic microwave background to plot
 def add_cmb(graph_obj, freq_range):
-    noise_list = plotdata.noise_list(*plotdata.cmb(freq_range))
+    noise_list = bling.noise_list(*bling.cmb(freq_range))
     data_set = graph.data_set("Cosmic Microwave Bkgd", "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj.dataset_list.append(data_set)
 
 # Add signal to plot
-def add_signal(graph_obj, site_file, source_file, freq_range):
-    None
+def add_signal(graph_obj, aperture, site_file, source_file, freq_range):
+    sig_list, freq_list = sigtrans.signal(aperture, site_file, source_file, freq_range)
+    
+    # build and return list of coordinates
+    crdlist = []
+    for i, signal_val in enumerate(sig_list):
+        crdlist.append(graph.coord_obj(freq_list[i], signal_val))
+    
+    # build data set and add to graph
+    data_set = graph.data_set("Signal", "Frequency", "Hz", "Signal", "W", crdlist)
+    graph_obj.dataset_list.append(data_set)
 
 ## Composite calculations
 # (note: some parameters passed may be "None" -- these are ignored if possible)
@@ -60,18 +70,10 @@ def add_signal(graph_obj, site_file, source_file, freq_range):
 def add_noise(graph_obj, site_file, galactic_file, mirror_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb, freq_range):
     
-    # compute all the individual noise sources
-    radiance_bsq, rfreq = plotdata.radiance(site_file, freq_range)
-    galactic_bsq, gfreq = plotdata.generic_noise(galactic_file, freq_range)
-    mirror_bsq, mfreq = plotdata.mirror(mirror_temp, mirror_constant, freq_range)
-    zodiac_bsq, zfreq = plotdata.generic_noise(zodiac_file, freq_range)
-    cib_bsq, cibfreq = plotdata.generic_noise("data/Backgrounds/CIB/cib.xlsx", freq_range)
-    cmb_bsq, cmbfreq = plotdata.cmb(freq_range)
-    
-    # combine the noise
-    blingsq_tot = radiance_bsq + galactic_bsq + mirror_bsq + zodiac_bsq + cib_bsq + cmb_bsq
+    blingsq_tot, mfreq = bling.noise_total(site_file, galactic_file, mirror_file, mirror_temp,
+        mirror_constant, zodiac_file, cib, cmb, freq_range)
     data_set = graph.data_set("Total Noise", "Frequency", "Hz", "Noise", "BLING",
-            plotdata.noise_list(blingsq_tot, mfreq))
+            bling.noise_list(blingsq_tot, mfreq))
     graph_obj.dataset_list.append(data_set)
     
 

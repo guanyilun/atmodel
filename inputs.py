@@ -79,8 +79,8 @@ def signal(gui):
     
     inputs = {}
     
-    inputs["aper"] = dyngui.input_obj("Aperture (m)", QtGui.QLineEdit())
-    conn_update(gui, inputs["aper"].widget, "textChanged(QString)")
+    inputs["aperture"] = dyngui.input_obj("Aperture (m)", QtGui.QLineEdit())
+    conn_update(gui, inputs["aperture"].widget, "textChanged(QString)")
     
     site = QtGui.QComboBox()
     site.addItem("")
