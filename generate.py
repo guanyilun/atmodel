@@ -78,16 +78,16 @@ def add_noise(graph_obj, site_file, galactic_file, mirror_temp,
     graph_obj.dataset_list.append(data_set)
 
 # Add total temp to plot
-def add_temp(graph_obj, galactic_file, mirror_temp, mirror_constant,
+def add_temp(graph_obj, atmos_site, galactic_file, mirror_temp, mirror_constant,
         zodiac_file, cib, cmb, aperture, site_file, source_file, freq_range):
     None
 
 # Add integration time to plot
-def add_integ(graph_obj, galactic_file, mirror_temp, mirror_constant,
+def add_integ(graph_obj, atmos_site, galactic_file, mirror_temp, mirror_constant,
         zodiac_file, cib, cmb, aperture, site_file, source_file, snr, freq_range):
     
     # compute noise and signal and, with signal:noise ratio, integration time
-    blingsq_tot, mfreq = bling.noise_total(site_file, galactic_file, mirror_temp,
+    blingsq_tot, mfreq = bling.noise_total(atmos_site, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb, freq_range)
     sig_list, slist = sigtrans.signal(aperture, site_file, source_file, freq_range)
     integ_time = cal.IT(blingsq_tot, snr, sig_list) # array of integration times

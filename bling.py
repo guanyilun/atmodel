@@ -99,7 +99,7 @@ def noise_total(site_file, galactic_file, mirror_temp, mirror_constant,
         zodiac_file, add_cib, add_cmb, freq_range):
     
     # compute all the individual noise sources if enough info provided
-    if len(site_file) > 0: # TODO: account for when signal is selected but atmosphere is not
+    if len(site_file) > 0:
         radiance_bsq, rfreq = radiance(site_file, freq_range)
     else:
         rfreq, radiance_bsq = generate_freq(freq_range)

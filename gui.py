@@ -349,6 +349,7 @@ class gui(QtGui.QWidget):
                 mirror_type = ""
                 zodiac = ""
                 aperture = ""
+                atmos_site = ""
                 site = ""
                 source = ""
                 mirror_constant = -1
@@ -359,7 +360,7 @@ class gui(QtGui.QWidget):
                 atmos_index1 = group.inputs["n_atmos"].widget.currentIndex()
                 if atmos_index1 > 0:
                     atmos_index2 = self.atmos_collection[atmos_index1-1].inputs["site"].widget.currentIndex()
-                    site = self.atmos_files[atmos_index2-1].file
+                    atmos_site = self.atmos_files[atmos_index2-1].file
                 
                 # galactic emission
                 galactic_index1 = group.inputs["n_galactic"].widget.currentIndex()
@@ -401,11 +402,11 @@ class gui(QtGui.QWidget):
                     site = self.atmos_files[site_index-1].file # override atmospheric radiance site if provided
                 
                 if compos_plot == 1: # total noise
-                    generate.add_noise(new_graph, site, galactic, mirror_temp,
+                    generate.add_noise(new_graph, atmos_site, galactic, mirror_temp,
                             mirror_constant, zodiac, cib, cmb, freq_range)
                 
                 elif compos_plot == 2: # total temperature
-                    generate.add_temp(new_graph, galactic, mirror_temp, mirror_constant,
+                    generate.add_temp(new_graph, atmos_site, galactic, mirror_temp, mirror_constant,
                             zodiac, cib, cmb, aperture, site, source, freq_range)
                 
                 elif compos_plot == 3: # integration time
@@ -415,7 +416,7 @@ class gui(QtGui.QWidget):
                     except ValueError:
                         continue # not filled in properly, so skip
                 
-                    generate.add_integ(new_graph, galactic, mirror_temp, mirror_constant,
+                    generate.add_integ(new_graph, atmos_site, galactic, mirror_temp, mirror_constant,
                             zodiac, cib, cmb, aperture, site, source, snr, freq_range)
 
         self.plot.redraw(new_graph)
