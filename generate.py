@@ -67,10 +67,10 @@ def add_signal(graph_obj, aperture, site_file, source_file, freq_range):
 # (note: some parameters passed may be "None" -- these are ignored if possible)
 
 # Add total noise to plot
-def add_noise(graph_obj, site_file, galactic_file, mirror_file, mirror_temp,
+def add_noise(graph_obj, site_file, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb, freq_range):
     
-    blingsq_tot, mfreq = bling.noise_total(site_file, galactic_file, mirror_file, mirror_temp,
+    blingsq_tot, mfreq = bling.noise_total(site_file, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb, freq_range)
     data_set = graph.data_set("Total Noise", "Frequency", "Hz", "Noise", "BLING",
             bling.noise_list(blingsq_tot, mfreq))
@@ -78,11 +78,25 @@ def add_noise(graph_obj, site_file, galactic_file, mirror_file, mirror_temp,
     
 
 # Add total temp to plot
-def add_temp(graph_obj, galactic_file, mirror_file, mirror_temp, mirror_constant,
+def add_temp(graph_obj, galactic_file, mirror_temp, mirror_constant,
         zodiac_file, cib, cmb, aperture, site_file, source_file, freq_range):
     None
 
 # Add integration time to plot
-def add_integ(graph_obj, galactic_file, mirror_file, mirror_temp, mirror_constant,
+def add_integ(graph_obj, galactic_file, mirror_temp, mirror_constant,
         zodiac_file, cib, cmb, aperture, site_file, source_file, snr, freq_range):
-    None
+    
+    # compute noise and signal and, with signal:noise ratio, integration time
+    blingsq_tot, mfreq = bling.noise_total(site_file, galactic_file, mirror_temp,
+        mirror_constant, zodiac_file, cib, cmb, freq_range)
+    sig_list, slist = sigtrans.signal(aperture, site_file, source_file, freq_range)
+    integ_time = cal.IT(blingsq_tot, snr, sig_list)
+    
+    # build and return list of coordinates
+    crdlist = []
+    for i, signal_val in enumerate(sig_list):
+        crdlist.append(graph.coord_obj(mlist[i], signal_val))
+    
+    # build data set and add to graph
+    data_set = graph.data_set("Integration Time", "Frequency", "Hz", "Time", "s", crdlist)
+    graph_obj.dataset_list.append(data_set)

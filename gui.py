@@ -399,15 +399,15 @@ class gui(QtGui.QWidget):
                     pass
                 
                 if compos_plot == 1: # total noise
-                    generate.add_noise(new_graph, site, galactic, mirror_type, mirror_temp,
+                    generate.add_noise(new_graph, site, galactic, mirror_temp,
                             mirror_constant, zodiac, cib, cmb, freq_range)
                 
                 elif compos_plot == 2: # total temperature
-                    generate.add_temp(new_graph, galactic, mirror_const, mirror_temp, mirror_constant,
+                    generate.add_temp(new_graph, galactic, mirror_temp, mirror_constant,
                             zodiac, cib, cmb, aperture, site, source, freq_range)
                 
                 elif compos_plot == 3: # integration time
-                    generate.add_integ(new_graph, galactic, mirror_const, mirror_temp, mirror_constant,
+                    generate.add_integ(new_graph, galactic, mirror_temp, mirror_constant,
                             zodiac, cib, cmb, aperture, site, source, snr, freq_range)
 
         self.plot.redraw(new_graph)

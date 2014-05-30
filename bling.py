@@ -82,8 +82,8 @@ def mirror(mirror_temp, constant, freq_range):
     return cal.bling_TME(freq_list, 1000, constant, mirror_temp, wavelengths), freq_list
 
 # total BLING noise
-def noise_total(site_file, galactic_file, mirror_file, mirror_temp,
-        mirror_constant, zodiac_file, add_cib, add_cmb, freq_range):
+def noise_total(site_file, galactic_file, mirror_temp, mirror_constant,
+        zodiac_file, add_cib, add_cmb, freq_range):
     
     # compute all the individual noise sources
     radiance_bsq, rfreq = radiance(site_file, freq_range)
