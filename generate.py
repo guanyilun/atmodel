@@ -76,7 +76,6 @@ def add_noise(graph_obj, site_file, galactic_file, mirror_temp,
     data_set = graph.data_set("Total Noise", "Frequency", "Hz", "Noise", "BLING",
             bling.noise_list(blingsq_tot, mfreq))
     graph_obj.dataset_list.append(data_set)
-    
 
 # Add total temp to plot
 def add_temp(graph_obj, galactic_file, mirror_temp, mirror_constant,

@@ -3,7 +3,7 @@ from xlwt import Workbook
 from xlsxwriter.workbook import Workbook
 import os
 
-c = 2.99792458*(10**8)
+c = 299792458
 unit_conversions = {'THz':10**12,'Hz':1,'micron':10**(-6),'um':10**(-6),'m':1,'CM-1':c*10**2,'CM^-1':c*10**2}
 unit_types = ['Frequency','frequency','Wavelength','wavelength','FREQ','Freq'] #unit types in order of preference
 

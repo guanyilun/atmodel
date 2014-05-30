@@ -152,15 +152,20 @@ def compos(gui):
     
     # select first item in each input box
     def default():
-        inputs["n_atmos"].widget.setCurrentIndex(1)
-        inputs["n_galactic"].widget.setCurrentIndex(1)
-        inputs["n_mirror"].widget.setCurrentIndex(1)
-        inputs["n_zodiac"].widget.setCurrentIndex(1)
+        if len(inputs["n_atmos"].widget) > 1:
+            inputs["n_atmos"].widget.setCurrentIndex(1)
+        if len(inputs["n_galactic"].widget) > 1:
+            inputs["n_galactic"].widget.setCurrentIndex(1)
+        if len(inputs["n_mirror"].widget) > 1:
+            inputs["n_mirror"].widget.setCurrentIndex(1)
+        if len(inputs["n_zodiac"].widget) > 1:
+            inputs["n_zodiac"].widget.setCurrentIndex(1)
         
         inputs["o_cib"].widget.setCheckState(QtCore.Qt.Checked)
         inputs["o_cmb"].widget.setCheckState(QtCore.Qt.Checked)
         
-        inputs["signal"].widget.setCurrentIndex(1)
+        if len(inputs["signal"].widget) > 1:
+            inputs["signal"].widget.setCurrentIndex(1)
         inputs["snr"].widget.setText("3") # default signal:noise = 3
         update_all(gui)
     

@@ -336,67 +336,69 @@ class gui(QtGui.QWidget):
         
         if compos_plot > 0:
             
+            i = 0
             # loop through all sets of inputs
             for group in self.compos_collection:
-                
-                try: # check if given signal:noise is a number
-                    snr = float(group.inputs["snr"].widget.text())
-                except ValueError:
-                    continue # not filled in properly, so skip
+                if i == len(self.compos_collection) - 1:
+                    break # ignore last group
+                i += 1
                 
                 # fetch all valid selected input values (assume "None" by default)
-                galactic = None
-                mirror_temp = None
-                mirror_type = None
-                zodiac = None
-                aperture = None
-                site = None
-                source = None
+                galactic = ""
+                mirror_temp = ""
+                mirror_type = ""
+                zodiac = ""
+                aperture = ""
+                site = ""
+                source = ""
+                mirror_constant = -1
+                mirror_temp = -1
+                aperture = -1
                 
-                try: # atmospheric radiance
-                    atmos_index1 = group.inputs["n_atmos"].widget.currentIndex()
+                # atmospheric radiance
+                atmos_index1 = group.inputs["n_atmos"].widget.currentIndex()
+                if atmos_index1 > 0:
                     atmos_index2 = self.atmos_collection[atmos_index1-1].inputs["site"].widget.currentIndex()
                     site = self.atmos_files[atmos_index2-1].file
-                except Exception:
-                    pass
                 
-                try: # galactic emission
-                    galactic_index1 = group.inputs["n_galactic"].widget.currentIndex()
+                # galactic emission
+                galactic_index1 = group.inputs["n_galactic"].widget.currentIndex()
+                if galactic_index1 > 0:
                     galactic_index2 = self.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
                     galactic = self.galactic_files[galactic_index2-1].file
-                except Exception:
-                    pass
                 
-                try: # thermal mirror emission
-                    mirror_index = group.inputs["n_mirror"].widget.currentIndex()
+                # thermal mirror emission
+                mirror_index = group.inputs["n_mirror"].widget.currentIndex()
+                if mirror_index > 0:
                     type_index = str(self.mirror_collection[mirror_index-1].inputs["type"].widget.currentText())
                     
                     mirror_constant = self.mirror_consts[type_index]
-                    mirror_temp = float(self.mirror_collection[mirror_index-1].inputs["temp"].widget.text())
-                except Exception:
-                    pass
+                    try:
+                        mirror_temp = float(self.mirror_collection[mirror_index-1].inputs["temp"].widget.text())
+                    except Exception:
+                        pass
                 
-                try: # zodiacal emission
-                    zodiac_index1 = group.inputs["n_zodiac"].widget.currentIndex()
+                # zodiacal emission
+                zodiac_index1 = group.inputs["n_zodiac"].widget.currentIndex()
+                if zodiac_index1 > 0:
                     zodiac_index2 = self.zodiac_collection[zodiac_index1-1].inputs["ecrd"].widget.currentIndex()
                     zodiac = self.zodiac_files[zodiac_index2-1].file
-                except Exception:
-                    pass
                     
                 cib = group.inputs["o_cib"].widget.isChecked()
                 cmb = group.inputs["o_cmb"].widget.isChecked()
-                    
-                try: # signal
-                    signal_index = group.inputs["signal"].widget.currentIndex()
-                    
+                
+                # signal
+                signal_index = group.inputs["signal"].widget.currentIndex()
+                if signal_index > 0:
                     site_index = self.signal_collection[signal_index-1].inputs["site"].widget.currentIndex()
                     source_index = self.signal_collection[signal_index-1].inputs["source"].widget.currentIndex()
                     
-                    aperture = float(self.signal_collection[signal_index-1].inputs["aperture"].widget.text())
+                    try:
+                        aperture = float(self.signal_collection[signal_index-1].inputs["aperture"].widget.text())
+                    except Exception:
+                        pass
                     source = self.source_files[source_index-1].file
                     site = self.atmos_files[site_index-1].file # override atmospheric radiance site if provided
-                except Exception:
-                    pass
                 
                 if compos_plot == 1: # total noise
                     generate.add_noise(new_graph, site, galactic, mirror_temp,
@@ -407,6 +409,12 @@ class gui(QtGui.QWidget):
                             zodiac, cib, cmb, aperture, site, source, freq_range)
                 
                 elif compos_plot == 3: # integration time
+                    
+                    try: # check if given signal:noise ratio is a number
+                        snr = float(group.inputs["snr"].widget.text())
+                    except ValueError:
+                        continue # not filled in properly, so skip
+                
                     generate.add_integ(new_graph, galactic, mirror_temp, mirror_constant,
                             zodiac, cib, cmb, aperture, site, source, snr, freq_range)
 
