@@ -360,32 +360,32 @@ class gui(QtGui.QWidget):
                 except Exception:
                     pass
                 
-            #try: # galactic emission
-                galactic_index1 = group.inputs["n_galactic"].widget.currentIndex()
-                galactic_index2 = self.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
-                galactic = self.galactic_files[galactic_index2-1].file
-            #except Exception:
-            #    pass
-            
-            #try: # thermal mirror emission
-                mirror_index = group.inputs["n_mirror"].widget.currentIndex()
-                type_index = str(self.mirror_collection[mirror_index-1].inputs["type"].widget.currentText())
+                try: # galactic emission
+                    galactic_index1 = group.inputs["n_galactic"].widget.currentIndex()
+                    galactic_index2 = self.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
+                    galactic = self.galactic_files[galactic_index2-1].file
+                except Exception:
+                    pass
                 
-                mirror_constant = self.mirror_consts[type_index]
-                mirror_temp = float(self.mirror_collection[mirror_index-1].inputs["temp"].widget.text())
-            #except Exception:
-            #    pass
-            
-            #try: # zodiacal emission
-                zodiac_index1 = group.inputs["n_zodiac"].widget.currentIndex()
-                zodiac_index2 = self.zodiac_collection[zodiac_index1-1].inputs["ecrd"].widget.currentIndex()
-                zodiac = self.zodiac_files[zodiac_index2-1].file
-            #except Exception:
-            #    pass
+                try: # thermal mirror emission
+                    mirror_index = group.inputs["n_mirror"].widget.currentIndex()
+                    type_index = str(self.mirror_collection[mirror_index-1].inputs["type"].widget.currentText())
+                    
+                    mirror_constant = self.mirror_consts[type_index]
+                    mirror_temp = float(self.mirror_collection[mirror_index-1].inputs["temp"].widget.text())
+                except Exception:
+                    pass
                 
+                try: # zodiacal emission
+                    zodiac_index1 = group.inputs["n_zodiac"].widget.currentIndex()
+                    zodiac_index2 = self.zodiac_collection[zodiac_index1-1].inputs["ecrd"].widget.currentIndex()
+                    zodiac = self.zodiac_files[zodiac_index2-1].file
+                except Exception:
+                    pass
+                    
                 cib = group.inputs["o_cib"].widget.isChecked()
                 cmb = group.inputs["o_cmb"].widget.isChecked()
-                
+                    
                 try: # signal
                     signal_index = group.inputs["signal"].widget.currentIndex()
                     
@@ -393,8 +393,8 @@ class gui(QtGui.QWidget):
                     source_index = self.signal_collection[signal_index-1].inputs["source"].widget.currentIndex()
                     
                     aperture = float(self.signal_collection[signal_index-1].inputs["aperture"].widget.text())
-                    source = self.source_files[source_index-1]
-                    site = self.atmos_files[site_index-1] # override atmospheric radiance site if provided
+                    source = self.source_files[source_index-1].file
+                    site = self.atmos_files[site_index-1].file # override atmospheric radiance site if provided
                 except Exception:
                     pass
                 

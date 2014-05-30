@@ -5,6 +5,7 @@ import math
 import numpy
 
 import bling
+import cal
 import dyngui
 import graph
 import sigtrans
@@ -90,12 +91,12 @@ def add_integ(graph_obj, galactic_file, mirror_temp, mirror_constant,
     blingsq_tot, mfreq = bling.noise_total(site_file, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb, freq_range)
     sig_list, slist = sigtrans.signal(aperture, site_file, source_file, freq_range)
-    integ_time = cal.IT(blingsq_tot, snr, sig_list)
+    integ_time = cal.IT(blingsq_tot, snr, sig_list) # array of integration times
     
     # build and return list of coordinates
     crdlist = []
-    for i, signal_val in enumerate(sig_list):
-        crdlist.append(graph.coord_obj(mlist[i], signal_val))
+    for i, integ_val in enumerate(integ_time):
+        crdlist.append(graph.coord_obj(mfreq[i], integ_val))
     
     # build data set and add to graph
     data_set = graph.data_set("Integration Time", "Frequency", "Hz", "Time", "s", crdlist)
