@@ -124,9 +124,12 @@ def compos(gui):
     
     # initialize checkboxes
     cib = QtGui.QCheckBox("Cosmic Infrared Background")
-    cib.setCheckState(QtCore.Qt.Checked)
+    cib.setCheckState(QtCore.Qt.Unchecked)
+    conn_update(gui, cib, "stateChanged(int)")
+    
     cmb = QtGui.QCheckBox("Cosmic Microwave Background")
-    cmb.setCheckState(QtCore.Qt.Checked)
+    cmb.setCheckState(QtCore.Qt.Unchecked)
+    conn_update(gui, cmb, "stateChanged(int)")
     
     inputs["n_atmos"] = dyngui.input_obj("Atmosphere", atmos)
     inputs["n_galactic"] = dyngui.input_obj("Galactic", galactic)
@@ -145,6 +148,8 @@ def compos(gui):
         inputs["n_zodiac"].widget.setCurrentIndex(0)
         inputs["signal"].widget.setCurrentIndex(0)
         inputs["snr"].widget.setText("")
+        cib.setCheckState(QtCore.Qt.Unchecked)
+        cmb.setCheckState(QtCore.Qt.Unchecked)
         update_all(gui)
     
     inputs["z_clear"] = dyngui.input_obj("", QtGui.QPushButton("Clear Fields"))

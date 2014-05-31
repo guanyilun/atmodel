@@ -35,14 +35,19 @@ def new_group(parent, inputs):
 # Return filled in value of a particular widget
 def widget_val(widget, ignore_check = False):
     
+    if hasattr(widget, "isChecked"):
+        if not ignore_check:
+            return widget.isChecked()
+        elif widget.isChecked():
+            return "True" # always recognize value of checkbox if checked
+        else:
+            return ""
+    
     if hasattr(widget, "currentText"):
         return widget.currentText()
     
     if hasattr(widget, "text"):
         return widget.text()
-    
-    if not ignore_check and hasattr(widget, "checkState"):
-        return widget.checkState() == QtCore.Qt.Checked
     
     return "" # return empty string by default
 
@@ -54,7 +59,7 @@ def group_str(group, ignore_check = False):
     # loop through all the widgets, checking if they are filled in
     for name in iter(sorted(group)):
         
-        if len(group[name].label) < 1:
+        if len(group[name].label) < 1 and not hasattr(group[name].widget, "isChecked"):
             continue # ignore widget if not labeled
         
         value = widget_val(group[name].widget, ignore_check)
