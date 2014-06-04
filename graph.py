@@ -49,10 +49,47 @@ class Graph(FigureCanvas):
         #placeholder data to check that this works
         #self.x = np.arange(0.0, 3.0, 0.01)
         #self.y = random.random()*np.sin(2*np.pi*self.x)
-        list = graph_data.dataset_list[0]
-        self.x = [list.coord_list[i][0] for i in xrange(len(list.coord_list))]
-        self.y = [list.coord_list[i][1] for i in xrange(len(list.coord_list))]
-        self.axes.plot(self.x, self.y)
+        data = graph_data.dataset_list
+        
+        for n in xrange(len(data)):
+            if n == 0:
+                set0 = [data[n]]
+                set1 = []
+            elif data[n].xunits != set0[0].xunits:
+                print("Tried to plot more than one set of units on xaxis")
+                pass
+            elif data[n].yunits != data[0].yunits:
+                if len(set1) == 0:
+                    set1.append(data[n])
+                elif data[n].yunits != set1[0].yunits:
+                    print("Tried to plot more than two sets of units on yaxis")
+                else:
+                    set1.append(data[n])
+            else:
+                set0.append(data[n])
+        
+        color_list=['r','g','b']
+        print(len(data))
+        print(len(set0))
+        print(len(set1))
+        print(set0[0].yunits)
+        self.axes.set_xscale('log')
+        self.axes.set_yscale('log')
+        for n in xrange(len(set0)):
+            self.x = [set0[n].coord_list[i][0] for i in xrange(len(set0[n].coord_list))]
+            self.y = [set0[n].coord_list[i][1] for i in xrange(len(set0[n].coord_list))]
+            self.axes.plot(self.x, self.y, c=color_list[n], label=data[n].label)
+        self.axes.set_xlabel(set0[0].xunits)
+        self.axes.set_ylabel(set0[0].yunits)
+        self.axes.set_xscale('log')
+        self.axes.set_yscale('log')
+
+        #twinx = self.axes.twinx()
+        #twinx.plot(self.x, self.y)
+        
+        #plt.xlabel(graph_data.dataset_list[0].xunits)
+        #plt.ylabel(graph_data.dataset_list[0].yunits)
+        plt.legend(loc='upper left')
         
         #draw new graph
         self.draw()
