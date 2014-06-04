@@ -89,8 +89,6 @@ class Graph(FigureCanvas):
         self.axes.set_ylabel(set0[0].yunits)
         self.axes.set_xscale('log')
         self.axes.set_yscale('log')
-
-        self.axes.legend(loc='upper left')
         
         if len(set1) > 0:
             
@@ -106,7 +104,9 @@ class Graph(FigureCanvas):
             twinx.set_yscale('log')
 
             twinx.legend(loc='upper right')
-        
+
+        self.axes.legend(loc='upper left')
+
         #draw new graph
         self.draw()
 
