@@ -83,7 +83,7 @@ class Graph(FigureCanvas):
         for n in xrange(len(set0)):
             self.x = [set0[n].coord_list[i][0] for i in xrange(len(set0[n].coord_list))]
             self.y = [set0[n].coord_list[i][1] for i in xrange(len(set0[n].coord_list))]
-            self.axes.plot(self.x, self.y, c=color_list[n], label=set0[n].label)
+            self.axes.plot(self.x, self.y, c=color_list[n], label=str(set0[n].label))
 
         self.axes.set_xlabel(set0[0].xunits)
         self.axes.set_ylabel(set0[0].yunits)
@@ -98,7 +98,7 @@ class Graph(FigureCanvas):
             for n in xrange(len(set1)):
                 self.x = [set1[n].coord_list[i][0] for i in xrange(len(set1[n].coord_list))]
                 self.y = [set1[n].coord_list[i][1] for i in xrange(len(set1[n].coord_list))]
-                twinx.plot(self.x, self.y, c=color_list[n+len(set0)], label=set1[n].label)
+                twinx.plot(self.x, self.y, c=color_list[n+len(set0)], label=str(set1[n].label))
 
             twinx.set_ylabel(set1[0].yunits)
             twinx.set_yscale('log')

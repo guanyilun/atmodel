@@ -135,6 +135,15 @@ def compos(gui):
     isplot.setCheckState(QtCore.Qt.Unchecked)
     conn_update(gui, isplot, "stateChanged(int)")
     
+    # signal:noise ratio
+    snr = QtGui.QLineEdit()
+    conn_update(gui, snr, "textChanged(QString)")
+    
+    # label for composite graph
+    label = QtGui.QLineEdit()
+    conn_update(gui, label, "textChanged(QString)")
+    
+    inputs["_label"] = dyngui.input_obj("Label", label)
     inputs["is_plot"] = dyngui.input_obj("", isplot)
     inputs["n_atmos"] = dyngui.input_obj("Atmosphere", atmos)
     inputs["n_galactic"] = dyngui.input_obj("Galactic", galactic)
@@ -147,6 +156,8 @@ def compos(gui):
     
     # clear all inputs in this set
     def clear():
+        inputs["_label"].widget.setText("")
+        inputs["is_plot"].widget.setCheckState(QtCore.Qt.Unchecked)
         inputs["n_atmos"].widget.setCurrentIndex(0)
         inputs["n_galactic"].widget.setCurrentIndex(0)
         inputs["n_mirror"].widget.setCurrentIndex(0)

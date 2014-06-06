@@ -138,7 +138,6 @@ class gui(QtGui.QWidget):
         self.compos_collection = []
         
         compos_set0 = inputs.compos(self)
-        #self.compos_set0_toplot, compos_set0_list = self.add_tab(self.compos_tabs, "New", None)
         
         self.compos_collection.append(dyngui.collect_obj(compos_set0,
             dyngui.new_group_tab(self.compos_tabs, compos_set0, "New")))
@@ -346,6 +345,7 @@ class gui(QtGui.QWidget):
                 i += 1
                 
                 # fetch all valid selected input values (assume "None" by default)
+                dataset_label = str(i)
                 galactic = bling.name_file("", "")
                 mirror_temp = ""
                 mirror_type = ""
@@ -357,6 +357,10 @@ class gui(QtGui.QWidget):
                 mirror_constant = -1
                 mirror_temp = -1
                 aperture = -1
+                
+                # label for graph
+                if len(group.inputs["_label"].widget.text()) > 0:
+                    dataset_label = group.inputs["_label"].widget.text()
                 
                 # atmospheric radiance
                 atmos_index1 = group.inputs["n_atmos"].widget.currentIndex()
@@ -405,11 +409,11 @@ class gui(QtGui.QWidget):
                         site = self.atmos_files[site_index-1] # override atmospheric radiance site if provided
                 
                 if compos_plot == 1: # total noise
-                    generate.add_noise(new_graph, str(i), atmos_site, galactic, mirror_temp,
+                    generate.add_noise(new_graph, dataset_label, atmos_site, galactic, mirror_temp,
                             mirror_constant, zodiac, cib, cmb, freq_range)
                 
                 elif compos_plot == 2: # total temperature
-                    generate.add_temp(new_graph, str(i), atmos_site, galactic, mirror_temp, mirror_constant,
+                    generate.add_temp(new_graph, dataset_label, atmos_site, galactic, mirror_temp, mirror_constant,
                             zodiac, cib, cmb, aperture, site, source, freq_range)
                 
                 elif compos_plot == 3: # integration time
@@ -419,7 +423,7 @@ class gui(QtGui.QWidget):
                     except ValueError:
                         continue # not filled in properly, so skip
                 
-                    generate.add_integ(new_graph, str(i), atmos_site, galactic, mirror_temp, mirror_constant,
+                    generate.add_integ(new_graph, dataset_label, atmos_site, galactic, mirror_temp, mirror_constant,
                             zodiac, cib, cmb, aperture, site, source, snr, freq_range)
 
         self.plot.redraw(new_graph)

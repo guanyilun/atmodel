@@ -152,6 +152,12 @@ def update_tabcollect(collection, tab_control, inputs_func):
     
     for group in collection:
         
+        label = group.inputs["_label"].widget.text()
+        if len(label) > 0:
+            tab_control.setTabText(i, label)
+        else:
+            tab_control.setTabText(i, "New")
+        
         # remove group if descriptor string is blank
         if group_str(group.inputs, True) == "" and i < n:
             group.group_widget.setParent(None) # prevent display
