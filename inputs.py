@@ -131,6 +131,11 @@ def compos(gui):
     cmb.setCheckState(QtCore.Qt.Unchecked)
     conn_update(gui, cmb, "stateChanged(int)")
     
+    isplot = QtGui.QCheckBox("Plot this data")
+    isplot.setCheckState(QtCore.Qt.Unchecked)
+    conn_update(gui, isplot, "stateChanged(int)")
+    
+    inputs["is_plot"] = dyngui.input_obj("", isplot)
     inputs["n_atmos"] = dyngui.input_obj("Atmosphere", atmos)
     inputs["n_galactic"] = dyngui.input_obj("Galactic", galactic)
     inputs["n_mirror"] = dyngui.input_obj("Mirror", mirror)
@@ -205,7 +210,7 @@ def update_all(gui):
     dyngui.update_collection(gui.mirror_collection, gui.mirror_list, func_arg(mirror, gui))
     dyngui.update_collection(gui.zodiac_collection, gui.zodiac_list, func_arg(zodiac, gui))
     dyngui.update_collection(gui.signal_collection, gui.signal_list, func_arg(signal, gui))
-    dyngui.update_collection(gui.compos_collection, gui.compos_clayout, func_arg(compos, gui))
+    dyngui.update_tabcollect(gui.compos_collection, gui.compos_tabs, func_arg(compos, gui))
     
     # update composite tab
     for group in gui.compos_collection:

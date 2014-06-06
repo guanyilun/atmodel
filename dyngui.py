@@ -32,6 +32,27 @@ def new_group(parent, inputs):
             form.addRow(QtGui.QLabel(""), line.widget)
     return group
 
+# New tab of input controls
+def new_group_tab(parent, inputs, name):
+    
+    # group of inputs
+    group = QtGui.QWidget()
+    parent.addTab(group, name)
+    form = QtGui.QFormLayout()
+    group.setLayout(form)
+    
+    # draw all specified input controls
+    for key, line in iter(sorted(inputs.items())):
+        line.widget.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+        line.widget.setMinimumHeight(10)
+        
+        # display label only if one is given
+        if line.label != "":
+            form.addRow(QtGui.QLabel(line.label + ":"), line.widget)
+        else:
+            form.addRow(QtGui.QLabel(""), line.widget)
+    return group
+
 # Return filled in value of a particular widget
 def widget_val(widget, ignore_check = False):
     
@@ -90,7 +111,6 @@ def update_list(box, collection):
 
 # Update collection of widget groups, removing and adding new groups on demand
 #  collection: collection of widget groups to update
-#  groups: list of QGroupBox objects corresponding to the collection
 #  display_list: list of displayed widget groups
 #  inputs_func: function that returns a set of widgets to add to the colllection
 def update_collection(collection, display_list, inputs_func):
@@ -117,4 +137,32 @@ def update_collection(collection, display_list, inputs_func):
     if group_str(collection[k].inputs, True) != "":
         group_set = inputs_func() # generate a new set of widgets
         collection.append(collect_obj(group_set, new_group(display_list, group_set)))
+
+# Update collection of tab widget collections, removing and adding new tabs on demand
+#  collection: collection of widget groups to update
+#  tabs_control: control that holds all the tabs
+#  inputs_func: function that returns a set of widgets to add to the colllection
+def update_tabcollect(collection, tab_control, inputs_func):
     
+    to_remove = [] # list of groups to remove
+    
+    # loop through all existing widget groups in the collection
+    i = 0
+    n = len(collection) - 1 # index of last group, before removals
+    
+    for group in collection:
+        
+        # remove group if descriptor string is blank
+        if group_str(group.inputs, True) == "" and i < n:
+            group.group_widget.setParent(None) # prevent display
+            group.group_widget.deleteLater() # remove from list of QGroupBox widgets
+            collection.remove(group) # remove from collection
+        
+        i += 1
+    
+    k = len(collection) - 1 # index of last group of newly trimmed collection
+    
+    # add new group if last group is not empty
+    if group_str(collection[k].inputs, True) != "":
+        group_set = inputs_func() # generate a new set of widgets
+        collection.append(collect_obj(group_set, new_group_tab(tab_control, group_set, "New")))
