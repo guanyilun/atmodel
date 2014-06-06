@@ -164,8 +164,8 @@ def compos(gui):
         inputs["n_zodiac"].widget.setCurrentIndex(0)
         inputs["signal"].widget.setCurrentIndex(0)
         inputs["snr"].widget.setText("")
-        cib.setCheckState(QtCore.Qt.Unchecked)
-        cmb.setCheckState(QtCore.Qt.Unchecked)
+        inputs["cib"].widget.setCheckState(QtCore.Qt.Unchecked)
+        inputs["cmb"].widget.setCheckState(QtCore.Qt.Unchecked)
         update_all(gui)
     
     inputs["z_clear"] = dyngui.input_obj("", QtGui.QPushButton("Clear Fields"))
