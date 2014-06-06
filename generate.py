@@ -63,7 +63,7 @@ def add_signal(graph_obj, aperture, site_file, source_file, freq_range):
         crdlist.append(graph.coord_obj(freq_list[i], signal_val))
     
     # build data set and add to graph
-    data_set = graph.data_set("Signal ("+site_file.name+", "+source_file.name+")",
+    data_set = graph.data_set("Signal ("+str(aperture)+" m, "+site_file.name+", "+source_file.name+")",
             "Frequency", "Hz", "Signal", "W", crdlist)
     graph_obj.dataset_list.append(data_set)
 
