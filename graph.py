@@ -103,11 +103,11 @@ class Graph(FigureCanvas):
             twinx.set_ylabel(set1[0].yunits)
             twinx.set_yscale('log')
 
-            leg2 = twinx.legend(loc='lower right')
+            leg2 = twinx.legend(loc='lower right',prop={'size':6})
             frame2 = leg2.get_frame()
             frame2.set_alpha(0.5)
 
-        leg1 = self.axes.legend(loc='lower left')
+        leg1 = self.axes.legend(loc='lower left',prop={'size':6})
         frame1 = leg1.get_frame()
         frame1.set_alpha(0.5)
 
