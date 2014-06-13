@@ -40,14 +40,14 @@ def add_galactic(graph_obj, galactic_file, freq_range):
 # Add thermal mirror emission to plot
 def add_mirror(graph_obj, metal_name, mirror_temp, constant, freq_range):
     noise_list = bling.noise_list(*bling.mirror(mirror_temp, constant, freq_range))
-    data_set = graph.data_set("Thermal Mirror ("+metal_name+", "+mirror_temp+" K)",
+    data_set = graph.data_set("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
             "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj.dataset_list.append(data_set)
 
 # Add zodiacal emission to plot
 def add_zodiac(graph_obj, zodiac_file, freq_range):
     noise_list = bling.noise_list(*bling.generic_noise(zodiac_file.file, freq_range))
-    data_set = graph.data_set("Zodiacal Emission ("+zodiac_file.file+")", "Frequency", "Hz", "Noise", "BLING", noise_list)
+    data_set = graph.data_set("Zodiacal Emission ("+zodiac_file.name+")", "Frequency", "Hz", "Noise", "BLING", noise_list)
     graph_obj.dataset_list.append(data_set)
 
 # Add cosmic infrared background to plot
