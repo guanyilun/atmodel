@@ -39,22 +39,23 @@ class Graph(FigureCanvas):
 
     #this happens every time Generate is clicked
     def redraw(self, graph_data):
-        
+
         #clear figure
         plt.clf()
-        
+
         #define axes
         self.axes = self.figure.add_subplot(111)
-        
+
         #placeholder data to check that this works
         #self.x = np.arange(0.0, 3.0, 0.01)
         #self.y = random.random()*np.sin(2*np.pi*self.x)
         data = graph_data.dataset_list
-        
+
+        #check to make sure there aren't too many data sets
         if len(data) > 6:
             print("Error: Tried to plot more than six data sets")
             return
-        
+        #sort data by units and also make sure there aren't too many units
         for n in xrange(len(data)):
             if n == 0:
                 set0 = [data[n]]
@@ -72,12 +73,11 @@ class Graph(FigureCanvas):
                     set1.append(data[n])
             else:
                 set0.append(data[n])
-        
+
+        #colors to give to plots
         color_list=['r','g','b','m','c','k']
-        print(len(data))
-        print(len(set0))
-        print(len(set1))
-        print(set0[0].yunits)
+
+        #setting default scale to log and plotting data
         self.axes.set_xscale('log')
         self.axes.set_yscale('log')
         for n in xrange(len(set0)):
@@ -85,24 +85,28 @@ class Graph(FigureCanvas):
             self.y = [set0[n].coord_list[i][1] for i in xrange(len(set0[n].coord_list))]
             self.axes.plot(self.x, self.y, c=color_list[n], label=str(set0[n].label))
 
-        self.axes.set_xlabel(set0[0].xunits)
-        self.axes.set_ylabel(set0[0].yunits)
+        #axis labels
+        self.axes.set_xlabel(set0[0].xname + ' (' + set0[0].xunits + ')')
+        self.axes.set_ylabel(set0[0].yname + ' (' + set0[0].yunits + ')')
         self.axes.set_xscale('log')
         self.axes.set_yscale('log')
-        
+
         if len(set1) > 0:
-            
+
             #define twin axes
             twinx = self.axes.twinx()
-        
+
+            #plot on twin axes
             for n in xrange(len(set1)):
                 self.x = [set1[n].coord_list[i][0] for i in xrange(len(set1[n].coord_list))]
                 self.y = [set1[n].coord_list[i][1] for i in xrange(len(set1[n].coord_list))]
                 twinx.plot(self.x, self.y, c=color_list[n+len(set0)], label=str(set1[n].label))
 
-            twinx.set_ylabel(set1[0].yunits)
+            #name and scale twin axes
+            twinx.set_ylabel(set1[0].yname + ' (' + set1[0].yunits + ')')
             twinx.set_yscale('log')
 
+            #making legends (they will never die)
             leg2 = twinx.legend(loc='lower right',prop={'size':6})
             frame2 = leg2.get_frame()
             frame2.set_alpha(0.5)
