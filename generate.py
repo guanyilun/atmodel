@@ -9,6 +9,7 @@ import cal
 import dyngui
 import graph
 import sigtrans
+import temp
 
 # Add atmospheric radiance to plot
 def add_radiance(graph_obj, site_file, freq_range):
@@ -92,7 +93,17 @@ def add_noise(graph_obj, label, site_file, galactic_file, mirror_temp,
 # Add total temp to plot
 def add_temp(graph_obj, label, atmos_site, galactic_file, mirror_temp, mirror_constant,
         zodiac_file, cib, cmb, aperture, site_file, source_file, freq_range):
-    None
+    
+    if len(site_file.file) > 0:
+        site = site_file.file
+    elif len(atmos_site.file) > 0:
+        site = atmos_site.file
+    
+    temp_tot, mfreq = temp.total(site, galactic_file.file, mirror_temp,
+        mirror_constant, zodiac_file.file, cib, cmb, freq_range)
+    data_set = graph.data_set("Total Temp ("+label+")", "Frequency", "Hz", "Temperature", "K",
+            temp.temp_list(temp_tot, mfreq))
+    graph_obj.dataset_list.append(data_set)
 
 # Add integration time to plot
 def add_integ(graph_obj, label, atmos_site, galactic_file, mirror_temp, mirror_constant,
