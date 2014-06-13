@@ -12,7 +12,8 @@ import graph
 # Atmospheric Transmission
 def trans(site_file, freq_range):
     site = ExcelReader(site_file)
-    return numpy.array(site.read_from_col(0, freq_range.min, freq_range.max, 'COMBIN TRANS'), dtype='float')
+    freq_list = numpy.array(site.read_from_col('Hz',freq_range.min, freq_range.max), dtype='float')
+    return numpy.array(site.read_from_col(0, freq_range.min, freq_range.max, 'COMBIN TRANS'), dtype='float'), freq_list
 
 # Compute Signal
 def signal(aperture, site_file, source_file, freq_range):

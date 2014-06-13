@@ -18,7 +18,16 @@ def add_radiance(graph_obj, site_file, freq_range):
 
 # Add atmospheric transmission to plot
 def add_trans(graph_obj, site_file, freq_range):
-    None
+    trans_list, freq_list = sigtrans.trans(site_file.file, freq_range)
+    
+    # build and return list of coordinates
+    crdlist = []
+    for i, trans_val in enumerate(trans_list):
+        crdlist.append(graph.coord_obj(freq_list[i], trans_val))
+    
+    # build data set and add to graph
+    data_set = graph.data_set("Atmos Trans ("+site_file.name+")", "Frequency", "Hz", "Transmission", "Proportion", crdlist)
+    graph_obj.dataset_list.append(data_set)
 
 # Add galactic emission to plot
 def add_galactic(graph_obj, galactic_file, freq_range):
