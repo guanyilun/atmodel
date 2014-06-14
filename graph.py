@@ -46,9 +46,6 @@ class Graph(FigureCanvas):
         #define axes
         self.axes = self.figure.add_subplot(111)
 
-        #placeholder data to check that this works
-        #self.x = np.arange(0.0, 3.0, 0.01)
-        #self.y = random.random()*np.sin(2*np.pi*self.x)
         data = graph_data.dataset_list
 
         #check to make sure there aren't too many data sets
