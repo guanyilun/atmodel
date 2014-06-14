@@ -8,7 +8,7 @@ from gui import *
 import bling
 
 def add_files(file_list, directory):
-    for obj in os.listdir(directory):
+    for obj in sorted(os.listdir(directory)):
         # skip if file is not data
         if obj[obj.find(".")+1:len(obj)] != "xlsx":
             continue
