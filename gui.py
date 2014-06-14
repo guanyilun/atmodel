@@ -35,8 +35,9 @@ class gui(QtGui.QWidget):
     def init_UI(self):
         
         # setup the window
-        self.resize(950, 580)
+        self.resize(1000, 580)
         self.center()
+        self.showMaximized()
         self.setWindowTitle("Atmospheric Modeling")
         
         ###
