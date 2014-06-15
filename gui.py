@@ -163,6 +163,50 @@ class gui(QtGui.QWidget):
         
         right = QtGui.QVBoxLayout()
         
+        ## menu bar
+        menu = QtGui.QMenuBar()
+        right.addWidget(menu)
+        
+        # open project file
+        def open_func():
+            None
+        
+        openprj = QtGui.QAction("&Open", self)
+        openprj.setStatusTip("Open project file")
+        openprj.setShortcut("Ctrl+O")
+        openprj.triggered.connect(open_func)
+        menu.addAction(openprj)
+        
+        # save project file
+        def save_func():
+            None
+        
+        saveprj = QtGui.QAction("&Save", self)
+        saveprj.setStatusTip("Save project file")
+        saveprj.setShortcut("Ctrl+S")
+        saveprj.triggered.connect(save_func)
+        menu.addAction(saveprj)
+        
+        # save project file with different name
+        def saveas_func():
+            None
+        
+        saveas = QtGui.QAction("Save As", self)
+        saveas.setStatusTip("Save project file with different name")
+        saveas.triggered.connect(saveas_func)
+        menu.addAction(saveas)
+        
+        # export data
+        def export_func():
+            None
+        
+        export = QtGui.QAction("Export", self)
+        export.setStatusTip("Export data in graph")
+        export.triggered.connect(export_func)
+        menu.addAction(export)
+        
+        ##
+        
         ## graph
         graph = QtGui.QVBoxLayout()
         graph.addStretch(1)
