@@ -15,9 +15,14 @@ def config(gui):
     
     # dynamically change the title on the graph
     def name_changed(text):
+        
+        # only change title if the graph isn't empty
         if hasattr(gui.plot, "axes"):
             gui.plot.axes.set_title(text)
             gui.plot.draw()
+        
+        # mark that project has been edited since last save
+        gui.changed = True
     
     QtCore.QObject.connect(inputs1["name"].widget,
             QtCore.SIGNAL("textChanged(QString)"), name_changed)

@@ -1,7 +1,10 @@
 import gc, const, plotter, file_refs
+import math
 import numpy as np
 from scipy import interpolate
 from excel import ExcelReader
+
+cmb_temp = 2.725 # temperature of CMB (in K)
 
 # These calculations reference equations in 2 papers:
 # "Limitations on Observing Submillimeter and Far Infrared Galaxies" by Denny
@@ -47,9 +50,10 @@ def bling_CMB(freq, resol):  #calculates BLING(squared) for "Cosmic Microwave Ba
 ##                       2) Calculate antenna temperature from intensity
 ##                       3) Calculate BLING(squared) from antenna temperature
 ## 1) Calculate intensity from frequency
+    
     resol = float(resol)  #ensure "resol" is a float not an integer
     temp = []  #create list to be filled with calculated temperatures
-    c1 = const.h / (const.k * const.T)  #constants from equation 2.16 in Denny
+    c1 = const.h / (const.k * cmb_temp)  #constants from equation 2.16 in Denny
     c2 = 2 * const.h / (const.c ** 2)  #constants from equation 2.16 in Denny
     for i in freq:
         denom = np.exp(c1 * i) - 1  #calculate part of the denominator in equation 2.16 in Denny
@@ -127,9 +131,9 @@ def bling_TME(freq, resol, sigma, mirror_temp, wavelength):  #calculates BLING(s
 ## 1) Calculate emissivity from surface electrical conductivity("sigma") of specific metal
     em = []  #create list to be filled with emissivities, depending on wavelength
     w_l = wavelength * (1e-6)  #convert wavelength from microns to meters
-    c1 = 16 * np.pi * const.c * const.epsilon / sigma  #constants from equation 2.17 in Denny
+    c1 = 16 * np.pi * const.c * const.eps0 / sigma  #constants from equation 2.17 in Denny
     for i in w_l:
-        emis = (c1 / i)**.5  #emissivity a function of the radical of the constants divided by wavelength from equation 2.17 in Denny
+        emis = math.sqrt(c1 / i)  #emissivity a function of the radical of the constants divided by wavelength from equation 2.17 in Denny
         em.append(emis)  #add calculated emissivities to "em" list
     em = np.array(em)  #turn "em" list into "em" array
 
@@ -174,7 +178,7 @@ def temp_TME(freq, sigma, mirror_temp, wavelength):  #calculates antenna tempera
 ## 1) Calculate emissivity from surface electrical conductivity("sigma") of specific metal
     em = []  #create list to be filled with emissivities, depending on wavelength
     w_l = wavelength * (1e-6)  #convert wavelength from microns to meters
-    c1 = 16 * np.pi * const.c * const.epsilon / sigma  #constants from equation 2.17 in Denny
+    c1 = 16 * np.pi * const.c * const.eps0 / sigma  #constants from equation 2.17 in Denny
     for i in w_l:
         emis = (c1 / i)**.5  #emissivity a function of the radical of the constants divided by wavelength from equation 2.17 in Denny
         em.append(emis)  #add calculated emissivities to "em" list
@@ -200,7 +204,7 @@ def temp_CMB(freq):  #calculates antenna temperature for "Cosmic Microwave Backg
 ##                       2) Calculate antenna temperature from intensity
 ## 1) Calculate intensity from frequency
     temp = []  #create list to be filled with calculated temperatures
-    c1 = const.h / (const.k * const.T)  #constants from equation 2.16 in Denny
+    c1 = const.h / (const.k * cmb_temp)  #constants from equation 2.16 in Denny
     c2 = 2 * const.h / (const.c ** 2)  #constants from equation 2.16 in Denny
     for i in freq:
         denom = np.exp(c1 * i) - 1  #calculate part of the denominator in equation 2.16 in Denny
@@ -244,7 +248,7 @@ def TS(freq, inte, tau, d, resol):  #calculates Total Signal
     resol = float(resol)  #ensure "resol" is a float not an integer
     
     inte_resol = 1000.0
-    step_size = 0.1 * 3 * 10 ** 10 / inte_resol   #characterize the level of details wanted from interpolation 
+    step_size = 0.1 * 3 * 10e10 / inte_resol   #characterize the level of details wanted from interpolation 
     c = np.pi*(d/2.0)**2 * step_size  #constants come from equation 3.13 in Denny et al and "step_size" is the increment of the Riemann sum
     int_range_length = freq/2/resol  #2nd term in integration bounds from equation 3.13 in Denny et al
     int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values

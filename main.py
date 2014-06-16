@@ -4,8 +4,9 @@ import os
 import sys
 from PyQt4 import QtGui
 
-from gui import *
 import aux
+import const
+from gui import *
 
 def add_files(file_list, directory):
     for obj in sorted(os.listdir(directory)):
@@ -30,15 +31,15 @@ def main():
     def freq_thz1(thz): # frequency (THz)
         return 1e12 * thz
     def wl_m1(m): # wavelength (m)
-        return 299792458. / m
+        return const.c / m
     def wl_microns1(um): # wavelength (microns)
-        return 299792458. / (1e-6 * um)
+        return const.c / (1e-6 * um)
     def wl_nm1(nm): # wavelength (nm)
-        return 299792458. / (1e-9 * nm)
+        return const.c / (1e-9 * nm)
     def wn_m_inv1(m_inv): # wavenumber (m^-1)
-        return 299792458. * m_inv
+        return const.c * m_inv
     def wn_cm_inv1(cm_inv): # wavenumber (cm^-1)
-        return 299792458. * (1e-2 * cm_inv)
+        return const.c * (1e-2 * cm_inv)
     
     # convert from frequency in Hz to units of photon energy
     def freq_hz2(hz): # frequency (Hz)
@@ -46,15 +47,15 @@ def main():
     def freq_thz2(hz): # frequency (THz)
         return 1e-12 * hz
     def wl_m2(hz): # wavelength (m)
-        return 299792458. / hz
+        return const.c / hz
     def wl_microns2(hz): # wavelength (microns)
-        return 1e6 * 299792458. / hz
+        return 1e6 * const.c / hz
     def wl_nm2(hz): # wavelength (nm)
-        return 1e9 * 299792458. / hz
+        return 1e9 * const.c / hz
     def wn_m_inv2(hz): # wavenumber (m^-1)
-        return hz / 299792458.
+        return hz / const.c
     def wn_cm_inv2(hz): # wavenumber (cm^-1)
-        return 1e2 * hz / 299792458.
+        return 1e2 * hz / const.c
     
     energy_list = [aux.energy_form("Frequency", "Hz", freq_hz1, freq_hz2),
                    aux.energy_form("Frequency", "THz", freq_thz1, freq_thz2),

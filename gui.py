@@ -196,7 +196,7 @@ class gui(QtGui.QWidget):
         menu_layout = QtGui.QVBoxLayout()
         right.addLayout(menu_layout)
         
-        menu = QtGui.QMenuBar()
+        menu = QtGui.QToolBar()
         menu_layout.addWidget(menu)
         
         # open project file
@@ -204,7 +204,7 @@ class gui(QtGui.QWidget):
             None
         
         openprj = QtGui.QAction("&Open", self)
-        openprj.setStatusTip("Open project file")
+        openprj.setToolTip("Open project file")
         openprj.setShortcut("Ctrl+O")
         openprj.triggered.connect(open_func)
         menu.addAction(openprj)
@@ -214,7 +214,7 @@ class gui(QtGui.QWidget):
             None
         
         saveprj = QtGui.QAction("&Save", self)
-        saveprj.setStatusTip("Save project file")
+        saveprj.setToolTip("Save project file")
         saveprj.setShortcut("Ctrl+S")
         saveprj.triggered.connect(save_func)
         menu.addAction(saveprj)
@@ -224,7 +224,7 @@ class gui(QtGui.QWidget):
             None
         
         saveas = QtGui.QAction("Save As", self)
-        saveas.setStatusTip("Save project file with different name")
+        saveas.setToolTip("Save project file with different name")
         saveas.triggered.connect(saveas_func)
         menu.addAction(saveas)
         
@@ -233,7 +233,7 @@ class gui(QtGui.QWidget):
             None
         
         export = QtGui.QAction("Export", self)
-        export.setStatusTip("Export data in graph")
+        export.setToolTip("Export data in graph")
         export.triggered.connect(export_func)
         menu.addAction(export)
         
