@@ -2,6 +2,8 @@
 # groups of widgets that are the inputs in the calculations
 
 from PyQt4 import QtCore, QtGui
+
+import aux
 import dyngui
 
 # Project Configuration
@@ -40,11 +42,36 @@ def config(gui):
     QtCore.QObject.connect(inputs2["e_units"].widget,
             QtCore.SIGNAL("currentIndexChanged(int)"), e_units_changed)
     
+    # minimum and maximum energies in units defined above
     inputs2["energy1"] = dyngui.input_obj("Minimum", QtGui.QLineEdit())
-    conn_update(gui, inputs2["energy1"].widget, "textChanged(QString)")
-    
     inputs2["energy2"] = dyngui.input_obj("Maximum", QtGui.QLineEdit())
-    conn_update(gui, inputs2["energy2"].widget, "textChanged(QString)")
+    
+    # set presently active range of energies as default text
+    e_units_changed(inputs2["e_units"].widget.currentIndex())
+    
+    # convert currently entered text to frequency range
+    def energy_changed(text):
+        
+        try: # ensure both fields are filled with floating point numbers
+            
+            # currently selected unit of photon energy
+            energy_unit = gui.energy_list[inputs2["e_units"].widget.currentIndex()]
+            
+            freq1 = energy_unit.to_hz(float(inputs2["energy1"].widget.text()))
+            freq2 = energy_unit.to_hz(float(inputs2["energy2"].widget.text()))
+            
+            if freq1 < freq2:
+                gui.freq_range = aux.interval(freq1, freq2)
+            else:
+                gui.freq_range = aux.interval(freq2, freq1)
+            
+        except Exception:
+            pass # assume fields are incomplete, so ignore now and try again later
+    
+    QtCore.QObject.connect(inputs2["energy1"].widget,
+            QtCore.SIGNAL("textChanged(QString)"), energy_changed)
+    QtCore.QObject.connect(inputs2["energy2"].widget,
+            QtCore.SIGNAL("textChanged(QString)"), energy_changed)
     
     return inputs1, inputs2
 

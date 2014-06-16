@@ -19,7 +19,7 @@ class gui(QtGui.QWidget):
         super(gui, self).__init__()
         
         self.energy_list = energy_list # ways of measuring photon energy
-        self.freq_range = aux.interval(1e8, 1e10) # frequency range for plot (Hz)
+        self.freq_range = aux.interval(1e11, 1e13) # frequency range for plot (Hz)
         
         self.atmos_files = sites # list of observer sites
         self.source_files = source # list of source galaxies
@@ -193,8 +193,11 @@ class gui(QtGui.QWidget):
         right = QtGui.QVBoxLayout()
         
         ## menu bar
+        menu_layout = QtGui.QVBoxLayout()
+        right.addLayout(menu_layout)
+        
         menu = QtGui.QMenuBar()
-        right.addWidget(menu)
+        menu_layout.addWidget(menu)
         
         # open project file
         def open_func():
@@ -234,54 +237,14 @@ class gui(QtGui.QWidget):
         export.triggered.connect(export_func)
         menu.addAction(export)
         
-        ##
+        ## Graph and toolbar
+        graph_layout = QtGui.QVBoxLayout()
+        right.addLayout(graph_layout)
         
-        ## graph
-        graph = QtGui.QVBoxLayout()
-        graph.addStretch(1)
-        right.addLayout(graph)
-        
-        ## input frequency range (domain)
-        domain = QtGui.QHBoxLayout()
-        domain.addStretch(1)
-        right.addLayout(domain)
-        
-        # label for frequency
-        domain.addWidget(QtGui.QLabel("Frequencies (THz): "))
-        
-        # min frequency
-        self.freq_min = QtGui.QLineEdit()
-        self.freq_min.setPlaceholderText("min")
-        self.freq_min.setAlignment(QtCore.Qt.AlignHCenter)
-        self.freq_min.setFixedWidth(80)
-        domain.addWidget(self.freq_min)
-        
-        # to frequency label
-        domain.addWidget(QtGui.QLabel(" to "))
-        
-        # max frequency
-        self.freq_max = QtGui.QLineEdit()
-        self.freq_max.setPlaceholderText("max")
-        self.freq_max.setAlignment(QtCore.Qt.AlignHCenter)
-        self.freq_max.setFixedWidth(80)
-        domain.addWidget(self.freq_max)
-        
-        # use default (maximum) range
-        def auto_box_update(use_auto):
-            self.freq_max.setReadOnly(use_auto)
-            self.freq_min.setReadOnly(use_auto)
-        
-        self.auto_domain = QtGui.QCheckBox("Auto")
-        QtCore.QObject.connect(self.auto_domain,
-                QtCore.SIGNAL("toggled(bool)"), auto_box_update)
-        self.auto_domain.setCheckState(QtCore.Qt.Checked)
-        domain.addWidget(self.auto_domain)
-        
-        # canvas widget and toolbar
         self.plot = Graph()
-        self.toolbar = NavigationToolbar(self.plot,parent=None)
-        right.addWidget(self.plot)
-        right.addWidget(self.toolbar)
+        self.toolbar = NavigationToolbar(self.plot, parent=None)
+        graph_layout.addWidget(self.plot)
+        graph_layout.addWidget(self.toolbar)
         
         ## buttons
         buttons = QtGui.QHBoxLayout()
@@ -307,16 +270,6 @@ class gui(QtGui.QWidget):
     # generate a graph with inputs
     def generate_graph(self):
         
-        # frequency range
-        if self.auto_domain.isChecked():
-            freq_range = aux.interval(0.1e12, 10e12)
-        else:
-            try:
-                freq_range = aux.interval(float(self.freq_min.text()) * 1e12,
-                        float(self.freq_max.text()) * 1e12)
-            except Exception:
-                freq_range = aux.interval(0.1e12, 10e12)
-        
         new_graph = graph.graph_obj("Atmospheric Model", [])
         
         # Atmospheric radiance
@@ -327,7 +280,7 @@ class gui(QtGui.QWidget):
                 # only add to graph if a site is selected
                 if index > 0:
                     generate.add_radiance(new_graph,
-                        self.atmos_files[index - 1], freq_range)
+                        self.atmos_files[index - 1], self.freq_range)
         
         # Atmospheric transmission
         if self.atmos_toplot[1].isChecked():
@@ -337,7 +290,7 @@ class gui(QtGui.QWidget):
                 # only add to graph if a site is selected
                 if index > 0:
                     generate.add_trans(new_graph,
-                        self.atmos_files[index - 1], freq_range)
+                        self.atmos_files[index - 1], self.freq_range)
         
         # Galactic emission
         if self.galactic_toplot.isChecked():
@@ -347,7 +300,7 @@ class gui(QtGui.QWidget):
                 # only add to graph if a coordinate is selected
                 if index > 0:
                     generate.add_galactic(new_graph,
-                        self.galactic_files[index - 1], freq_range)
+                        self.galactic_files[index - 1], self.freq_range)
         
         # Thermal mirror emission
         if self.mirror_toplot.isChecked():
@@ -364,7 +317,7 @@ class gui(QtGui.QWidget):
                 # only add to graph if a type is selected
                 if len(index) > 0:
                     generate.add_mirror(new_graph, index,
-                        temp, self.mirror_consts[index], freq_range)
+                        temp, self.mirror_consts[index], self.freq_range)
         
         # Zodiacal emission
         if self.zodiac_toplot.isChecked():
@@ -374,15 +327,15 @@ class gui(QtGui.QWidget):
                 # only add to graph if a coordinate is selected
                 if index > 0:
                     generate.add_zodiac(new_graph,
-                        self.zodiac_files[index - 1], freq_range)
+                        self.zodiac_files[index - 1], self.freq_range)
         
         # Cosmic infrared background
         if self.other_toplot.isChecked() and self.other_set["cib"].widget.isChecked():
-            generate.add_cib(new_graph, freq_range)
+            generate.add_cib(new_graph, self.freq_range)
         
         # Cosmic microwave background
         if self.other_toplot.isChecked() and self.other_set["cmb"].widget.isChecked():
-            generate.add_cmb(new_graph, freq_range)
+            generate.add_cmb(new_graph, self.freq_range)
         
         # Signal
         if self.signal_toplot.isChecked():
@@ -402,7 +355,7 @@ class gui(QtGui.QWidget):
                     generate.add_signal(new_graph,
                         aperture,
                         self.atmos_files[site - 1],
-                        self.source_files[source - 1], freq_range)
+                        self.source_files[source - 1], self.freq_range)
         
         # Composite calculations
         compos_plot = self.compos_whatbox.currentIndex()
@@ -484,11 +437,11 @@ class gui(QtGui.QWidget):
                 
                 if compos_plot == 1: # total noise
                     generate.add_noise(new_graph, dataset_label, atmos_site, galactic, mirror_temp,
-                            mirror_constant, zodiac, cib, cmb, freq_range)
+                            mirror_constant, zodiac, cib, cmb, self.freq_range)
                 
                 elif compos_plot == 2: # total temperature
                     generate.add_temp(new_graph, dataset_label, atmos_site, galactic, mirror_temp, mirror_constant,
-                            zodiac, cib, cmb, aperture, site, source, freq_range)
+                            zodiac, cib, cmb, aperture, site, source, self.freq_range)
                 
                 elif compos_plot == 3: # integration time
                     
@@ -498,6 +451,6 @@ class gui(QtGui.QWidget):
                         continue # not filled in properly, so skip
                 
                     generate.add_integ(new_graph, dataset_label, atmos_site, galactic, mirror_temp, mirror_constant,
-                            zodiac, cib, cmb, aperture, site, source, snr, freq_range)
+                            zodiac, cib, cmb, aperture, site, source, snr, self.freq_range)
 
         self.plot.redraw(new_graph)
