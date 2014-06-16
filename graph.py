@@ -15,8 +15,7 @@ import random
 # object that defines a particular graph that is passed to the graph widget
 #  title: title to be shown at top of graph
 #  dataset_list: list of zero or more data_set objects
-graph_obj = collections.namedtuple("graph_obj",
-        "title dataset_list")
+graph_obj = collections.namedtuple("graph_obj", "title dataset_list")
 
 # individual data set to be graphed
 #  label: description for data set to be shown in legend
@@ -111,6 +110,10 @@ class Graph(FigureCanvas):
         leg1 = self.axes.legend(loc='lower left',prop={'size':7})
         frame1 = leg1.get_frame()
         frame1.set_alpha(0.5)
+        
+        # set title of graph
+        if len(graph_data.title) > 0:
+            self.axes.set_title(graph_data.title)
 
         #draw new graph
         self.draw()

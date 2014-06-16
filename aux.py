@@ -8,7 +8,6 @@ import numpy
 name_file = collections.namedtuple("name_file", "name file")
 interval = collections.namedtuple("interval", "min max")
 energy_form = collections.namedtuple("energy_form", "type units to_hz from_hz")
-config_obj = collections.namedtuple("config_obj", "freq_range energy_form resol")
 
 # generate list of frequencies (in Hz) with identical form as data
 def generate_freq(freq_range):

@@ -270,7 +270,7 @@ class gui(QtGui.QWidget):
     # generate a graph with inputs
     def generate_graph(self):
         
-        new_graph = graph.graph_obj("Atmospheric Model", [])
+        new_graph = graph.graph_obj(self.config_sets[0]["name"].widget.text(), [])
         self.energy_form = self.energy_list[self.config_sets[1]["e_units"].widget.currentIndex()]
         
         # Atmospheric radiance
