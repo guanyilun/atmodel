@@ -28,6 +28,9 @@ class gui(QtGui.QWidget):
         self.zodiac_files = zodiac # list of ecliptic emission files
         
         self.changed = False # no edits made so far
+        self.bling_units = 0 # use W/Hz^1/2 as default units of BLING
+        self.noise_what = 0 # plot BLING by default for noise
+        self.compos_what = 0 # plot total BLING by default for composite
         self.init_UI()
     
     # center the window
@@ -140,6 +143,26 @@ class gui(QtGui.QWidget):
         self.other_set = inputs.other(self)
         dyngui.new_group(other_list, self.other_set)
         
+        # Bottom: what to plot (BLING or Temperature)
+        noise_what = QtGui.QWidget()
+        noise_layout.addWidget(noise_what, 0, QtCore.Qt.AlignHCenter)
+        noise_whatlo = QtGui.QFormLayout()
+        noise_what.setLayout(noise_whatlo)
+        
+        self.noise_whatbox = QtGui.QComboBox()
+        self.noise_whatbox.addItem("BLING")
+        self.noise_whatbox.addItem("Temperature")
+        
+        noise_whatlo.addRow("Plot:", self.noise_whatbox)
+        
+        # send update when changed
+        def noise_what_changed(new_index):
+            self.noise_what = new_index
+            self.changed = True
+        
+        QtCore.QObject.connect(self.noise_whatbox,
+            QtCore.SIGNAL("currentIndexChanged(int)"), noise_what_changed)
+        
         ## -- SIGNAL -- ##
         
         self.signal_toplot, self.signal_list = dyngui.add_tab(left_tabs, "Signal", "Signal")
@@ -179,11 +202,19 @@ class gui(QtGui.QWidget):
         compos_what.setLayout(compos_whatlo)
         
         self.compos_whatbox = QtGui.QComboBox()
-        self.compos_whatbox.addItem("Total Noise")
+        self.compos_whatbox.addItem("Total BLING")
         self.compos_whatbox.addItem("Total Temperature")
         self.compos_whatbox.addItem("Integration Time")
         
         compos_whatlo.addRow("Plot:", self.compos_whatbox)
+        
+        # send update when changed
+        def compos_what_changed(new_index):
+            self.compos_what = new_index
+            self.changed = True
+        
+        QtCore.QObject.connect(self.compos_whatbox,
+            QtCore.SIGNAL("currentIndexChanged(int)"), compos_what_changed)
         
         ###
         ### Right Side (input settings)
@@ -354,9 +385,6 @@ class gui(QtGui.QWidget):
                         self.atmos_files[site - 1],
                         self.source_files[source - 1])
         
-        # Composite calculations
-        compos_plot = self.compos_whatbox.currentIndex()
-        
         # loop through all sets of inputs
         i = 0
         for group in self.compos_collection:
@@ -430,16 +458,15 @@ class gui(QtGui.QWidget):
                 if site_index > 0:
                     site = self.atmos_files[site_index-1] # override atmospheric radiance site if provided
             
-            if compos_plot == 1: # total noise
+            if self.compos_what == 0: # total noise
                 generate.add_noise(self, new_graph, dataset_label, atmos_site,
                         galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
             
-            elif compos_plot == 2: # total temperature
+            elif self.compos_what == 1: # total temperature
                 generate.add_temp(self, new_graph, dataset_label, atmos_site,
-                        galactic, mirror_temp, mirror_constant, zodiac, cib, cmb,
-                        aperture, site, source)
+                        galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
             
-            elif compos_plot == 3: # integration time
+            elif self.compos_what == 2: # integration time
                 
                 try: # check if given signal:noise ratio is a number
                     snr = float(group.inputs["snr"].widget.text())

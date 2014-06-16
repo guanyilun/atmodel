@@ -6,15 +6,23 @@ import numpy
 
 import aux
 import cal
+import const
 import graph
 
 # Create noise list from bling squared list
-def noise_list(blingsq_list, freq_list):
+def noise_list(gui, blingsq_list, freq_list):
     
     # build and return list of coordinates
     crdlist = []
-    for i, bling_sq in enumerate(blingsq_list):
-        crdlist.append(graph.coord_obj(freq_list[i], math.sqrt(bling_sq)))
+    
+    if gui.bling_units == 0: # use W/Hz^1/2
+        for i, bling_sq in enumerate(blingsq_list):
+            crdlist.append(graph.coord_obj(freq_list[i], math.sqrt(bling_sq)))
+    
+    else: # use photons/s Hz^1/2
+        for i, bling_sq in enumerate(blingsq_list):
+            crdlist.append(graph.coord_obj(freq_list[i],
+                    math.sqrt(bling_sq) / (const.h * freq_list[i])))
     
     return crdlist
 
@@ -49,7 +57,7 @@ def mirror(mirror_temp, constant, freq_range):
     
     # compute thermal noise for a set of frequencies
     freq_list, zero_list = aux.generate_freq(freq_range)
-    wavelengths = 299792458. / freq_list
+    wavelengths = const.c / freq_list
     return cal.bling_TME(freq_list, 1000, constant, mirror_temp, wavelengths), freq_list
 
 # total BLING noise

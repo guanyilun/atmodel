@@ -89,7 +89,21 @@ def config(gui):
     QtCore.QObject.connect(inputs2["energy2"].widget,
             QtCore.SIGNAL("textChanged(QString)"), energy_changed)
     
-    return inputs1, inputs2
+    inputs3 = {} # units of bling
+    
+    bling = QtGui.QComboBox()
+    bling.addItems(["W/Hz^1/2", "photons/s*Hz^1/2"])
+    inputs3["b_units"] = dyngui.input_obj("Units of BLING", bling)
+    
+    # send update when changed
+    def bling_changed(new_index):
+        gui.bling_units = new_index
+        gui.changed = True
+    
+    QtCore.QObject.connect(bling,
+        QtCore.SIGNAL("currentIndexChanged(int)"), bling_changed)
+    
+    return inputs1, inputs2, inputs3
 
 # Atmospheric Radiance & Transmission
 def atmos(gui):
@@ -249,10 +263,10 @@ def compos(gui):
         inputs["n_galactic"].widget.setCurrentIndex(0)
         inputs["n_mirror"].widget.setCurrentIndex(0)
         inputs["n_zodiac"].widget.setCurrentIndex(0)
+        inputs["o_cib"].widget.setCheckState(QtCore.Qt.Unchecked)
+        inputs["o_cmb"].widget.setCheckState(QtCore.Qt.Unchecked)
         inputs["signal"].widget.setCurrentIndex(0)
         inputs["snr"].widget.setText("")
-        inputs["cib"].widget.setCheckState(QtCore.Qt.Unchecked)
-        inputs["cmb"].widget.setCheckState(QtCore.Qt.Unchecked)
         update_all(gui)
     
     inputs["z_clear"] = dyngui.input_obj("", QtGui.QPushButton("Clear Fields"))
