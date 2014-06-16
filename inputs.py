@@ -12,7 +12,15 @@ def config(gui):
     inputs1 = {} # identifying information
     
     inputs1["name"] = dyngui.input_obj("Name", QtGui.QLineEdit())
-    conn_update(gui, inputs1["name"].widget, "textChanged(QString)")
+    
+    # dynamically change the title on the graph
+    def name_changed(text):
+        if hasattr(gui.plot, "axes"):
+            gui.plot.axes.set_title(text)
+            gui.plot.draw()
+    
+    QtCore.QObject.connect(inputs1["name"].widget,
+            QtCore.SIGNAL("textChanged(QString)"), name_changed)
     
     inputs2 = {} # photon energy units and range
     
@@ -67,6 +75,9 @@ def config(gui):
             
         except Exception:
             pass # assume fields are incomplete, so ignore now and try again later
+        
+        # mark that project has been edited since last save
+        gui.changed = True
     
     QtCore.QObject.connect(inputs2["energy1"].widget,
             QtCore.SIGNAL("textChanged(QString)"), energy_changed)

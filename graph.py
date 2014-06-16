@@ -112,8 +112,7 @@ class Graph(FigureCanvas):
         frame1.set_alpha(0.5)
         
         # set title of graph
-        if len(graph_data.title) > 0:
-            self.axes.set_title(graph_data.title)
+        self.axes.set_title(graph_data.title)
 
         #draw new graph
         self.draw()
