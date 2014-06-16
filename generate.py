@@ -30,8 +30,16 @@ def new_dataset(label, energy_form, dep_type, dep_units, data_hz):
 
 # Add atmospheric radiance to plot
 def add_radiance(gui, graph_obj, site_file):
-    noise_list = bling.noise_list(gui, *bling.radiance(site_file.file, gui.freq_range))
-    data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form, "BLING", bling_units(gui), noise_list)
+    
+    if gui.noise_what == 0: # BLING
+        noise_list = bling.noise_list(gui, *bling.radiance(site_file.file, gui.freq_range))
+        data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
+                "BLING", bling_units(gui), noise_list)
+    else: # temperature
+        temp_list = temp.temp_list(*temp.radiance(site_file.file, gui.freq_range))
+        data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
+                "Temperature", "K", temp_list)
+    
     graph_obj.dataset_list.append(data_set)
 
 # Add atmospheric transmission to plot
@@ -44,41 +52,75 @@ def add_trans(gui, graph_obj, site_file):
         crdlist.append(graph.coord_obj(freq_list[i], trans_val))
     
     # build data set and add to graph
-    data_set = new_dataset("Atmos Trans ("+site_file.name+")", gui.energy_form, "Transmission", "Proportion", crdlist)
+    data_set = new_dataset("Atmos Trans ("+site_file.name+")", gui.energy_form,
+            "Transmission", "Proportion", crdlist)
     graph_obj.dataset_list.append(data_set)
 
 # Add galactic emission to plot
 def add_galactic(gui, graph_obj, galactic_file):
-    noise_list = bling.noise_list(gui, *bling.generic_noise(galactic_file.file, gui.freq_range))
-    data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
-            gui.energy_form, "BLING", bling_units(gui), noise_list)
+    
+    if gui.noise_what == 0: # BLING
+        noise_list = bling.noise_list(gui, *bling.generic_noise(galactic_file.file, gui.freq_range))
+        data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
+                gui.energy_form, "BLING", bling_units(gui), noise_list)
+    else: # temperature
+        temp_list = temp.temp_list(*temp.generic_temp(galactic_file.file, gui.freq_range))
+        data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
+                gui.energy_form, "Temperature", "K", temp_list)
+    
     graph_obj.dataset_list.append(data_set)
 
 # Add thermal mirror emission to plot
 def add_mirror(gui, graph_obj, metal_name, mirror_temp, constant):
-    noise_list = bling.noise_list(gui, *bling.mirror(mirror_temp, constant, gui.freq_range))
-    data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
-            gui.energy_form, "BLING", bling_units(gui), noise_list)
+    
+    if gui.noise_what == 0: # BLING
+        noise_list = bling.noise_list(gui, *bling.mirror(mirror_temp, constant, gui.freq_range))
+        data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
+                gui.energy_form, "BLING", bling_units(gui), noise_list)
+    else: # temperature
+        temp_list = temp.temp_list(*temp.mirror(mirror_temp, constant, gui.freq_range))
+        data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
+                gui.energy_form, "Temperature", "K", temp_list)
+    
     graph_obj.dataset_list.append(data_set)
 
 # Add zodiacal emission to plot
 def add_zodiac(gui, graph_obj, zodiac_file):
-    noise_list = bling.noise_list(gui, *bling.generic_noise(zodiac_file.file, gui.freq_range))
-    data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
-            gui.energy_form, "BLING", bling_units(gui), noise_list)
+    
+    if gui.noise_what == 0: # BLING
+        noise_list = bling.noise_list(gui, *bling.generic_noise(zodiac_file.file, gui.freq_range))
+        data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
+                gui.energy_form, "BLING", bling_units(gui), noise_list)
+    else: # temperature
+        temp_list = temp.temp_list(*temp.generic_temp(zodiac_file.file, gui.freq_range))
+        data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
+                gui.energy_form, "Temperature", "K", temp_list)
+    
     graph_obj.dataset_list.append(data_set)
 
 # Add cosmic infrared background to plot
 def add_cib(gui, graph_obj):
     # TODO: convert to equation fit
-    noise_list = bling.noise_list(gui, *bling.generic_noise("data/Backgrounds/CIB/cib.xlsx", gui.freq_range))
-    data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
+    
+    if gui.noise_what == 0: # BLING
+        noise_list = bling.noise_list(gui, *bling.generic_noise("data/Backgrounds/CIB/cib.xlsx", gui.freq_range))
+        data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
+    else: # temperature
+        temp_list = temp.temp_list(*temp.generic_temp("data/Backgrounds/CIB/cib.xlsx", gui.freq_range))
+        data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "Temperature", "K", temp_list)
+    
     graph_obj.dataset_list.append(data_set)
 
 # Add cosmic microwave background to plot
 def add_cmb(gui, graph_obj):
-    noise_list = bling.noise_list(gui, *bling.cmb(gui.freq_range))
-    data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
+    
+    if gui.noise_what == 0: # BLING
+        noise_list = bling.noise_list(gui, *bling.cmb(gui.freq_range))
+        data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
+    else: # temperature
+        temp_list = temp.temp_list(*temp.cmb(gui.freq_range))
+        data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "Temperature", "K", temp_list)
+    
     graph_obj.dataset_list.append(data_set)
 
 # Add signal to plot
