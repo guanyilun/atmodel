@@ -56,13 +56,13 @@ def main():
     def wn_cm_inv2(hz): # wavenumber (cm^-1)
         return 1e2 * hz / 299792458.
     
-    energy_list = [aux.energy("Frequency", "Hz", freq_hz1, freq_hz2),
-                   aux.energy("Frequency", "THz", freq_thz1, freq_thz2),
-                   aux.energy("Wavelength", "m", wl_m1, wl_m2),
-                   aux.energy("Wavelength", "microns", wl_microns1, wl_microns2),
-                   aux.energy("Wavelength", "nm", wl_nm1, wl_nm2),
-                   aux.energy("Wavenumber", "m^-1", wn_m_inv1, wn_m_inv2),
-                   aux.energy("Wavenumber", "cm^-1", wn_cm_inv1, wn_cm_inv2)]
+    energy_list = [aux.energy_form("Frequency", "Hz", freq_hz1, freq_hz2),
+                   aux.energy_form("Frequency", "THz", freq_thz1, freq_thz2),
+                   aux.energy_form("Wavelength", "m", wl_m1, wl_m2),
+                   aux.energy_form("Wavelength", "microns", wl_microns1, wl_microns2),
+                   aux.energy_form("Wavelength", "nm", wl_nm1, wl_nm2),
+                   aux.energy_form("Wavenumber", "m^-1", wn_m_inv1, wn_m_inv2),
+                   aux.energy_form("Wavenumber", "cm^-1", wn_cm_inv1, wn_cm_inv2)]
     
     # create name file pairs
     atmos_files = []

@@ -271,7 +271,7 @@ class gui(QtGui.QWidget):
     def generate_graph(self):
         
         new_graph = graph.graph_obj("Atmospheric Model", [])
-        energy_form = self.energy_list[self.config_sets[1]["e_units"].widget.currentIndex()]
+        self.energy_form = self.energy_list[self.config_sets[1]["e_units"].widget.currentIndex()]
         
         # Atmospheric radiance
         if self.atmos_toplot[0].isChecked():
@@ -280,8 +280,7 @@ class gui(QtGui.QWidget):
                 index = group.inputs["site"].widget.currentIndex()
                 # only add to graph if a site is selected
                 if index > 0:
-                    generate.add_radiance(new_graph, energy_form,
-                        self.atmos_files[index - 1], self.freq_range)
+                    generate.add_radiance(self, new_graph, self.atmos_files[index - 1])
         
         # Atmospheric transmission
         if self.atmos_toplot[1].isChecked():
@@ -290,8 +289,7 @@ class gui(QtGui.QWidget):
                 index = group.inputs["site"].widget.currentIndex()
                 # only add to graph if a site is selected
                 if index > 0:
-                    generate.add_trans(new_graph, energy_form,
-                        self.atmos_files[index - 1], self.freq_range)
+                    generate.add_trans(self, new_graph, self.atmos_files[index - 1])
         
         # Galactic emission
         if self.galactic_toplot.isChecked():
@@ -300,8 +298,7 @@ class gui(QtGui.QWidget):
                 index = group.inputs["gcrd"].widget.currentIndex()
                 # only add to graph if a coordinate is selected
                 if index > 0:
-                    generate.add_galactic(new_graph, energy_form,
-                        self.galactic_files[index - 1], self.freq_range)
+                    generate.add_galactic(self, new_graph, self.galactic_files[index - 1])
         
         # Thermal mirror emission
         if self.mirror_toplot.isChecked():
@@ -317,8 +314,8 @@ class gui(QtGui.QWidget):
                 
                 # only add to graph if a type is selected
                 if len(index) > 0:
-                    generate.add_mirror(new_graph, energy_form, index,
-                        temp, self.mirror_consts[index], self.freq_range)
+                    generate.add_mirror(self, new_graph, index,
+                        temp, self.mirror_consts[index])
         
         # Zodiacal emission
         if self.zodiac_toplot.isChecked():
@@ -327,16 +324,16 @@ class gui(QtGui.QWidget):
                 index = group.inputs["ecrd"].widget.currentIndex()
                 # only add to graph if a coordinate is selected
                 if index > 0:
-                    generate.add_zodiac(new_graph, energy_form,
-                        self.zodiac_files[index - 1], self.freq_range)
+                    generate.add_zodiac(self, new_graph,
+                        self.zodiac_files[index - 1])
         
         # Cosmic infrared background
         if self.other_toplot.isChecked() and self.other_set["cib"].widget.isChecked():
-            generate.add_cib(new_graph, energy_form, self.freq_range)
+            generate.add_cib(self, new_graph)
         
         # Cosmic microwave background
         if self.other_toplot.isChecked() and self.other_set["cmb"].widget.isChecked():
-            generate.add_cmb(new_graph, energy_form, self.freq_range)
+            generate.add_cmb(self, new_graph)
         
         # Signal
         if self.signal_toplot.isChecked():
@@ -353,10 +350,10 @@ class gui(QtGui.QWidget):
                 
                 # only add if all fields are filled in
                 if site > 0 and source > 0:
-                    generate.add_signal(new_graph, energy_form,
+                    generate.add_signal(self, new_graph,
                         aperture,
                         self.atmos_files[site - 1],
-                        self.source_files[source - 1], self.freq_range)
+                        self.source_files[source - 1])
         
         # Composite calculations
         compos_plot = self.compos_whatbox.currentIndex()
@@ -437,13 +434,13 @@ class gui(QtGui.QWidget):
                         site = self.atmos_files[site_index-1] # override atmospheric radiance site if provided
                 
                 if compos_plot == 1: # total noise
-                    generate.add_noise(new_graph, energy_form, dataset_label, atmos_site,
-                            galactic, mirror_temp, mirror_constant, zodiac, cib, cmb, self.freq_range)
+                    generate.add_noise(self, new_graph, dataset_label, atmos_site,
+                            galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
                 
                 elif compos_plot == 2: # total temperature
-                    generate.add_temp(new_graph, energy_form, dataset_label, atmos_site,
+                    generate.add_temp(self, new_graph, dataset_label, atmos_site,
                             galactic, mirror_temp, mirror_constant, zodiac, cib, cmb,
-                            aperture, site, source, self.freq_range)
+                            aperture, site, source)
                 
                 elif compos_plot == 3: # integration time
                     
@@ -452,8 +449,8 @@ class gui(QtGui.QWidget):
                     except ValueError:
                         continue # not filled in properly, so skip
                 
-                    generate.add_integ(new_graph, dataset_label, atmos_site, galactic,
+                    generate.add_integ(self, new_graph, dataset_label, atmos_site, galactic,
                             mirror_temp, mirror_constant, zodiac, cib, cmb, aperture,
-                            site, source, snr, self.freq_range)
+                            site, source, snr)
 
         self.plot.redraw(new_graph)
