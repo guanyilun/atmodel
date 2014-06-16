@@ -52,6 +52,43 @@ def new_group_tab(parent, inputs, name):
         else:
             form.addRow(QtGui.QLabel(""), line.widget)
     return group
+    
+    # add new tab page of inputs
+def add_tab(parent, label, heading, to_plot_list = {}):
+    
+    # create actual tab page
+    tab = QtGui.QWidget()
+    parent.addTab(tab, label)
+    
+    # setup layout of tab page
+    layout = QtGui.QVBoxLayout()
+    tab.setLayout(layout)
+    
+    # show a heading for the tab if one is given
+    if heading != None:
+        layout.addWidget(QtGui.QLabel("<h3>" + heading + "</h3>"), 0, QtCore.Qt.AlignHCenter)
+    
+    # checkbox to plot everything in current tab
+    if len(to_plot_list) < 1:
+        to_plot = QtGui.QCheckBox("Plot this data")
+        to_plot.setCheckState(QtCore.Qt.Unchecked)
+        layout.addWidget(to_plot, 0, QtCore.Qt.AlignHCenter)
+    
+    else: # show all plotting checkboxes if specified
+        to_plot = None
+        for checkbox in to_plot_list:
+            layout.addWidget(checkbox, 0, QtCore.Qt.AlignHCenter)
+    
+    # container holding input controls
+    scroll = QtGui.QScrollArea()
+    scroll.setFrameShape(QtGui.QFrame.NoFrame) # don't show the border
+    layout.addWidget(scroll)
+    
+    # list of groups of input controls
+    control_list = QtGui.QFormLayout()
+    scroll.setLayout(control_list)
+    
+    return to_plot, control_list # allow groups of controls to be added later
 
 # Return filled in value of a particular widget
 def widget_val(widget, ignore_check = False):

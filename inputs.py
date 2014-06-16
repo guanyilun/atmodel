@@ -4,6 +4,50 @@
 from PyQt4 import QtCore, QtGui
 import dyngui
 
+# Project Configuration
+def config(gui):
+    
+    inputs1 = {} # identifying information
+    
+    inputs1["name"] = dyngui.input_obj("Name", QtGui.QLineEdit())
+    conn_update(gui, inputs1["name"].widget, "textChanged(QString)")
+    
+    inputs2 = {} # photon energy units and range
+    
+    energy = QtGui.QComboBox()
+    for option in gui.energy_list:
+        energy.addItem(option.type + " (" + option.units + ")")
+    inputs2["e_units"] = dyngui.input_obj("Photon Energy", energy)
+    
+    def e_units_changed(new_index): # handle changed in selected units of photon energy
+        
+        # do unit conversions for min and max energies
+        energy_min = gui.energy_list[new_index].from_hz(gui.freq_range.min)
+        energy_max = gui.energy_list[new_index].from_hz(gui.freq_range.max)
+        
+        # assign to "min" and "max" text fields by numerical value
+        #  (ie. smaller wavelengths correspond to higher energy, so need to reverse)
+        if energy_min < energy_max: # order already correct
+            inputs2["energy1"].widget.setText(str(energy_min))
+            inputs2["energy2"].widget.setText(str(energy_max))
+        else: # order reversed
+            inputs2["energy2"].widget.setText(str(energy_min))
+            inputs2["energy1"].widget.setText(str(energy_max))
+        
+        # mark that project has been edited since last save
+        gui.changed = True
+    
+    QtCore.QObject.connect(inputs2["e_units"].widget,
+            QtCore.SIGNAL("currentIndexChanged(int)"), e_units_changed)
+    
+    inputs2["energy1"] = dyngui.input_obj("Minimum", QtGui.QLineEdit())
+    conn_update(gui, inputs2["energy1"].widget, "textChanged(QString)")
+    
+    inputs2["energy2"] = dyngui.input_obj("Maximum", QtGui.QLineEdit())
+    conn_update(gui, inputs2["energy2"].widget, "textChanged(QString)")
+    
+    return inputs1, inputs2
+
 # Atmospheric Radiance & Transmission
 def atmos(gui):
     
@@ -230,3 +274,6 @@ def update_all(gui):
         dyngui.update_list(group.inputs["n_mirror"].widget, gui.mirror_collection)
         dyngui.update_list(group.inputs["n_zodiac"].widget, gui.zodiac_collection)
         dyngui.update_list(group.inputs["signal"].widget, gui.signal_collection)
+        
+    # mark that project has been edited since last save
+    gui.changed = True

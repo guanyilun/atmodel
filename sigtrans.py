@@ -5,7 +5,6 @@ from excel import ExcelXWriter, ExcelReader
 import math
 import numpy
 
-import bling
 import cal
 import graph
 

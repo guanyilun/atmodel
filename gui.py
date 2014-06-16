@@ -6,7 +6,7 @@ from PyQt4 import QtCore, QtGui
 from matplotlib.backends.backend_qt4agg \
     import NavigationToolbar2QTAgg as NavigationToolbar
 
-import bling
+import aux
 import dyngui
 import generate
 import graph
@@ -15,13 +15,19 @@ import inputs
 
 class gui(QtGui.QWidget):
     
-    def __init__(self, sites, source, galactic, mirror, zodiac):
+    def __init__(self, energy_list, sites, source, galactic, mirror, zodiac):
         super(gui, self).__init__()
+        
+        self.energy_list = energy_list # ways of measuring photon energy
+        self.freq_range = aux.interval(1e8, 1e10) # frequency range for plot (Hz)
+        
         self.atmos_files = sites # list of observer sites
         self.source_files = source # list of source galaxies
         self.galactic_files = galactic # list of galactic emission files
         self.mirror_consts = mirror # dictionary of constants for mirror types (metals)
         self.zodiac_files = zodiac # list of ecliptic emission files
+        
+        self.changed = False # no edits made so far
         self.init_UI()
     
     # center the window
@@ -51,6 +57,29 @@ class gui(QtGui.QWidget):
         left_tabs.setFixedWidth(400)
         left.addWidget(left_tabs, 0, QtCore.Qt.AlignLeft)
         
+        ## -- SETTINGS -- ##
+        
+        config_panel = QtGui.QWidget()
+        left_tabs.addTab(config_panel, "Settings")
+        
+        config_layout = QtGui.QVBoxLayout()
+        config_panel.setLayout(config_layout)
+        
+        config_layout.addWidget(QtGui.QLabel("<h3>Project Configuration</h3>"), 0, QtCore.Qt.AlignHCenter)
+        
+        # container holding input controls
+        config_area = QtGui.QScrollArea()
+        config_area.setFrameShape(QtGui.QFrame.NoFrame) # don't show the border
+        config_layout.addWidget(config_area)
+        
+        # list of groups of input controls
+        config_controls = QtGui.QFormLayout()
+        config_area.setLayout(config_controls)
+        
+        self.config_sets = inputs.config(self)
+        for single_set in self.config_sets:
+            dyngui.new_group(config_controls, single_set)
+        
         ## -- NOISE -- ##
         
         noise_panel = QtGui.QWidget()
@@ -67,7 +96,7 @@ class gui(QtGui.QWidget):
         # Atmospheric Radiance / Transmission
         
         self.atmos_toplot = [QtGui.QCheckBox("Plot Radiance"), QtGui.QCheckBox("Plot Transmission")]
-        ignored_value, self.atmos_list =  self.add_tab(
+        ignored_value, self.atmos_list =  dyngui.add_tab(
             noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)
         self.atmos_collection = []
         
@@ -77,7 +106,7 @@ class gui(QtGui.QWidget):
         
         # Galactic Emission
         
-        self.galactic_toplot, self.galactic_list = self.add_tab(noise_tabs, "Galactic", "Galactic Emission")
+        self.galactic_toplot, self.galactic_list = dyngui.add_tab(noise_tabs, "Galactic", "Galactic Emission")
         self.galactic_collection = []
         
         galactic_set0 = inputs.galactic(self)
@@ -86,7 +115,7 @@ class gui(QtGui.QWidget):
         
         # Thermal Mirror Emission
         
-        self.mirror_toplot, self.mirror_list = self.add_tab(noise_tabs, "Mirror", "Thermal Mirror Emission")
+        self.mirror_toplot, self.mirror_list = dyngui.add_tab(noise_tabs, "Mirror", "Thermal Mirror Emission")
         self.mirror_collection = []
         self.mirror_groups = []
         
@@ -96,7 +125,7 @@ class gui(QtGui.QWidget):
         
         # Zodiacal Emission
         
-        self.zodiac_toplot, self.zodiac_list = self.add_tab(noise_tabs, "Zodiacal", "Zodiacal Emission")
+        self.zodiac_toplot, self.zodiac_list = dyngui.add_tab(noise_tabs, "Zodiacal", "Zodiacal Emission")
         self.zodiac_collection = []
         self.zodiac_groups = []
         
@@ -106,14 +135,14 @@ class gui(QtGui.QWidget):
         
         # Other Noise
         
-        self.other_toplot, other_list = self.add_tab(noise_tabs, "Other", "Other Noise")
+        self.other_toplot, other_list = dyngui.add_tab(noise_tabs, "Other", "Other Noise")
         
         self.other_set = inputs.other(self)
         dyngui.new_group(other_list, self.other_set)
         
         ## -- SIGNAL -- ##
         
-        self.signal_toplot, self.signal_list = self.add_tab(left_tabs, "Signal", "Signal")
+        self.signal_toplot, self.signal_list = dyngui.add_tab(left_tabs, "Signal", "Signal")
         self.signal_collection = []
         self.signal_groups = []
         
@@ -280,13 +309,13 @@ class gui(QtGui.QWidget):
         
         # frequency range
         if self.auto_domain.isChecked():
-            freq_range = bling.interval(0.1e12, 10e12)
+            freq_range = aux.interval(0.1e12, 10e12)
         else:
             try:
-                freq_range = bling.interval(float(self.freq_min.text()) * 1e12,
+                freq_range = aux.interval(float(self.freq_min.text()) * 1e12,
                         float(self.freq_max.text()) * 1e12)
             except Exception:
-                freq_range = bling.interval(0.1e12, 10e12)
+                freq_range = aux.interval(0.1e12, 10e12)
         
         new_graph = graph.graph_obj("Atmospheric Model", [])
         
@@ -391,14 +420,14 @@ class gui(QtGui.QWidget):
                 
                 # fetch all valid selected input values (assume "None" by default)
                 dataset_label = str(i)
-                galactic = bling.name_file("", "")
+                galactic = aux.name_file("", "")
                 mirror_temp = ""
                 mirror_type = ""
-                zodiac = bling.name_file("", "")
+                zodiac = aux.name_file("", "")
                 aperture = ""
-                atmos_site = bling.name_file("", "")
-                site = bling.name_file("", "")
-                source = bling.name_file("", "")
+                atmos_site = aux.name_file("", "")
+                site = aux.name_file("", "")
+                source = aux.name_file("", "")
                 mirror_constant = -1
                 mirror_temp = -1
                 aperture = -1
@@ -472,40 +501,3 @@ class gui(QtGui.QWidget):
                             zodiac, cib, cmb, aperture, site, source, snr, freq_range)
 
         self.plot.redraw(new_graph)
-         
-    # add new tab page of inputs
-    def add_tab(self, parent, label, heading, to_plot_list = {}):
-        
-        # create actual tab page
-        tab = QtGui.QWidget()
-        parent.addTab(tab, label)
-        
-        # setup layout of tab page
-        layout = QtGui.QVBoxLayout()
-        tab.setLayout(layout)
-        
-        # show a heading for the tab if one is given
-        if heading != None:
-            layout.addWidget(QtGui.QLabel("<h3>" + heading + "</h3>"), 0, QtCore.Qt.AlignHCenter)
-        
-        # checkbox to plot everything in current tab
-        if len(to_plot_list) < 1:
-            to_plot = QtGui.QCheckBox("Plot this data")
-            to_plot.setCheckState(QtCore.Qt.Unchecked)
-            layout.addWidget(to_plot, 0, QtCore.Qt.AlignHCenter)
-        
-        else: # show all plotting checkboxes if specified
-            to_plot = None
-            for checkbox in to_plot_list:
-                layout.addWidget(checkbox, 0, QtCore.Qt.AlignHCenter)
-        
-        # scroll area to contain possible overflow of input controls
-        scroll = QtGui.QScrollArea()
-        layout.addWidget(scroll)
-        
-        # list of groups of input controls
-        control_list = QtGui.QFormLayout()
-        scroll.setLayout(control_list)
-        scroll.setFrameShape(QtGui.QFrame.NoFrame) # don't show the border
-        
-        return (to_plot, control_list) # allow groups of controls to be added later
