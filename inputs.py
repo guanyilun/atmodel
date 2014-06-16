@@ -55,10 +55,10 @@ def config(gui):
         try: # ensure both fields are filled with floating point numbers
             
             # currently selected unit of photon energy
-            energy_unit = gui.energy_list[inputs2["e_units"].widget.currentIndex()]
+            energy_form = gui.energy_list[inputs2["e_units"].widget.currentIndex()]
             
-            freq1 = energy_unit.to_hz(float(inputs2["energy1"].widget.text()))
-            freq2 = energy_unit.to_hz(float(inputs2["energy2"].widget.text()))
+            freq1 = energy_form.to_hz(float(inputs2["energy1"].widget.text()))
+            freq2 = energy_form.to_hz(float(inputs2["energy2"].widget.text()))
             
             if freq1 < freq2:
                 gui.freq_range = aux.interval(freq1, freq2)
