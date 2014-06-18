@@ -47,6 +47,7 @@ class Graph(FigureCanvas):
 
         #define axes
         self.axes = self.figure.add_subplot(111)
+        self.axes.grid(True) # enable grid lines
 
         data = graph_data.dataset_list
 
@@ -117,7 +118,7 @@ class Graph(FigureCanvas):
         # set title of graph
         self.axes.set_title(graph_data.title)
 
-        #draw new graph
+        # draw new graph
         self.draw()
 
     # Update the graph title
