@@ -41,6 +41,9 @@ class Graph(FigureCanvas):
 
         #clear figure
         plt.clf()
+        
+        # store all graph data for future use
+        self.graph_data = graph_data
 
         #define axes
         self.axes = self.figure.add_subplot(111)
@@ -117,3 +120,12 @@ class Graph(FigureCanvas):
         #draw new graph
         self.draw()
 
+    # Update the graph title
+    def set_title(self, new_title):
+        
+        # only update title if graph is not empty
+        if hasattr(self, "axes"):
+            
+            self.axes.set_title(new_title)
+            self.graph_data = graph_obj(new_title, self.graph_data.dataset_list)
+            self.draw()
