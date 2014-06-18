@@ -124,8 +124,17 @@ class Graph(FigureCanvas):
     def set_title(self, new_title):
         
         # only update title if graph is not empty
-        if hasattr(self, "axes"):
+        if hasattr(self, "graph_data"):
             
             self.axes.set_title(new_title)
             self.graph_data = graph_obj(new_title, self.graph_data.dataset_list)
             self.draw()
+
+    # Export data current on the graph to a file
+    def export(self, file_path):
+        
+        # only export data from graph if the graph exists
+        if hasattr(self, "graph_data"):
+            
+            # TODO: export the data
+            None
