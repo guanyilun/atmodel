@@ -260,7 +260,12 @@ class gui(QtGui.QWidget):
         
         # export data
         def export_func():
-            None
+            
+            # allow data export only if graph exists
+            if hasattr(self.plot, "graph_data"):
+                export_file = QtGui.QFileDialog.getSaveFileName(self, "Export Data",
+                    filter="Excel Spreadsheet (*.xlsx)")
+                self.plot.export(export_file)
         
         export = QtGui.QAction("Export", self)
         export.setToolTip("Export data in graph")
