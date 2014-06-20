@@ -141,15 +141,17 @@ class Graph(FigureCanvas):
             # export all data sets
             for data_set in self.graph_data.dataset_list:
                 
-                # extract arrays from list of coordinates
+                # extract separate coordinate lists from list of coordinates
                 xlist = []
                 ylist = []
                 for coord in data_set.coord_list:
                     xlist.append(coord.x)
                     ylist.append(coord.y)
-                xarray = np.array(xlist)
-                yarray = np.array(ylist)
                 
-                # add in columns with independent and dependent variables
-                writer.write_col(data_set.xname + " (" + data_set.xunits + ")", xarray)
-                writer.write_col(data_set.yname + " (" + data_set.yunits + ")", yarray)
+                writer.write_col(data_set.label, # name of data set
+                    # independent coordinate name / units + data
+                    [data_set.xname + " (" + data_set.xunits + ")"] + xlist)
+                writer.write_col('', # empty label (skip first row)
+                    # dependent coordinate name / units + data
+                    [data_set.yname + " (" + data_set.yunits + ")"] + ylist)
+                writer.write_col('', []) # empty column to separate data sets
