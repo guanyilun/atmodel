@@ -1,4 +1,4 @@
-# generate.py
+# py
 # generate graph given inputs
 
 import math
@@ -178,3 +178,185 @@ def add_integ(gui, graph_obj, label, atmos_site, galactic_file, mirror_temp, mir
     # build data set and add to graph
     data_set = new_dataset("Integration Time ("+label+")", gui.energy_form, "Time", "s", crdlist)
     graph_obj.dataset_list.append(data_set)
+
+# generate a graph with inputs
+def process(gui):
+    
+    new_graph = graph.graph_obj(gui.config_sets[0]["name"].widget.text(), [])
+    gui.energy_form = gui.energy_list[gui.config_sets[1]["e_units"].widget.currentIndex()]
+    
+    # Atmospheric radiance
+    if gui.atmos_toplot[0].isChecked():
+        # loop through all selected sites
+        for group in gui.atmos_collection:
+            index = group.inputs["site"].widget.currentIndex()
+            # only add to graph if a site is selected
+            if index > 0:
+                add_radiance(gui, new_graph, gui.atmos_files[index - 1])
+    
+    # Atmospheric transmission
+    if gui.atmos_toplot[1].isChecked():
+        # loop through all selected sites
+        for group in gui.atmos_collection:
+            index = group.inputs["site"].widget.currentIndex()
+            # only add to graph if a site is selected
+            if index > 0:
+                add_trans(gui, new_graph, gui.atmos_files[index - 1])
+    
+    # Galactic emission
+    if gui.galactic_toplot.isChecked():
+        # loop through all selected coordinates
+        for group in gui.galactic_collection:
+            index = group.inputs["gcrd"].widget.currentIndex()
+            # only add to graph if a coordinate is selected
+            if index > 0:
+                add_galactic(gui, new_graph, gui.galactic_files[index - 1])
+    
+    # Thermal mirror emission
+    if gui.mirror_toplot.isChecked():
+        # loop through all selected mirror types
+        for group in gui.mirror_collection:
+            
+            try: # check if given temperature is a number
+                temp = float(group.inputs["temp"].widget.text())
+            except ValueError:
+                continue # not filled in properly, so skip
+            
+            index = str(group.inputs["type"].widget.currentText())
+            
+            # only add to graph if a type is selected
+            if len(index) > 0:
+                add_mirror(gui, new_graph, index,
+                    temp, gui.mirror_consts[index])
+    
+    # Zodiacal emission
+    if gui.zodiac_toplot.isChecked():
+        # loop through all selected coordinates
+        for group in gui.zodiac_collection:
+            index = group.inputs["ecrd"].widget.currentIndex()
+            # only add to graph if a coordinate is selected
+            if index > 0:
+                add_zodiac(gui, new_graph,
+                    gui.zodiac_files[index - 1])
+    
+    # Cosmic infrared background
+    if gui.other_toplot.isChecked() and gui.other_set["cib"].widget.isChecked():
+        add_cib(gui, new_graph)
+    
+    # Cosmic microwave background
+    if gui.other_toplot.isChecked() and gui.other_set["cmb"].widget.isChecked():
+        add_cmb(gui, new_graph)
+    
+    # Signal
+    if gui.signal_toplot.isChecked():
+        # loop through all aperture/site/source sets
+        for group in gui.signal_collection:
+            
+            try: # check if given aperture is a number
+                aperture = float(group.inputs["aperture"].widget.text())
+            except ValueError:
+                continue # not filled in properly, so skip
+            
+            site = group.inputs["site"].widget.currentIndex()
+            source = group.inputs["source"].widget.currentIndex()
+            
+            # only add if all fields are filled in
+            if site > 0 and source > 0:
+                add_signal(gui, new_graph,
+                    aperture,
+                    gui.atmos_files[site - 1],
+                    gui.source_files[source - 1])
+    
+    # loop through all sets of inputs
+    i = 0
+    for group in gui.compos_collection:
+        if group.inputs["is_plot"].widget.isChecked() != True:
+            continue # not selected for plotting
+        if i == len(gui.compos_collection) - 1:
+            break # ignore last group
+        i += 1
+        
+        # fetch all valid selected input values (assume "None" by default)
+        dataset_label = str(i)
+        galactic = aux.name_file("", "")
+        mirror_temp = ""
+        mirror_type = ""
+        zodiac = aux.name_file("", "")
+        aperture = ""
+        atmos_site = aux.name_file("", "")
+        site = aux.name_file("", "")
+        source = aux.name_file("", "")
+        mirror_constant = -1
+        mirror_temp = -1
+        aperture = -1
+        
+        # label for graph
+        if len(group.inputs["_label"].widget.text()) > 0:
+            dataset_label = group.inputs["_label"].widget.text()
+        
+        # atmospheric radiance
+        atmos_index1 = group.inputs["n_atmos"].widget.currentIndex()
+        if atmos_index1 > 0:
+            atmos_index2 = gui.atmos_collection[atmos_index1-1].inputs["site"].widget.currentIndex()
+            atmos_site = gui.atmos_files[atmos_index2-1]
+        
+        # galactic emission
+        galactic_index1 = group.inputs["n_galactic"].widget.currentIndex()
+        if galactic_index1 > 0:
+            galactic_index2 = gui.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
+            galactic = gui.galactic_files[galactic_index2-1]
+        
+        # thermal mirror emission
+        mirror_index = group.inputs["n_mirror"].widget.currentIndex()
+        if mirror_index > 0:
+            type_index = str(gui.mirror_collection[mirror_index-1].inputs["type"].widget.currentText())
+            
+            mirror_constant = gui.mirror_consts[type_index]
+            try:
+                mirror_temp = float(gui.mirror_collection[mirror_index-1].inputs["temp"].widget.text())
+            except Exception:
+                pass
+        
+        # zodiacal emission
+        zodiac_index1 = group.inputs["n_zodiac"].widget.currentIndex()
+        if zodiac_index1 > 0:
+            zodiac_index2 = gui.zodiac_collection[zodiac_index1-1].inputs["ecrd"].widget.currentIndex()
+            zodiac = gui.zodiac_files[zodiac_index2-1]
+            
+        cib = group.inputs["o_cib"].widget.isChecked()
+        cmb = group.inputs["o_cmb"].widget.isChecked()
+        
+        # signal
+        signal_index = group.inputs["signal"].widget.currentIndex()
+        if signal_index > 0:
+            site_index = gui.signal_collection[signal_index-1].inputs["site"].widget.currentIndex()
+            source_index = gui.signal_collection[signal_index-1].inputs["source"].widget.currentIndex()
+            
+            try:
+                aperture = float(gui.signal_collection[signal_index-1].inputs["aperture"].widget.text())
+            except Exception:
+                pass
+            source = gui.source_files[source_index-1]
+            if site_index > 0:
+                site = gui.atmos_files[site_index-1] # override atmospheric radiance site if provided
+        
+        if gui.compos_what == 0: # total noise
+            add_noise(gui, new_graph, dataset_label, atmos_site,
+                    galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
+        
+        elif gui.compos_what == 1: # total temperature
+            add_temp(gui, new_graph, dataset_label, atmos_site,
+                    galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
+        
+        elif gui.compos_what == 2: # integration time
+            
+            try: # check if given signal:noise ratio is a number
+                snr = float(group.inputs["snr"].widget.text())
+            except ValueError:
+                continue # not filled in properly, so skip
+        
+            add_integ(gui, new_graph, dataset_label, atmos_site, galactic,
+                    mirror_temp, mirror_constant, zodiac, cib, cmb, aperture,
+                    site, source, snr)
+
+    gui.plot.redraw(new_graph)
