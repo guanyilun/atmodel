@@ -9,8 +9,7 @@ from matplotlib.backends.backend_qt4agg \
     import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 
-#this is only here fore the placeholder data test
-import random
+from excel import *
 
 # object that defines a particular graph that is passed to the graph widget
 #  title: title to be shown at top of graph
@@ -137,5 +136,20 @@ class Graph(FigureCanvas):
         # only export data from graph if the graph exists
         if hasattr(self, "graph_data"):
             
-            # TODO: export the data
-            None
+            writer = ExcelXWriter(str(file_path))
+            
+            # export all data sets
+            for data_set in self.graph_data.dataset_list:
+                
+                # extract arrays from list of coordinates
+                xlist = []
+                ylist = []
+                for coord in data_set.coord_list:
+                    xlist.append(coord.x)
+                    ylist.append(coord.y)
+                xarray = np.array(xlist)
+                yarray = np.array(ylist)
+                
+                # add in columns with independent and dependent variables
+                writer.write_col(data_set.xname + " (" + data_set.xunits + ")", xarray)
+                writer.write_col(data_set.yname + " (" + data_set.yunits + ")", yarray)
