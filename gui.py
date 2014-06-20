@@ -12,6 +12,7 @@ import generate
 import graph
 from graph import *
 import inputs
+import project
 
 class gui(QtGui.QWidget):
     
@@ -19,18 +20,20 @@ class gui(QtGui.QWidget):
         super(gui, self).__init__()
         
         self.energy_list = energy_list # ways of measuring photon energy
-        self.freq_range = aux.interval(1e11, 1e13) # frequency range for plot (Hz)
-        
         self.atmos_files = sites # list of observer sites
         self.source_files = source # list of source galaxies
         self.galactic_files = galactic # list of galactic emission files
         self.mirror_consts = mirror # dictionary of constants for mirror types (metals)
         self.zodiac_files = zodiac # list of ecliptic emission files
         
+        # Set default state
         self.changed = False # no edits made so far
+        self.proj_file = "" # current project file path
+        self.freq_range = aux.interval(1e11, 1e13) # frequency range for plot (Hz)
         self.bling_units = 0 # use W/Hz^1/2 as default units of BLING
         self.noise_what = 0 # plot BLING by default for noise
         self.compos_what = 0 # plot total BLING by default for composite
+        
         self.init_UI()
     
     # center the window
@@ -231,7 +234,10 @@ class gui(QtGui.QWidget):
         
         # open project file
         def open_func():
-            None
+            proj_file = QtGui.QFileDialog.getOpenFileName(self, "Open Project",
+                filter="Atmospheric Modeling Project (*.atmodel)")
+            if len(proj_file) > 0: # open project file if a file is selected
+                project.open(self, proj_file)
         
         openprj = QtGui.QAction("&Open", self)
         openprj.setToolTip("Open project file")
