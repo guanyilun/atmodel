@@ -34,7 +34,8 @@ class gui(QtGui.QWidget):
         self.bling_units = 0 # use W/Hz^1/2 as default units of BLING
         self.noise_what = 0 # plot BLING by default for noise
         self.compos_what = 0 # plot total BLING by default for composite
-        self.collections = {} # dictionary of collections of widgets
+        
+        self.collections = {} # dictionary of collections of data input widgets
         
         self.init_UI()
     
