@@ -43,7 +43,7 @@ def add_radiance(gui, graph_obj, site_file, spec_res):
     graph_obj.dataset_list.append(data_set)
 
 # Add atmospheric transmission to plot
-def add_trans(gui, graph_obj, site_file, spec_res):
+def add_trans(gui, graph_obj, site_file):
     trans_list, freq_list = sigtrans.trans(site_file.file, gui.freq_range)
     
     # build and return list of coordinates
