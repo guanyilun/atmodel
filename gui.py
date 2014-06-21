@@ -154,7 +154,7 @@ class gui(QtGui.QWidget):
         noise_bottom.setLayout(noise_botlo)
         
         # spectral resolution for noise sources
-        self.noise_res = QtGui.QLineEdit(config.specres)
+        self.noise_res = QtGui.QLineEdit(config.spec_res)
         noise_botlo.addRow("Resolution:", self.noise_res)
         
         # spectral resolution changed
@@ -194,7 +194,7 @@ class gui(QtGui.QWidget):
         signal_bottom.setLayout(signal_botlo)
         
         # spectral resolution for signal
-        self.signal_res = QtGui.QLineEdit(config.specres)
+        self.signal_res = QtGui.QLineEdit(config.spec_res)
         signal_botlo.addRow("Resolution:", self.signal_res)
         
         # spectral resolution changed

@@ -29,10 +29,10 @@ def new_dataset(label, energy_form, dep_type, dep_units, data_hz):
     return graph.data_set(label, energy_form.type, energy_form.units, dep_type, dep_units, crdlist)
 
 # Add atmospheric radiance to plot
-def add_radiance(gui, graph_obj, site_file):
+def add_radiance(gui, graph_obj, site_file, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.radiance(site_file.file, gui.freq_range))
+        noise_list = bling.noise_list(gui, *bling.radiance(site_file.file, spec_res, gui.freq_range))
         data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
                 "BLING", bling_units(gui), noise_list)
     else: # temperature
@@ -43,7 +43,7 @@ def add_radiance(gui, graph_obj, site_file):
     graph_obj.dataset_list.append(data_set)
 
 # Add atmospheric transmission to plot
-def add_trans(gui, graph_obj, site_file):
+def add_trans(gui, graph_obj, site_file, spec_res):
     trans_list, freq_list = sigtrans.trans(site_file.file, gui.freq_range)
     
     # build and return list of coordinates
@@ -57,10 +57,10 @@ def add_trans(gui, graph_obj, site_file):
     graph_obj.dataset_list.append(data_set)
 
 # Add galactic emission to plot
-def add_galactic(gui, graph_obj, galactic_file):
+def add_galactic(gui, graph_obj, galactic_file, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.generic_noise(galactic_file.file, gui.freq_range))
+        noise_list = bling.noise_list(gui, *bling.generic_noise(galactic_file.file, spec_res, gui.freq_range))
         data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
                 gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
@@ -71,10 +71,10 @@ def add_galactic(gui, graph_obj, galactic_file):
     graph_obj.dataset_list.append(data_set)
 
 # Add thermal mirror emission to plot
-def add_mirror(gui, graph_obj, metal_name, mirror_temp, constant):
+def add_mirror(gui, graph_obj, metal_name, mirror_temp, constant, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.mirror(mirror_temp, constant, gui.freq_range))
+        noise_list = bling.noise_list(gui, *bling.mirror(mirror_temp, constant, spec_res, gui.freq_range))
         data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
                 gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
@@ -85,10 +85,10 @@ def add_mirror(gui, graph_obj, metal_name, mirror_temp, constant):
     graph_obj.dataset_list.append(data_set)
 
 # Add zodiacal emission to plot
-def add_zodiac(gui, graph_obj, zodiac_file):
+def add_zodiac(gui, graph_obj, zodiac_file, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.generic_noise(zodiac_file.file, gui.freq_range))
+        noise_list = bling.noise_list(gui, *bling.generic_noise(zodiac_file.file, spec_res, gui.freq_range))
         data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
                 gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
@@ -99,11 +99,11 @@ def add_zodiac(gui, graph_obj, zodiac_file):
     graph_obj.dataset_list.append(data_set)
 
 # Add cosmic infrared background to plot
-def add_cib(gui, graph_obj):
+def add_cib(gui, graph_obj, spec_res):
     # TODO: convert to equation fit
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.generic_noise("data/Backgrounds/CIB/cib.xlsx", gui.freq_range))
+        noise_list = bling.noise_list(gui, *bling.generic_noise("data/Backgrounds/CIB/cib.xlsx", spec_res, gui.freq_range))
         data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
         temp_list = temp.temp_list(*temp.generic_temp("data/Backgrounds/CIB/cib.xlsx", gui.freq_range))
@@ -112,10 +112,10 @@ def add_cib(gui, graph_obj):
     graph_obj.dataset_list.append(data_set)
 
 # Add cosmic microwave background to plot
-def add_cmb(gui, graph_obj):
+def add_cmb(gui, graph_obj, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.cmb(gui.freq_range))
+        noise_list = bling.noise_list(gui, *bling.cmb(spec_res, gui.freq_range))
         data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
         temp_list = temp.temp_list(*temp.cmb(gui.freq_range))
@@ -124,8 +124,8 @@ def add_cmb(gui, graph_obj):
     graph_obj.dataset_list.append(data_set)
 
 # Add signal to plot
-def add_signal(gui, graph_obj, aperture, site_file, source_file):
-    sig_list, freq_list = sigtrans.signal(aperture, site_file.file, source_file.file, gui.freq_range)
+def add_signal(gui, graph_obj, aperture, site_file, source_file, spec_res):
+    sig_list, freq_list = sigtrans.signal(aperture, site_file.file, source_file.file, spec_res, gui.freq_range)
     
     # build and return list of coordinates
     crdlist = []
@@ -142,10 +142,10 @@ def add_signal(gui, graph_obj, aperture, site_file, source_file):
 
 # Add total noise to plot
 def add_noise(gui, graph_obj, label, site_file, galactic_file, mirror_temp,
-        mirror_constant, zodiac_file, cib, cmb):
+        mirror_constant, zodiac_file, cib, cmb, spec_res):
     
     blingsq_tot, mfreq = bling.noise_total(site_file.file, galactic_file.file, mirror_temp,
-        mirror_constant, zodiac_file.file, cib, cmb, gui.freq_range)
+        mirror_constant, zodiac_file.file, cib, cmb, spec_res, gui.freq_range)
     data_set = new_dataset("Total Noise ("+label+")", gui.energy_form, "BLING", bling_units(gui),
             bling.noise_list(gui, blingsq_tot, mfreq))
     graph_obj.dataset_list.append(data_set)
@@ -162,12 +162,12 @@ def add_temp(gui, graph_obj, label, atmos_site, galactic_file, mirror_temp,
 
 # Add integration time to plot
 def add_integ(gui, graph_obj, label, atmos_site, galactic_file, mirror_temp, mirror_constant,
-        zodiac_file, cib, cmb, aperture, site_file, source_file, snr):
+        zodiac_file, cib, cmb, aperture, site_file, source_file, snr, spec_res):
     
     # compute noise and signal and, with signal:noise ratio, integration time
     blingsq_tot, mfreq = bling.noise_total(atmos_site.file, galactic_file.file, mirror_temp,
-        mirror_constant, zodiac_file.file, cib, cmb, gui.freq_range)
-    sig_list, slist = sigtrans.signal(aperture, site_file.file, source_file.file, gui.freq_range)
+        mirror_constant, zodiac_file.file, cib, cmb, spec_res, gui.freq_range)
+    sig_list, slist = sigtrans.signal(aperture, site_file.file, source_file.file, spec_res, gui.freq_range)
     integ_time = cal.IT(blingsq_tot, snr, sig_list) # array of integration times
     
     # build and return list of coordinates
@@ -185,6 +185,11 @@ def process(gui):
     new_graph = graph.graph_obj(gui.config_sets[0]["name"].widget.text(), [])
     gui.energy_form = gui.energy_list[gui.config_sets[1]["e_units"].widget.currentIndex()]
     
+    try:
+        noise_res = float(gui.noise_res.text())
+    except Exception:
+        noise_res = config.spec_res
+    
     # Atmospheric radiance
     if gui.atmos_toplot[0].isChecked():
         # loop through all selected sites
@@ -192,7 +197,7 @@ def process(gui):
             index = group.inputs["site"].widget.currentIndex()
             # only add to graph if a site is selected
             if index > 0:
-                add_radiance(gui, new_graph, gui.atmos_files[index - 1])
+                add_radiance(gui, new_graph, gui.atmos_files[index - 1], noise_res)
     
     # Atmospheric transmission
     if gui.atmos_toplot[1].isChecked():
@@ -210,7 +215,7 @@ def process(gui):
             index = group.inputs["gcrd"].widget.currentIndex()
             # only add to graph if a coordinate is selected
             if index > 0:
-                add_galactic(gui, new_graph, gui.galactic_files[index - 1])
+                add_galactic(gui, new_graph, gui.galactic_files[index - 1], noise_res)
     
     # Thermal mirror emission
     if gui.mirror_toplot.isChecked():
@@ -227,7 +232,7 @@ def process(gui):
             # only add to graph if a type is selected
             if len(index) > 0:
                 add_mirror(gui, new_graph, index,
-                    temp, gui.mirror_consts[index])
+                    temp, gui.mirror_consts[index], noise_res)
     
     # Zodiacal emission
     if gui.zodiac_toplot.isChecked():
@@ -237,15 +242,15 @@ def process(gui):
             # only add to graph if a coordinate is selected
             if index > 0:
                 add_zodiac(gui, new_graph,
-                    gui.zodiac_files[index - 1])
+                    gui.zodiac_files[index - 1], noise_res)
     
     # Cosmic infrared background
     if gui.other_toplot.isChecked() and gui.other_set["cib"].widget.isChecked():
-        add_cib(gui, new_graph)
+        add_cib(gui, new_graph, noise_res)
     
     # Cosmic microwave background
     if gui.other_toplot.isChecked() and gui.other_set["cmb"].widget.isChecked():
-        add_cmb(gui, new_graph)
+        add_cmb(gui, new_graph, noise_res)
     
     # Signal
     if gui.signal_toplot.isChecked():
@@ -260,12 +265,18 @@ def process(gui):
             site = group.inputs["site"].widget.currentIndex()
             source = group.inputs["source"].widget.currentIndex()
             
+            try:
+                signal_res = float(gui.signal_res.text())
+            except Exception:
+                signal_res = config.spec_res
+            
             # only add if all fields are filled in
             if site > 0 and source > 0:
                 add_signal(gui, new_graph,
                     aperture,
                     gui.atmos_files[site - 1],
-                    gui.source_files[source - 1])
+                    gui.source_files[source - 1],
+                    gui.signal_res.text())
     
     # loop through all sets of inputs
     i = 0
@@ -354,9 +365,14 @@ def process(gui):
                 snr = float(group.inputs["snr"].widget.text())
             except ValueError:
                 continue # not filled in properly, so skip
-        
+            
+            try: # check if given spectral resolution is a number
+                spec_res = float(group.inputs["specres"].widget.text())
+            except ValueError:
+                continue # not filled in properly, so skip
+            
             add_integ(gui, new_graph, dataset_label, atmos_site, galactic,
                     mirror_temp, mirror_constant, zodiac, cib, cmb, aperture,
-                    site, source, snr)
+                    site, source, snr, spec_res)
 
     gui.plot.redraw(new_graph)

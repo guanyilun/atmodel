@@ -294,7 +294,7 @@ def compos(gui):
         if len(inputs["signal"].widget) > 1:
             inputs["signal"].widget.setCurrentIndex(1)
         inputs["snr"].widget.setText(config.snr) # default signal:noise
-        inputs["specres"].widget.setText(config.specres) # default spectral resolution
+        inputs["specres"].widget.setText(config.spec_res) # default spectral resolution
         update_all(gui)
     
     inputs["z_default"] = dyngui.input_obj("", QtGui.QPushButton("Use Default"))

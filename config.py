@@ -1,7 +1,7 @@
 # config.py
 # default values
 
-specres = "1000" # Spectral Resolution
+spec_res = "1000" # Spectral Resolution
 snr = "5"        # Signal to Noise Ratio
 
 use_cib = True   # Cosmic Infrared Background
