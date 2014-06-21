@@ -34,6 +34,7 @@ class gui(QtGui.QWidget):
         self.bling_units = 0 # use W/Hz^1/2 as default units of BLING
         self.noise_what = 0 # plot BLING by default for noise
         self.compos_what = 0 # plot total BLING by default for composite
+        self.collections = {} # dictionary of collections of widgets
         
         self.init_UI()
     
@@ -110,6 +111,7 @@ class gui(QtGui.QWidget):
         atmos_set0 = inputs.atmos(self)
         self.atmos_collection.append(dyngui.collect_obj(atmos_set0,
                 dyngui.new_group(self.atmos_list, atmos_set0)))
+        self.collections["atmos"] = self.atmos_collection
         
         # Galactic Emission
         
@@ -119,6 +121,7 @@ class gui(QtGui.QWidget):
         galactic_set0 = inputs.galactic(self)
         self.galactic_collection.append(dyngui.collect_obj(galactic_set0,
                 dyngui.new_group(self.galactic_list, galactic_set0)))
+        self.collections["galactic"] = self.galactic_collection
         
         # Thermal Mirror Emission
         
@@ -129,6 +132,7 @@ class gui(QtGui.QWidget):
         mirror_set0 = inputs.mirror(self)
         self.mirror_collection.append(dyngui.collect_obj(mirror_set0,
                 dyngui.new_group(self.mirror_list, mirror_set0)))
+        self.collections["mirror"] = self.mirror_collection
         
         # Zodiacal Emission
         
@@ -139,6 +143,7 @@ class gui(QtGui.QWidget):
         zodiac_set0 = inputs.zodiac(self)
         self.zodiac_collection.append(dyngui.collect_obj(zodiac_set0,
                 dyngui.new_group(self.zodiac_list, zodiac_set0)))
+        self.collections["zodiac"] = self.zodiac_collection
         
         # Other Noise
         
@@ -186,6 +191,7 @@ class gui(QtGui.QWidget):
         signal_set0 = inputs.signal(self)
         self.signal_collection.append(dyngui.collect_obj(signal_set0,
                 dyngui.new_group(self.signal_list, signal_set0)))
+        self.collections["signal"] = self.signal_collection
         
         ## Bottom area
         signal_bottom = QtGui.QWidget()
@@ -219,9 +225,9 @@ class gui(QtGui.QWidget):
         self.compos_collection = []
         
         compos_set0 = inputs.compos(self)
-        
         self.compos_collection.append(dyngui.collect_obj(compos_set0,
                 dyngui.new_group_tab(self.compos_tabs, compos_set0, "New")))
+        self.collections["compos"] = self.compos_collection
         
         # what to plot
         compos_what = QtGui.QWidget()
