@@ -88,7 +88,7 @@ def add_tab(parent, label, heading, to_plot_list = {}):
     control_list = QtGui.QFormLayout()
     scroll.setLayout(control_list)
     
-    return to_plot, control_list # allow groups of controls to be added later
+    return to_plot, control_list, layout # allow groups of controls to be added later
 
 # Return filled in value of a particular widget
 def widget_val(widget, ignore_check = False):

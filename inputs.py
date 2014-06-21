@@ -200,6 +200,10 @@ def compos(gui):
     
     inputs = {}
     
+    # label for composite graph
+    label = QtGui.QLineEdit()
+    conn_update(gui, label, "textChanged(QString)")
+    
     # initialize drop down boxes
     atmos = QtGui.QComboBox()
     dyngui.update_list(atmos, gui.atmos_collection)
@@ -238,9 +242,9 @@ def compos(gui):
     snr = QtGui.QLineEdit()
     conn_update(gui, snr, "textChanged(QString)")
     
-    # label for composite graph
-    label = QtGui.QLineEdit()
-    conn_update(gui, label, "textChanged(QString)")
+    # spectral resolution
+    specres = QtGui.QLineEdit()
+    conn_update(gui, specres, "textChanged(QString)")
     
     inputs["_label"] = dyngui.input_obj("Label", label)
     inputs["is_plot"] = dyngui.input_obj("", isplot)
@@ -251,7 +255,8 @@ def compos(gui):
     inputs["o_cib"] = dyngui.input_obj("", cib)
     inputs["o_cmb"] = dyngui.input_obj("", cmb)
     inputs["signal"] = dyngui.input_obj("Signal", signal)
-    inputs["snr"] = dyngui.input_obj("Signal:Noise", QtGui.QLineEdit())
+    inputs["snr"] = dyngui.input_obj("Signal:Noise", snr)
+    inputs["specres"] = dyngui.input_obj("Resolution", specres)
     
     # clear all inputs in this set
     def clear():
@@ -265,6 +270,7 @@ def compos(gui):
         inputs["o_cmb"].widget.setCheckState(QtCore.Qt.Unchecked)
         inputs["signal"].widget.setCurrentIndex(0)
         inputs["snr"].widget.setText("")
+        inputs["specres"].widget.setText("")
         update_all(gui)
     
     inputs["z_clear"] = dyngui.input_obj("", QtGui.QPushButton("Clear Fields"))
@@ -287,6 +293,7 @@ def compos(gui):
         if len(inputs["signal"].widget) > 1:
             inputs["signal"].widget.setCurrentIndex(1)
         inputs["snr"].widget.setText("3") # default signal:noise = 3
+        inputs["specres"].widget.setText("1000") # default spectral resolution = 1000
         update_all(gui)
     
     inputs["z_default"] = dyngui.input_obj("", QtGui.QPushButton("Use Default"))

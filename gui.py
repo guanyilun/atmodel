@@ -102,8 +102,8 @@ class gui(QtGui.QWidget):
         # Atmospheric Radiance / Transmission
         
         self.atmos_toplot = [QtGui.QCheckBox("Plot Radiance"), QtGui.QCheckBox("Plot Transmission")]
-        ignored_value, self.atmos_list =  dyngui.add_tab(
-            noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)
+        self.atmos_list = dyngui.add_tab(
+            noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)[1]
         self.atmos_collection = []
         
         atmos_set0 = inputs.atmos(self)
@@ -112,7 +112,7 @@ class gui(QtGui.QWidget):
         
         # Galactic Emission
         
-        self.galactic_toplot, self.galactic_list = dyngui.add_tab(noise_tabs, "Galactic", "Galactic Emission")
+        self.galactic_toplot, self.galactic_list, ign = dyngui.add_tab(noise_tabs, "Galactic", "Galactic Emission")
         self.galactic_collection = []
         
         galactic_set0 = inputs.galactic(self)
@@ -121,7 +121,7 @@ class gui(QtGui.QWidget):
         
         # Thermal Mirror Emission
         
-        self.mirror_toplot, self.mirror_list = dyngui.add_tab(noise_tabs, "Mirror", "Thermal Mirror Emission")
+        self.mirror_toplot, self.mirror_list, ign = dyngui.add_tab(noise_tabs, "Mirror", "Thermal Mirror Emission")
         self.mirror_collection = []
         self.mirror_groups = []
         
@@ -131,7 +131,7 @@ class gui(QtGui.QWidget):
         
         # Zodiacal Emission
         
-        self.zodiac_toplot, self.zodiac_list = dyngui.add_tab(noise_tabs, "Zodiacal", "Zodiacal Emission")
+        self.zodiac_toplot, self.zodiac_list, ign = dyngui.add_tab(noise_tabs, "Zodiacal", "Zodiacal Emission")
         self.zodiac_collection = []
         self.zodiac_groups = []
         
@@ -141,40 +141,64 @@ class gui(QtGui.QWidget):
         
         # Other Noise
         
-        self.other_toplot, other_list = dyngui.add_tab(noise_tabs, "Other", "Other Noise")
+        self.other_toplot, other_list, ign = dyngui.add_tab(noise_tabs, "Other", "Other Noise")
         
         self.other_set = inputs.other(self)
         dyngui.new_group(other_list, self.other_set)
         
-        # Bottom: what to plot (BLING or Temperature)
-        noise_what = QtGui.QWidget()
-        noise_layout.addWidget(noise_what, 0, QtCore.Qt.AlignHCenter)
-        noise_whatlo = QtGui.QFormLayout()
-        noise_what.setLayout(noise_whatlo)
+        ## Bottom area
+        noise_bottom = QtGui.QWidget()
+        noise_layout.addWidget(noise_bottom, 0, QtCore.Qt.AlignHCenter)
+        noise_botlo = QtGui.QFormLayout()
+        noise_bottom.setLayout(noise_botlo)
         
+        # spectral resolution for noise sources
+        self.noise_res = QtGui.QLineEdit()
+        noise_botlo.addRow("Resolution:", self.noise_res)
+        
+        # spectral resolution changed
+        def res_changed(new_text):
+            self.changed = True
+        QtCore.QObject.connect(self.noise_res,
+                QtCore.SIGNAL("textChanged(QString)"), res_changed)
+        
+        # what to plot (BLING or Temperature)
         self.noise_whatbox = QtGui.QComboBox()
         self.noise_whatbox.addItem("BLING")
         self.noise_whatbox.addItem("Temperature")
         
-        noise_whatlo.addRow("Plot:", self.noise_whatbox)
+        noise_botlo.addRow("Plot:", self.noise_whatbox)
         
         # send update when changed
         def noise_what_changed(new_index):
             self.noise_what = new_index
             self.changed = True
-        
         QtCore.QObject.connect(self.noise_whatbox,
-            QtCore.SIGNAL("currentIndexChanged(int)"), noise_what_changed)
+                QtCore.SIGNAL("currentIndexChanged(int)"), noise_what_changed)
         
         ## -- SIGNAL -- ##
         
-        self.signal_toplot, self.signal_list = dyngui.add_tab(left_tabs, "Signal", "Signal")
+        self.signal_toplot, self.signal_list, signal_layout = dyngui.add_tab(left_tabs, "Signal", "Signal")
         self.signal_collection = []
         self.signal_groups = []
         
         signal_set0 = inputs.signal(self)
         self.signal_collection.append(dyngui.collect_obj(signal_set0,
                 dyngui.new_group(self.signal_list, signal_set0)))
+        
+        ## Bottom area
+        signal_bottom = QtGui.QWidget()
+        signal_layout.addWidget(signal_bottom, 0, QtCore.Qt.AlignHCenter)
+        signal_botlo = QtGui.QFormLayout()
+        signal_bottom.setLayout(signal_botlo)
+        
+        # spectral resolution for signal
+        self.signal_res = QtGui.QLineEdit()
+        signal_botlo.addRow("Resolution:", self.signal_res)
+        
+        # spectral resolution changed
+        QtCore.QObject.connect(self.signal_res,
+                QtCore.SIGNAL("textChanged(QString)"), res_changed)
         
         ## -- COMPOSITE -- ##
         
@@ -196,7 +220,7 @@ class gui(QtGui.QWidget):
         compos_set0 = inputs.compos(self)
         
         self.compos_collection.append(dyngui.collect_obj(compos_set0,
-            dyngui.new_group_tab(self.compos_tabs, compos_set0, "New")))
+                dyngui.new_group_tab(self.compos_tabs, compos_set0, "New")))
         
         # what to plot
         compos_what = QtGui.QWidget()
@@ -217,7 +241,7 @@ class gui(QtGui.QWidget):
             self.changed = True
         
         QtCore.QObject.connect(self.compos_whatbox,
-            QtCore.SIGNAL("currentIndexChanged(int)"), compos_what_changed)
+                QtCore.SIGNAL("currentIndexChanged(int)"), compos_what_changed)
         
         ###
         ### Right Side (input settings)
