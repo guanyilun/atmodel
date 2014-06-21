@@ -235,7 +235,7 @@ class gui(QtGui.QWidget):
         # open project file
         def open_func():
             proj_file = QtGui.QFileDialog.getOpenFileName(self, "Open Project",
-                filter="Atmospheric Modeling Project (*.atmodel)")
+                    filter="Atmospheric Modeling Project (*.atmodel)")
             if len(proj_file) > 0: # open project file if a file is selected
                 project.open(self, proj_file)
         
@@ -247,7 +247,10 @@ class gui(QtGui.QWidget):
         
         # save project file
         def save_func():
-            None
+            if len(self.proj_file) > 0: # currently editing a project already
+                project.save(self, proj_file)
+            else: # no project file opened -- ask for file name
+                saveas_func()
         
         saveprj = QtGui.QAction("&Save", self)
         saveprj.setToolTip("Save project file")
@@ -257,7 +260,10 @@ class gui(QtGui.QWidget):
         
         # save project file with different name
         def saveas_func():
-            None
+            proj_file = QtGui.QFileDialog.getSaveFileName(self, "Save Project",
+                    filter="Atmospheric Modeling Project (*.atmodel)")
+            if len(proj_file) > 0: # save project file if a name is selected
+                project.save(self, proj_file)
         
         saveas = QtGui.QAction("Save As", self)
         saveas.setToolTip("Save project file with different name")
