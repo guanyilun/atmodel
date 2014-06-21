@@ -7,6 +7,7 @@ from matplotlib.backends.backend_qt4agg \
     import NavigationToolbar2QTAgg as NavigationToolbar
 
 import aux
+import config
 import dyngui
 import generate
 import graph
@@ -82,7 +83,7 @@ class gui(QtGui.QWidget):
         config_controls = QtGui.QFormLayout()
         config_area.setLayout(config_controls)
         
-        self.config_sets = inputs.config(self)
+        self.config_sets = inputs.pconfig(self)
         for single_set in self.config_sets:
             dyngui.new_group(config_controls, single_set)
         
@@ -153,7 +154,7 @@ class gui(QtGui.QWidget):
         noise_bottom.setLayout(noise_botlo)
         
         # spectral resolution for noise sources
-        self.noise_res = QtGui.QLineEdit()
+        self.noise_res = QtGui.QLineEdit(config.specres)
         noise_botlo.addRow("Resolution:", self.noise_res)
         
         # spectral resolution changed
@@ -193,7 +194,7 @@ class gui(QtGui.QWidget):
         signal_bottom.setLayout(signal_botlo)
         
         # spectral resolution for signal
-        self.signal_res = QtGui.QLineEdit()
+        self.signal_res = QtGui.QLineEdit(config.specres)
         signal_botlo.addRow("Resolution:", self.signal_res)
         
         # spectral resolution changed

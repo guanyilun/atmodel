@@ -4,10 +4,11 @@
 from PyQt4 import QtCore, QtGui
 
 import aux
+import config
 import dyngui
 
 # Project Configuration
-def config(gui):
+def pconfig(gui):
     
     inputs1 = {} # identifying information
     
@@ -287,13 +288,13 @@ def compos(gui):
         if len(inputs["n_zodiac"].widget) > 1:
             inputs["n_zodiac"].widget.setCurrentIndex(1)
         
-        inputs["o_cib"].widget.setCheckState(QtCore.Qt.Checked)
-        inputs["o_cmb"].widget.setCheckState(QtCore.Qt.Checked)
+        inputs["o_cib"].widget.setCheckState(config.use_cib and QtCore.Qt.Checked or QtCore.Qt.UnChecked)
+        inputs["o_cmb"].widget.setCheckState(config.use_cmb and QtCore.Qt.Checked or QtCore.Qt.UnChecked)
         
         if len(inputs["signal"].widget) > 1:
             inputs["signal"].widget.setCurrentIndex(1)
-        inputs["snr"].widget.setText("3") # default signal:noise = 3
-        inputs["specres"].widget.setText("1000") # default spectral resolution = 1000
+        inputs["snr"].widget.setText(config.snr) # default signal:noise
+        inputs["specres"].widget.setText(config.specres) # default spectral resolution
         update_all(gui)
     
     inputs["z_default"] = dyngui.input_obj("", QtGui.QPushButton("Use Default"))
