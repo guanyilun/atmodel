@@ -48,7 +48,17 @@ def save(gui, proj_file):
             # insert widget group as row in table
             cur.execute("insert into " + name + " values (" + values + ")")
     
+    # groups of widgets not part of any collections
+    cur.execute("create table misc (groupname, key, value)")
+    
+    for name, group in gui.groups.iteritems(): # loop through all groups
+        for key, wid in group.iteritems(): # loop through all widgets in each group
+            cur.execute("insert into misc values ('"
+                    + name + "', '" + key + "', '"
+                    + str(dyngui.widget_val(wid.widget)) + "')")
+    
     # close connection
+    db.commit()
     db.close()
     
     # update state
