@@ -24,9 +24,19 @@ def save(gui, proj_file):
     db = sqlite3.connect(str(proj_file))
     cur = db.cursor()
     
-    # create tables
-    
-    # write state settings
+    # add in all widget collections
+    for name, collect in gui.collections.iteritems():
+        
+        # build a list of input fields
+        field_str = "id"
+        for key, widget in collect[0].inputs.iteritems():
+            field_str += "," + key
+        
+        # create table for collection
+        cur.execute("create table " + name + " (" + field_str + ")")
+        
+        # insert values of widgets for every set in collection
+        
     
     # close connection
     db.close()
