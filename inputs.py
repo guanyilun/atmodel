@@ -93,14 +93,7 @@ def pconfig(gui):
     bling = QtGui.QComboBox()
     bling.addItems(["W/Hz^1/2", "photons/s*Hz^1/2"])
     inputs3["b_units"] = dyngui.input_obj("Units of BLING", bling)
-    
-    # send update when changed
-    def bling_changed(new_index):
-        gui.bling_units = new_index
-        gui.changed = True
-    
-    QtCore.QObject.connect(bling,
-        QtCore.SIGNAL("currentIndexChanged(int)"), bling_changed)
+    conn_changed(gui, bling, "currentIndexChanged(int)")
     
     return inputs1, inputs2, inputs3
 
@@ -302,33 +295,33 @@ def compos(gui):
     
     return inputs
 
-# return a function (fx) equivalent to another (func) being passed an argument (arg)
-def func_arg(func, arg):
-    
-    def fx():
-        return func(arg)
-    
-    return fx
-
 # connect widgets to update function
 def conn_update(gui, widget, sig):
-    QtCore.QObject.connect(widget, QtCore.SIGNAL(sig), func_arg(update_all, gui))
+    QtCore.QObject.connect(widget, QtCore.SIGNAL(sig), aux.func_arg(update_all, gui))
+
+# connect widgets to changed function
+def conn_changed(gui, widget, sig):
+    QtCore.QObject.connect(widget, QtCore.SIGNAL(sig), aux.func_arg(changed, gui))
 
 # add file list to drop down list
 def add_list(drop_down, file_list):
     for item in file_list:
         drop_down.addItem(item.name)
 
+# mark that project has changed
+def changed(gui):
+    gui.changed = True
+        
 # Propogate changes by updating all dynamic elements
 def update_all(gui):
     
     # update all collections of widget groups
-    dyngui.update_collection(gui.atmos_collection, gui.atmos_list, func_arg(atmos, gui))
-    dyngui.update_collection(gui.galactic_collection, gui.galactic_list, func_arg(galactic, gui))
-    dyngui.update_collection(gui.mirror_collection, gui.mirror_list, func_arg(mirror, gui))
-    dyngui.update_collection(gui.zodiac_collection, gui.zodiac_list, func_arg(zodiac, gui))
-    dyngui.update_collection(gui.signal_collection, gui.signal_list, func_arg(signal, gui))
-    dyngui.update_tabcollect(gui.compos_collection, gui.compos_tabs, func_arg(compos, gui))
+    dyngui.update_collection(gui.atmos_collection, gui.atmos_list, aux.func_arg(atmos, gui))
+    dyngui.update_collection(gui.galactic_collection, gui.galactic_list, aux.func_arg(galactic, gui))
+    dyngui.update_collection(gui.mirror_collection, gui.mirror_list, aux.func_arg(mirror, gui))
+    dyngui.update_collection(gui.zodiac_collection, gui.zodiac_list, aux.func_arg(zodiac, gui))
+    dyngui.update_collection(gui.signal_collection, gui.signal_list, aux.func_arg(signal, gui))
+    dyngui.update_tabcollect(gui.compos_collection, gui.compos_tabs, aux.func_arg(compos, gui))
     
     # update composite tab
     for group in gui.compos_collection:

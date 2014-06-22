@@ -9,6 +9,21 @@ import dyngui
 # load project file into GUI
 def open(gui, proj_file):
     
+    # create connection to database file
+    db = sqlite3.connect(str(proj_file))
+    cur = db.cursor()
+    
+    # clear all collections of groups
+    
+    # load groups from database into collections
+    
+    # update non-collection groups with saved values
+    
+    # update free-floating widgets with saved values
+    
+     # close connection
+    db.close()
+    
     # update state
     gui.changed = False
     gui.proj_file = proj_file

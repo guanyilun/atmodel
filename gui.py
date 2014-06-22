@@ -110,6 +110,8 @@ class gui(QtGui.QWidget):
         # Atmospheric Radiance / Transmission
         
         self.atmos_toplot = [QtGui.QCheckBox("Plot Radiance"), QtGui.QCheckBox("Plot Transmission")]
+        self.floating["atmos_toplot0"] = self.atmos_toplot[0]
+        self.floating["atmos_toplot1"] = self.atmos_toplot[1]
         self.atmos_list = dyngui.add_tab(
             noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)[1]
         self.atmos_collection = []
@@ -122,6 +124,7 @@ class gui(QtGui.QWidget):
         # Galactic Emission
         
         self.galactic_toplot, self.galactic_list, ign = dyngui.add_tab(noise_tabs, "Galactic", "Galactic Emission")
+        self.floating["galactic_toplot"] = self.galactic_toplot
         self.galactic_collection = []
         
         galactic_set0 = inputs.galactic(self)
@@ -132,6 +135,7 @@ class gui(QtGui.QWidget):
         # Thermal Mirror Emission
         
         self.mirror_toplot, self.mirror_list, ign = dyngui.add_tab(noise_tabs, "Mirror", "Thermal Mirror Emission")
+        self.floating["mirror_toplot"] = self.mirror_toplot
         self.mirror_collection = []
         self.mirror_groups = []
         
@@ -143,6 +147,7 @@ class gui(QtGui.QWidget):
         # Zodiacal Emission
         
         self.zodiac_toplot, self.zodiac_list, ign = dyngui.add_tab(noise_tabs, "Zodiacal", "Zodiacal Emission")
+        self.floating["zodiac_toplot"] = self.zodiac_toplot
         self.zodiac_collection = []
         self.zodiac_groups = []
         
@@ -154,6 +159,7 @@ class gui(QtGui.QWidget):
         # Other Noise
         
         self.other_toplot, other_list, ign = dyngui.add_tab(noise_tabs, "Other", "Other Noise")
+        self.floating["other_toplot"] = self.other_toplot
         
         self.other_set = inputs.other(self)
         dyngui.new_group(other_list, self.other_set)
@@ -170,12 +176,6 @@ class gui(QtGui.QWidget):
         self.floating["noise_res"] = self.noise_res
         noise_botlo.addRow("Resolution:", self.noise_res)
         
-        # spectral resolution changed
-        def res_changed(new_text):
-            self.changed = True
-        QtCore.QObject.connect(self.noise_res,
-                QtCore.SIGNAL("textChanged(QString)"), res_changed)
-        
         # what to plot (BLING or Temperature)
         self.noise_whatbox = QtGui.QComboBox()
         self.floating["noise_whatbox"] = self.noise_whatbox
@@ -183,13 +183,6 @@ class gui(QtGui.QWidget):
         self.noise_whatbox.addItem("Temperature")
         
         noise_botlo.addRow("Plot:", self.noise_whatbox)
-        
-        # send update when changed
-        def noise_what_changed(new_index):
-            self.noise_what = new_index
-            self.changed = True
-        QtCore.QObject.connect(self.noise_whatbox,
-                QtCore.SIGNAL("currentIndexChanged(int)"), noise_what_changed)
         
         ## -- SIGNAL -- ##
         
@@ -212,10 +205,6 @@ class gui(QtGui.QWidget):
         self.signal_res = QtGui.QLineEdit(config.spec_res)
         self.floating["signal_res"] = self.signal_res
         signal_botlo.addRow("Resolution:", self.signal_res)
-        
-        # spectral resolution changed
-        QtCore.QObject.connect(self.signal_res,
-                QtCore.SIGNAL("textChanged(QString)"), res_changed)
         
         ## -- COMPOSITE -- ##
         
@@ -253,13 +242,16 @@ class gui(QtGui.QWidget):
         
         compos_whatlo.addRow("Plot:", self.compos_whatbox)
         
-        # send update when changed
-        def compos_what_changed(new_index):
-            self.compos_what = new_index
-            self.changed = True
         
-        QtCore.QObject.connect(self.compos_whatbox,
-                QtCore.SIGNAL("currentIndexChanged(int)"), compos_what_changed)
+        # changing value of widget causes project to be marked as changed
+        for key, widget in self.floating.iteritems():
+            
+            if hasattr(widget, "currentIndex"):
+                inputs.conn_changed(self, widget, "currentIndexChanged(int)")
+            elif hasattr(widget, "checkState"):
+                inputs.conn_changed(self, widget, "stateChanged(int)")
+            elif hasattr(widget, "text"):
+                inputs.conn_changed(self, widget, "textChanged(QString)")
         
         ###
         ### Right Side (input settings)

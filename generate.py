@@ -183,7 +183,11 @@ def add_integ(gui, graph_obj, label, atmos_site, galactic_file, mirror_temp, mir
 def process(gui):
     
     new_graph = graph.graph_obj(gui.config_sets[0]["name"].widget.text(), [])
+    
     gui.energy_form = gui.energy_list[gui.config_sets[1]["e_units"].widget.currentIndex()]
+    gui.bling_units = gui.config_sets[2]["b_units"].widget.currentIndex()
+    gui.compos_what = gui.compos_whatbox.currentIndex()
+    gui.noise_what = gui.noise_whatbox.currentIndex()
     
     try:
         noise_res = float(gui.noise_res.text())
