@@ -57,6 +57,11 @@ def save(gui, proj_file):
                     + name + "', '" + key + "', '"
                     + str(dyngui.widget_val(wid.widget)) + "')")
     
+    # free-floating widgets not part of any group or collection
+    for key, widget in gui.floating.iteritems():
+        cur.execute("insert into misc values ('', '"
+                + key + "', '" + str(dyngui.widget_val(widget)) + "')")
+    
     # close connection
     db.commit()
     db.close()

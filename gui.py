@@ -30,6 +30,8 @@ class gui(QtGui.QWidget):
         # Set default state
         self.changed = False # no edits made so far
         self.proj_file = "" # current project file path
+        
+        # Project settings
         self.freq_range = aux.interval(1e11, 1e13) # frequency range for plot (Hz)
         self.bling_units = 0 # use W/Hz^1/2 as default units of BLING
         self.noise_what = 0 # plot BLING by default for noise
@@ -37,6 +39,7 @@ class gui(QtGui.QWidget):
         
         self.collections = {} # dictionary of collections of data input widgets
         self.groups = {} # dictionary of lone widget groups not part of a collection
+        self.floating = {} # free-floating widgets not in any group or collection
         
         self.init_UI()
     
@@ -164,6 +167,7 @@ class gui(QtGui.QWidget):
         
         # spectral resolution for noise sources
         self.noise_res = QtGui.QLineEdit(config.spec_res)
+        self.floating["noise_res"] = self.noise_res
         noise_botlo.addRow("Resolution:", self.noise_res)
         
         # spectral resolution changed
@@ -174,6 +178,7 @@ class gui(QtGui.QWidget):
         
         # what to plot (BLING or Temperature)
         self.noise_whatbox = QtGui.QComboBox()
+        self.floating["noise_whatbox"] = self.noise_whatbox
         self.noise_whatbox.addItem("BLING")
         self.noise_whatbox.addItem("Temperature")
         
@@ -205,6 +210,7 @@ class gui(QtGui.QWidget):
         
         # spectral resolution for signal
         self.signal_res = QtGui.QLineEdit(config.spec_res)
+        self.floating["signal_res"] = self.signal_res
         signal_botlo.addRow("Resolution:", self.signal_res)
         
         # spectral resolution changed
@@ -240,6 +246,7 @@ class gui(QtGui.QWidget):
         compos_what.setLayout(compos_whatlo)
         
         self.compos_whatbox = QtGui.QComboBox()
+        self.floating["compos_whatbox"] = self.compos_whatbox
         self.compos_whatbox.addItem("Total BLING")
         self.compos_whatbox.addItem("Total Temperature")
         self.compos_whatbox.addItem("Integration Time")
