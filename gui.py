@@ -36,6 +36,7 @@ class gui(QtGui.QWidget):
         self.compos_what = 0 # plot total BLING by default for composite
         
         self.collections = {} # dictionary of collections of data input widgets
+        self.groups = {} # dictionary of lone widget groups not part of a collection
         
         self.init_UI()
     
@@ -86,8 +87,9 @@ class gui(QtGui.QWidget):
         config_area.setLayout(config_controls)
         
         self.config_sets = inputs.pconfig(self)
-        for single_set in self.config_sets:
-            dyngui.new_group(config_controls, single_set)
+        for i, single_set in enumerate(self.config_sets):
+             dyngui.new_group(config_controls, single_set)
+             self.groups["config" + str(i)] = self.config_sets[i]
         
         ## -- NOISE -- ##
         
@@ -152,6 +154,7 @@ class gui(QtGui.QWidget):
         
         self.other_set = inputs.other(self)
         dyngui.new_group(other_list, self.other_set)
+        self.groups["other"] = self.other_set
         
         ## Bottom area
         noise_bottom = QtGui.QWidget()
