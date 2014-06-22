@@ -43,6 +43,16 @@ def open(gui, proj_file):
             collect_list = getattr(gui, name + "_list") # form layout containing widget groups
             collect.append(dyngui.collect_obj(inputs_set, dyngui.new_group(collect_list, inputs_set)))
     
+    # load all tabs for composite calculations (where groups are placed in individual tabs)
+    cur.execute("select * from compos")
+    rows = cur.fetchall()
+    
+    for row in rows:
+        inputs_set = inputs.compos(gui, row)
+        gui.collections["compos"].append(dyngui.collect_obj(inputs_set,
+                dyngui.new_group_tab(gui.compos_tabs, inputs_set,
+                row["_label"] == "" and "New" or row["_label"])))
+    
     # update non-collection groups with saved values
     
     # update free-floating widgets with saved values

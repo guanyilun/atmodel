@@ -244,15 +244,15 @@ def compos(gui, fields = {"_label" : "", "is_plot" : False,
     
     # initialize checkboxes
     cib = QtGui.QCheckBox("Cosmic Infrared Background")
-    cib.setCheckState(fields["o_cib"] and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
+    cib.setCheckState(fields["o_cib"] == "True" and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
     conn_update(gui, cib, "stateChanged(int)")
     
     cmb = QtGui.QCheckBox("Cosmic Microwave Background")
-    cmb.setCheckState(fields["o_cmb"] and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
+    cmb.setCheckState(fields["o_cmb"] == "True" and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
     conn_update(gui, cmb, "stateChanged(int)")
     
     isplot = QtGui.QCheckBox("Plot this data")
-    isplot.setCheckState(fields["is_plot"] and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
+    isplot.setCheckState(fields["is_plot"] == "True" and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
     conn_update(gui, isplot, "stateChanged(int)")
     
     # signal:noise ratio
