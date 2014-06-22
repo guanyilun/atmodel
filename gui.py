@@ -29,10 +29,6 @@ class gui(QtGui.QWidget):
         self.mirror_consts = mirror # dictionary of constants for mirror types (metals)
         self.zodiac_files = zodiac # list of ecliptic emission files
         
-        # Set default state
-        self.changed = False # no edits made so far
-        self.proj_file = "" # current project file path
-        
         # Project settings
         self.freq_range = aux.interval(1e11, 1e13) # frequency range for plot (Hz)
         self.bling_units = 0 # use W/Hz^1/2 as default units of BLING
@@ -44,6 +40,10 @@ class gui(QtGui.QWidget):
         self.floating = {} # free-floating widgets not in any group or collection
         
         self.init_UI()
+        
+        # Set default state
+        self.changed = False # no edits made so far
+        self.proj_file = "" # current project file path
         
         # Load project file if specified
         if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
@@ -273,11 +273,17 @@ class gui(QtGui.QWidget):
         menu_layout.addWidget(menu)
         
         # open project file
-        def open_func():
+        def open_proj():
             proj_file = QtGui.QFileDialog.getOpenFileName(self, "Open Project",
                     filter="Atmospheric Modeling Project (*.atmodel)")
             if len(proj_file) > 0: # open project file if a file is selected
                 project.open(self, proj_file)
+        
+        # check for changes to existing project first
+        def open_func():
+            def ignore():
+                pass # do nothing if ignored
+            self.close_project(open_proj, ignore)
         
         openprj = QtGui.QAction("&Open", self)
         openprj.setToolTip("Open project file")
@@ -357,8 +363,8 @@ class gui(QtGui.QWidget):
         
         self.show()
 
-    # Window close event
-    def closeEvent(self, event):
+    # Closing current project
+    def close_project(self, accept_func, ignore_func):
         
         # check if there are unsaved changes
         if self.changed:
@@ -370,20 +376,24 @@ class gui(QtGui.QWidget):
             if reply == QtGui.QMessageBox.Yes:
                 if len(self.proj_file) > 0: # currently editing a project already
                     project.save(self, self.proj_file)
-                    event.accept()
+                    accept_func()
                 else: # no project file opened -- ask for file name
                     proj_file = QtGui.QFileDialog.getSaveFileName(self, "Save Project",
                             filter="Atmospheric Modeling Project (*.atmodel)")
                     if len(proj_file) > 0: # save project file if a name is selected
                         project.save(self, proj_file)
-                        event.accept()
+                        accept_func()
                     else: # no file name selected
-                        event.ignore()
+                        ignore_func()
             
             # don't save project and quit
             elif reply == QtGui.QMessageBox.No:
-                event.accept()
+                accept_func()
             
             # don't close the window
             else:
-                event.ignore()
+                ignore_func()
+    
+    # Window close event
+    def closeEvent(self, event):
+        self.close_project(event.accept, event.ignore)
