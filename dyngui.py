@@ -90,8 +90,25 @@ def add_tab(parent, label, heading, to_plot_list = {}):
     
     return to_plot, control_list, layout # allow groups of controls to be added later
 
+# Retrieve restorable value of a widget
+def widget_val(widget):
+    
+    if hasattr(widget, "isChecked"):
+        return widget.isChecked()
+    
+    if hasattr(widget, "currentIndex"):
+        return widget.currentIndex()
+    
+    if hasattr(widget, "currentText"):
+        return widget.currentText()
+    
+    if hasattr(widget, "text"):
+        return widget.text()
+    
+    return "" # return empty string by default
+
 # Return filled in value of a particular widget
-def widget_val(widget, ignore_check = False):
+def widget_str(widget, ignore_check = False):
     
     if hasattr(widget, "isChecked"):
         if not ignore_check:
@@ -120,7 +137,7 @@ def group_str(group, ignore_check = False):
         if len(group[name].label) < 1 and not hasattr(group[name].widget, "isChecked"):
             continue # ignore widget if not labeled
         
-        value = widget_val(group[name].widget, ignore_check)
+        value = widget_str(group[name].widget, ignore_check)
         if len(str(value)) > 0:
             string += group[name].label + "=" + str(value) + "; "
     

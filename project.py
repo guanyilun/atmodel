@@ -4,6 +4,8 @@
 import os
 import sqlite3
 
+import dyngui
+
 # load project file into GUI
 def open(gui, proj_file):
     
@@ -29,14 +31,22 @@ def save(gui, proj_file):
         
         # build a list of input fields
         field_str = "id"
-        for key, widget in collect[0].inputs.iteritems():
+        for key, wid in collect[0].inputs.iteritems():
             field_str += "," + key
         
         # create table for collection
         cur.execute("create table " + name + " (" + field_str + ")")
         
         # insert values of widgets for every set in collection
-        
+        for i, group in enumerate(collect):
+            values = str(i) # id
+            
+            # append value of each widget within the group
+            for key, wid in group.inputs.iteritems():
+                values += ", '" + str(dyngui.widget_val(wid.widget)) + "'"
+            
+            # insert widget group as row in table
+            cur.execute("insert into " + name + " values (" + values + ")")
     
     # close connection
     db.close()
