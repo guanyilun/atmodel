@@ -5,6 +5,8 @@ import collections
 from PyQt4 import QtCore, QtGui
 from matplotlib.backends.backend_qt4agg \
     import NavigationToolbar2QTAgg as NavigationToolbar
+import os
+import sys
 
 import aux
 import config
@@ -42,6 +44,10 @@ class gui(QtGui.QWidget):
         self.floating = {} # free-floating widgets not in any group or collection
         
         self.init_UI()
+        
+        # Load project file if specified
+        if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
+            project.open(self, sys.argv[1])
     
     # center the window
     def center(self):
@@ -113,7 +119,7 @@ class gui(QtGui.QWidget):
         self.floating["atmos_toplot0"] = self.atmos_toplot[0]
         self.floating["atmos_toplot1"] = self.atmos_toplot[1]
         self.atmos_list = dyngui.add_tab(
-            noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)[1]
+                noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)[1]
         self.atmos_collection = []
         
         atmos_set0 = inputs.atmos(self)
