@@ -187,6 +187,7 @@ class gui(QtGui.QWidget):
         ## -- SIGNAL -- ##
         
         self.signal_toplot, self.signal_list, signal_layout = dyngui.add_tab(left_tabs, "Signal", "Signal")
+        self.floating["signal"] = self.signal_toplot
         self.signal_collection = []
         self.signal_groups = []
         
@@ -241,7 +242,6 @@ class gui(QtGui.QWidget):
         self.compos_whatbox.addItem("Integration Time")
         
         compos_whatlo.addRow("Plot:", self.compos_whatbox)
-        
         
         # changing value of widget causes project to be marked as changed
         for key, widget in self.floating.iteritems():

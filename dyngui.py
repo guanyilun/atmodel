@@ -108,7 +108,7 @@ def widget_val(widget):
 def widget_val_restore(widget, value):
     
     if hasattr(widget, "setCheckState"):
-        widget.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
+        widget.setCheckState(value == "True" and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
     
     elif hasattr(widget, "setCurrentIndex"):
         try:

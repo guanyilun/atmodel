@@ -24,6 +24,8 @@ def open(gui, proj_file):
             group.group_widget.deleteLater() # remove from list of QGroupBox widgets
             collect.remove(group) # remove from collection
     
+    ## Collections
+    
     # load groups from database into collections
     for name, collect in gui.collections.iteritems():
         
@@ -53,9 +55,31 @@ def open(gui, proj_file):
                 dyngui.new_group_tab(gui.compos_tabs, inputs_set,
                 row["_label"] == "" and "New" or row["_label"])))
     
-    # update non-collection groups with saved values
+    ## Non-Collection Groups and Free-Floating Widgets
     
-    # update free-floating widgets with saved values
+    cur.execute("select * from misc")
+    rows = cur.fetchall()
+    
+    # organize values by group
+    misc = {} # organized dictionary of all the rows
+    for row in rows:
+        if row["groupname"] in misc:
+            misc[row["groupname"]][row["key"]] = row["value"]
+        else: # first key in this group
+            misc[row["groupname"]] = {row["key"] : row["value"]}
+    
+    # set values
+    for name, group in misc.iteritems():
+        
+        # group of free-floating widget values
+        if name == "":
+            for key, value in group.iteritems():
+                dyngui.widget_val_restore(gui.floating[key], value)
+        
+        # other non-collection group of widgets
+        else:
+            for key, value in group.iteritems():
+                dyngui.widget_val_restore(gui.groups[name][key].widget, value)
     
      # close connection
     db.close()
