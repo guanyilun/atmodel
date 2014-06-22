@@ -14,6 +14,13 @@ def open(gui, proj_file):
     cur = db.cursor()
     
     # clear all collections of groups
+    for name, collect in gui.collections.iteritems():
+        
+        for i in xrange(len(collect) - 1, -1, -1):
+            group = collect[i]
+            group.group_widget.setParent(None) # prevent display
+            group.group_widget.deleteLater() # remove from list of QGroupBox widgets
+            collect.remove(group) # remove from collection
     
     # load groups from database into collections
     
