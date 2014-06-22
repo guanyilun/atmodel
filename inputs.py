@@ -288,8 +288,8 @@ def compos(gui):
         if len(inputs["n_zodiac"].widget) > 1:
             inputs["n_zodiac"].widget.setCurrentIndex(1)
         
-        inputs["o_cib"].widget.setCheckState(config.use_cib and QtCore.Qt.Checked or QtCore.Qt.UnChecked)
-        inputs["o_cmb"].widget.setCheckState(config.use_cmb and QtCore.Qt.Checked or QtCore.Qt.UnChecked)
+        inputs["o_cib"].widget.setCheckState(config.use_cib and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
+        inputs["o_cmb"].widget.setCheckState(config.use_cmb and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
         
         if len(inputs["signal"].widget) > 1:
             inputs["signal"].widget.setCurrentIndex(1)

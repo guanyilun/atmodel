@@ -99,13 +99,25 @@ def widget_val(widget):
     if hasattr(widget, "currentIndex"):
         return widget.currentIndex()
     
-    if hasattr(widget, "currentText"):
-        return widget.currentText()
-    
     if hasattr(widget, "text"):
         return widget.text()
     
     return "" # return empty string by default
+
+# Restore widget value retrieved earlier
+def widget_val_restore(widget, value):
+    
+    if hasattr(widget, "setCheckState"):
+        widget.setCheckState(value == True and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
+    
+    elif hasattr(widget, "setCurrentIndex"):
+        try:
+            widget.setCurrentIndex(int(value))
+        except:
+            pass
+    
+    elif hasattr(widget, "setText"):
+        widget.setText(str(value))
 
 # Return filled in value of a particular widget
 def widget_str(widget, ignore_check = False):
