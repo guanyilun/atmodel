@@ -282,7 +282,7 @@ class gui(QtGui.QWidget):
         # save project file
         def save_func():
             if len(self.proj_file) > 0: # currently editing a project already
-                project.save(self, proj_file)
+                project.save(self, self.proj_file)
             else: # no project file opened -- ask for file name
                 saveas_func()
         
