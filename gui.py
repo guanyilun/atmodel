@@ -350,3 +350,34 @@ class gui(QtGui.QWidget):
         self.setLayout(top)
         
         self.show()
+
+    # Window close event
+    def closeEvent(self, event):
+        
+        # check if there are unsaved changes
+        if self.changed:
+            reply = QtGui.QMessageBox.question(self, "Save Unsaved Changes?",
+                "You have made unsaved changes to your project. Would you like to save them?",
+                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No, QtGui.QMessageBox.Cancel)
+            
+            # save project
+            if reply == QtGui.QMessageBox.Yes:
+                if len(self.proj_file) > 0: # currently editing a project already
+                    project.save(self, self.proj_file)
+                    event.accept()
+                else: # no project file opened -- ask for file name
+                    proj_file = QtGui.QFileDialog.getSaveFileName(self, "Save Project",
+                            filter="Atmospheric Modeling Project (*.atmodel)")
+                    if len(proj_file) > 0: # save project file if a name is selected
+                        project.save(self, proj_file)
+                        event.accept()
+                    else: # no file name selected
+                        event.ignore()
+            
+            # don't save project and quit
+            elif reply == QtGui.QMessageBox.No:
+                event.accept()
+            
+            # don't close the window
+            else:
+                event.ignore()
