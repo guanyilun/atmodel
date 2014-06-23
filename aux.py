@@ -46,3 +46,10 @@ def get_col(file_name, col1, col1n, col2, col2n, freq_range):
     return [numpy.array(data.read_from_col(col1, freq_range.min, freq_range.max, col1n), dtype='float'),
         numpy.array(data.read_from_col(col2, freq_range.min, freq_range.max, col2n), dtype='float')]
 
+# return a function (fx) equivalent to another (func) being passed an argument (arg)
+def func_arg(func, arg):
+    
+    def fx():
+        return func(arg)
+    
+    return fx

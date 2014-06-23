@@ -4,13 +4,14 @@
 from PyQt4 import QtCore, QtGui
 import numpy as np
 import collections
+import matplotlib
+matplotlib.rcParams['text.latex.unicode']=True
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg \
     import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
-
-#this is only here fore the placeholder data test
-import random
+import matplotlib.ticker as ticker
+from excel import *
 
 # object that defines a particular graph that is passed to the graph widget
 #  title: title to be shown at top of graph
@@ -30,6 +31,26 @@ data_set = collections.namedtuple("data_set",
 # a single coordinate pair
 coord_obj = collections.namedtuple("coord_obj", "x y")
 
+#custom LaTeX tick format for the log scale graph
+def exp_ticks(value, index):
+    exp = np.floor(np.log10(value))
+    base = value/10**exp
+    if base == 1:
+        return '$10^{{{0:d}}}$'.format(int(exp))
+    else:
+        return '${0:n}\!\\times10^{{{1:d}}}$'.format(float(base), int(exp))
+
+#method for automatic placement of ticks on each axis
+def custom_locator(logrange, numticks):
+    #logrange: difference of log of upper and lower bound of data
+    #numticks: tries to place a maximum number of ticks of numticks+1
+    if numticks/logrange < 1:
+        subslen = 1
+    else:
+        subslen = np.floor(numticks/logrange)
+    subs = [0.1*np.round(10**(i/subslen+1)) for i in xrange(int(subslen))]
+    return ticker.LogLocator(subs=subs)
+
 class Graph(FigureCanvas):
     def __init__(self):
         #initializing the canvas
@@ -47,6 +68,7 @@ class Graph(FigureCanvas):
 
         #define axes
         self.axes = self.figure.add_subplot(111)
+        self.axes.grid(True) # enable grid lines
 
         data = graph_data.dataset_list
 
@@ -90,6 +112,20 @@ class Graph(FigureCanvas):
         self.axes.set_xscale('log')
         self.axes.set_yscale('log')
 
+        #format xaxis
+        xlogrange = np.round(np.log10(self.axes.get_xbound()[1]/self.axes.get_xbound()[0]))
+        xloc = custom_locator(xlogrange,10)
+        self.axes.get_xaxis().set_minor_locator(xloc)
+        self.axes.get_xaxis().set_major_formatter(ticker.NullFormatter())
+        self.axes.get_xaxis().set_minor_formatter(ticker.FuncFormatter(exp_ticks))
+
+        #format yaxis
+        ylogrange = np.round(np.log10(self.axes.get_ybound()[1]/self.axes.get_ybound()[0]))
+        yloc = custom_locator(ylogrange,10)
+        self.axes.get_yaxis().set_minor_locator(yloc)
+        self.axes.get_yaxis().set_major_formatter(ticker.NullFormatter())
+        self.axes.get_yaxis().set_minor_formatter(ticker.FuncFormatter(exp_ticks))
+
         if len(set1) > 0:
 
             #define twin axes
@@ -105,6 +141,13 @@ class Graph(FigureCanvas):
             twinx.set_ylabel(set1[0].yname + ' (' + set1[0].yunits + ')')
             twinx.set_yscale('log')
 
+            #format twix axis
+            ylogrange2 = np.round(np.log10(twinx.get_ybound()[1]/twinx.get_ybound()[0]))
+            yloc2 = custom_locator(ylogrange2,10)
+            twinx.yaxis.set_minor_locator(yloc2)
+            twinx.yaxis.set_major_formatter(ticker.NullFormatter())
+            twinx.yaxis.set_minor_formatter(ticker.FuncFormatter(exp_ticks))
+
             #making legends (they will never die)
             leg2 = twinx.legend(loc='lower right',prop={'size':7})
             frame2 = leg2.get_frame()
@@ -117,7 +160,7 @@ class Graph(FigureCanvas):
         # set title of graph
         self.axes.set_title(graph_data.title)
 
-        #draw new graph
+        # draw new graph
         self.draw()
 
     # Update the graph title
@@ -136,5 +179,22 @@ class Graph(FigureCanvas):
         # only export data from graph if the graph exists
         if hasattr(self, "graph_data"):
             
-            # TODO: export the data
-            None
+            writer = ExcelXWriter(str(file_path))
+            
+            # export all data sets
+            for data_set in self.graph_data.dataset_list:
+                
+                # extract separate coordinate lists from list of coordinates
+                xlist = []
+                ylist = []
+                for coord in data_set.coord_list:
+                    xlist.append(coord.x)
+                    ylist.append(coord.y)
+                
+                writer.write_col(data_set.label, # name of data set
+                    # independent coordinate name / units + data
+                    [data_set.xname + " (" + data_set.xunits + ")"] + xlist)
+                writer.write_col('', # empty label (skip first row)
+                    # dependent coordinate name / units + data
+                    [data_set.yname + " (" + data_set.yunits + ")"] + ylist)
+                writer.write_col('', []) # empty column to separate data sets

@@ -88,10 +88,39 @@ def add_tab(parent, label, heading, to_plot_list = {}):
     control_list = QtGui.QFormLayout()
     scroll.setLayout(control_list)
     
-    return to_plot, control_list # allow groups of controls to be added later
+    return to_plot, control_list, layout # allow groups of controls to be added later
+
+# Retrieve restorable value of a widget
+def widget_val(widget):
+    
+    if hasattr(widget, "isChecked"):
+        return widget.isChecked()
+    
+    if hasattr(widget, "currentIndex"):
+        return widget.currentIndex()
+    
+    if hasattr(widget, "text"):
+        return widget.text()
+    
+    return "" # return empty string by default
+
+# Restore widget value retrieved earlier
+def widget_val_restore(widget, value):
+    
+    if hasattr(widget, "setCheckState"):
+        widget.setCheckState(value == "True" and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
+    
+    elif hasattr(widget, "setCurrentIndex"):
+        try:
+            widget.setCurrentIndex(int(value))
+        except:
+            pass
+    
+    elif hasattr(widget, "setText"):
+        widget.setText(str(value))
 
 # Return filled in value of a particular widget
-def widget_val(widget, ignore_check = False):
+def widget_str(widget, ignore_check = False):
     
     if hasattr(widget, "isChecked"):
         if not ignore_check:
@@ -120,7 +149,7 @@ def group_str(group, ignore_check = False):
         if len(group[name].label) < 1 and not hasattr(group[name].widget, "isChecked"):
             continue # ignore widget if not labeled
         
-        value = widget_val(group[name].widget, ignore_check)
+        value = widget_str(group[name].widget, ignore_check)
         if len(str(value)) > 0:
             string += group[name].label + "=" + str(value) + "; "
     

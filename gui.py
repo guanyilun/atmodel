@@ -5,13 +5,17 @@ import collections
 from PyQt4 import QtCore, QtGui
 from matplotlib.backends.backend_qt4agg \
     import NavigationToolbar2QTAgg as NavigationToolbar
+import os
+import sys
 
 import aux
+import config
 import dyngui
 import generate
 import graph
 from graph import *
 import inputs
+import project
 
 class gui(QtGui.QWidget):
     
@@ -19,19 +23,31 @@ class gui(QtGui.QWidget):
         super(gui, self).__init__()
         
         self.energy_list = energy_list # ways of measuring photon energy
-        self.freq_range = aux.interval(1e11, 1e13) # frequency range for plot (Hz)
-        
         self.atmos_files = sites # list of observer sites
         self.source_files = source # list of source galaxies
         self.galactic_files = galactic # list of galactic emission files
         self.mirror_consts = mirror # dictionary of constants for mirror types (metals)
         self.zodiac_files = zodiac # list of ecliptic emission files
         
-        self.changed = False # no edits made so far
+        # Project settings
+        self.freq_range = aux.interval(1e11, 1e13) # frequency range for plot (Hz)
         self.bling_units = 0 # use W/Hz^1/2 as default units of BLING
         self.noise_what = 0 # plot BLING by default for noise
         self.compos_what = 0 # plot total BLING by default for composite
+        
+        self.collections = {} # dictionary of collections of data input widgets
+        self.groups = {} # dictionary of lone widget groups not part of a collection
+        self.floating = {} # free-floating widgets not in any group or collection
+        
         self.init_UI()
+        
+        # Set default state
+        self.changed = False # no edits made so far
+        self.proj_file = "" # current project file path
+        
+        # Load project file if specified
+        if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
+            project.open(self, sys.argv[1])
     
     # center the window
     def center(self):
@@ -79,9 +95,10 @@ class gui(QtGui.QWidget):
         config_controls = QtGui.QFormLayout()
         config_area.setLayout(config_controls)
         
-        self.config_sets = inputs.config(self)
-        for single_set in self.config_sets:
-            dyngui.new_group(config_controls, single_set)
+        self.config_sets = inputs.pconfig(self)
+        for i, single_set in enumerate(self.config_sets):
+             dyngui.new_group(config_controls, single_set)
+             self.groups["config" + str(i)] = self.config_sets[i]
         
         ## -- NOISE -- ##
         
@@ -99,79 +116,102 @@ class gui(QtGui.QWidget):
         # Atmospheric Radiance / Transmission
         
         self.atmos_toplot = [QtGui.QCheckBox("Plot Radiance"), QtGui.QCheckBox("Plot Transmission")]
-        ignored_value, self.atmos_list =  dyngui.add_tab(
-            noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)
+        self.floating["atmos_toplot0"] = self.atmos_toplot[0]
+        self.floating["atmos_toplot1"] = self.atmos_toplot[1]
+        self.atmos_list = dyngui.add_tab(
+                noise_tabs, "Atmospheric", "Earth's Atmosphere", self.atmos_toplot)[1]
         self.atmos_collection = []
         
         atmos_set0 = inputs.atmos(self)
         self.atmos_collection.append(dyngui.collect_obj(atmos_set0,
                 dyngui.new_group(self.atmos_list, atmos_set0)))
+        self.collections["atmos"] = self.atmos_collection
         
         # Galactic Emission
         
-        self.galactic_toplot, self.galactic_list = dyngui.add_tab(noise_tabs, "Galactic", "Galactic Emission")
+        self.galactic_toplot, self.galactic_list, ign = dyngui.add_tab(noise_tabs, "Galactic", "Galactic Emission")
+        self.floating["galactic_toplot"] = self.galactic_toplot
         self.galactic_collection = []
         
         galactic_set0 = inputs.galactic(self)
         self.galactic_collection.append(dyngui.collect_obj(galactic_set0,
                 dyngui.new_group(self.galactic_list, galactic_set0)))
+        self.collections["galactic"] = self.galactic_collection
         
         # Thermal Mirror Emission
         
-        self.mirror_toplot, self.mirror_list = dyngui.add_tab(noise_tabs, "Mirror", "Thermal Mirror Emission")
+        self.mirror_toplot, self.mirror_list, ign = dyngui.add_tab(noise_tabs, "Mirror", "Thermal Mirror Emission")
+        self.floating["mirror_toplot"] = self.mirror_toplot
         self.mirror_collection = []
         self.mirror_groups = []
         
         mirror_set0 = inputs.mirror(self)
         self.mirror_collection.append(dyngui.collect_obj(mirror_set0,
                 dyngui.new_group(self.mirror_list, mirror_set0)))
+        self.collections["mirror"] = self.mirror_collection
         
         # Zodiacal Emission
         
-        self.zodiac_toplot, self.zodiac_list = dyngui.add_tab(noise_tabs, "Zodiacal", "Zodiacal Emission")
+        self.zodiac_toplot, self.zodiac_list, ign = dyngui.add_tab(noise_tabs, "Zodiacal", "Zodiacal Emission")
+        self.floating["zodiac_toplot"] = self.zodiac_toplot
         self.zodiac_collection = []
         self.zodiac_groups = []
         
         zodiac_set0 = inputs.zodiac(self)
         self.zodiac_collection.append(dyngui.collect_obj(zodiac_set0,
                 dyngui.new_group(self.zodiac_list, zodiac_set0)))
+        self.collections["zodiac"] = self.zodiac_collection
         
         # Other Noise
         
-        self.other_toplot, other_list = dyngui.add_tab(noise_tabs, "Other", "Other Noise")
+        self.other_toplot, other_list, ign = dyngui.add_tab(noise_tabs, "Other", "Other Noise")
+        self.floating["other_toplot"] = self.other_toplot
         
         self.other_set = inputs.other(self)
         dyngui.new_group(other_list, self.other_set)
+        self.groups["other"] = self.other_set
         
-        # Bottom: what to plot (BLING or Temperature)
-        noise_what = QtGui.QWidget()
-        noise_layout.addWidget(noise_what, 0, QtCore.Qt.AlignHCenter)
-        noise_whatlo = QtGui.QFormLayout()
-        noise_what.setLayout(noise_whatlo)
+        ## Bottom area
+        noise_bottom = QtGui.QWidget()
+        noise_layout.addWidget(noise_bottom, 0, QtCore.Qt.AlignHCenter)
+        noise_botlo = QtGui.QFormLayout()
+        noise_bottom.setLayout(noise_botlo)
         
+        # spectral resolution for noise sources
+        self.noise_res = QtGui.QLineEdit(config.spec_res)
+        self.floating["noise_res"] = self.noise_res
+        noise_botlo.addRow("Resolution:", self.noise_res)
+        
+        # what to plot (BLING or Temperature)
         self.noise_whatbox = QtGui.QComboBox()
+        self.floating["noise_whatbox"] = self.noise_whatbox
         self.noise_whatbox.addItem("BLING")
         self.noise_whatbox.addItem("Temperature")
         
-        noise_whatlo.addRow("Plot:", self.noise_whatbox)
-        
-        # send update when changed
-        def noise_what_changed(new_index):
-            self.noise_what = new_index
-            self.changed = True
-        
-        QtCore.QObject.connect(self.noise_whatbox,
-            QtCore.SIGNAL("currentIndexChanged(int)"), noise_what_changed)
+        noise_botlo.addRow("Plot:", self.noise_whatbox)
         
         ## -- SIGNAL -- ##
         
-        self.signal_toplot, self.signal_list = dyngui.add_tab(left_tabs, "Signal", "Signal")
+        self.signal_toplot, self.signal_list, signal_layout = dyngui.add_tab(left_tabs, "Signal", "Signal")
+        self.floating["signal"] = self.signal_toplot
         self.signal_collection = []
         self.signal_groups = []
         
         signal_set0 = inputs.signal(self)
         self.signal_collection.append(dyngui.collect_obj(signal_set0,
                 dyngui.new_group(self.signal_list, signal_set0)))
+        self.collections["signal"] = self.signal_collection
+        
+        ## Bottom area
+        signal_bottom = QtGui.QWidget()
+        signal_layout.addWidget(signal_bottom, 0, QtCore.Qt.AlignHCenter)
+        signal_botlo = QtGui.QFormLayout()
+        signal_bottom.setLayout(signal_botlo)
+        
+        # spectral resolution for signal
+        self.signal_res = QtGui.QLineEdit(config.spec_res)
+        self.floating["signal_res"] = self.signal_res
+        signal_botlo.addRow("Resolution:", self.signal_res)
         
         ## -- COMPOSITE -- ##
         
@@ -191,9 +231,9 @@ class gui(QtGui.QWidget):
         self.compos_collection = []
         
         compos_set0 = inputs.compos(self)
-        
         self.compos_collection.append(dyngui.collect_obj(compos_set0,
-            dyngui.new_group_tab(self.compos_tabs, compos_set0, "New")))
+                dyngui.new_group_tab(self.compos_tabs, compos_set0, "New")))
+        self.collections["compos"] = self.compos_collection
         
         # what to plot
         compos_what = QtGui.QWidget()
@@ -202,19 +242,22 @@ class gui(QtGui.QWidget):
         compos_what.setLayout(compos_whatlo)
         
         self.compos_whatbox = QtGui.QComboBox()
+        self.floating["compos_whatbox"] = self.compos_whatbox
         self.compos_whatbox.addItem("Total BLING")
         self.compos_whatbox.addItem("Total Temperature")
         self.compos_whatbox.addItem("Integration Time")
         
         compos_whatlo.addRow("Plot:", self.compos_whatbox)
         
-        # send update when changed
-        def compos_what_changed(new_index):
-            self.compos_what = new_index
-            self.changed = True
-        
-        QtCore.QObject.connect(self.compos_whatbox,
-            QtCore.SIGNAL("currentIndexChanged(int)"), compos_what_changed)
+        # changing value of widget causes project to be marked as changed
+        for key, widget in self.floating.iteritems():
+            
+            if hasattr(widget, "currentIndex"):
+                inputs.conn_changed(self, widget, "currentIndexChanged(int)")
+            elif hasattr(widget, "checkState"):
+                inputs.conn_changed(self, widget, "stateChanged(int)")
+            elif hasattr(widget, "text"):
+                inputs.conn_changed(self, widget, "textChanged(QString)")
         
         ###
         ### Right Side (input settings)
@@ -230,8 +273,17 @@ class gui(QtGui.QWidget):
         menu_layout.addWidget(menu)
         
         # open project file
+        def open_proj():
+            proj_file = QtGui.QFileDialog.getOpenFileName(self, "Open Project",
+                    filter="Atmospheric Modeling Project (*.atmodel)")
+            if len(proj_file) > 0: # open project file if a file is selected
+                project.open(self, proj_file)
+        
+        # check for changes to existing project first
         def open_func():
-            None
+            def ignore():
+                pass # do nothing if ignored
+            self.close_project(open_proj, ignore)
         
         openprj = QtGui.QAction("&Open", self)
         openprj.setToolTip("Open project file")
@@ -241,7 +293,10 @@ class gui(QtGui.QWidget):
         
         # save project file
         def save_func():
-            None
+            if len(self.proj_file) > 0: # currently editing a project already
+                project.save(self, self.proj_file)
+            else: # no project file opened -- ask for file name
+                saveas_func()
         
         saveprj = QtGui.QAction("&Save", self)
         saveprj.setToolTip("Save project file")
@@ -251,7 +306,10 @@ class gui(QtGui.QWidget):
         
         # save project file with different name
         def saveas_func():
-            None
+            proj_file = QtGui.QFileDialog.getSaveFileName(self, "Save Project",
+                    filter="Atmospheric Modeling Project (*.atmodel)")
+            if len(proj_file) > 0: # save project file if a name is selected
+                project.save(self, proj_file)
         
         saveas = QtGui.QAction("Save As", self)
         saveas.setToolTip("Save project file with different name")
@@ -260,7 +318,12 @@ class gui(QtGui.QWidget):
         
         # export data
         def export_func():
-            None
+            
+            # allow data export only if graph exists
+            if hasattr(self.plot, "graph_data"):
+                export_file = QtGui.QFileDialog.getSaveFileName(self, "Export Data",
+                    filter="Excel Spreadsheet (*.xlsx)")
+                self.plot.export(export_file)
         
         export = QtGui.QAction("Export", self)
         export.setToolTip("Export data in graph")
@@ -282,10 +345,13 @@ class gui(QtGui.QWidget):
         right.addLayout(buttons)
         
         # generate graph
-        generate = QtGui.QPushButton("Generate Graph")
-        buttons.addWidget(generate)
-        QtCore.QObject.connect(generate,
-                QtCore.SIGNAL("clicked()"), self.generate_graph)
+        gen_btn = QtGui.QPushButton("Generate Graph")
+        buttons.addWidget(gen_btn)
+        
+        def do_generate():
+            generate.process(self)
+        QtCore.QObject.connect(gen_btn,
+                QtCore.SIGNAL("clicked()"), do_generate)
         
         ###
         
@@ -296,185 +362,38 @@ class gui(QtGui.QWidget):
         self.setLayout(top)
         
         self.show()
-    
-    # generate a graph with inputs
-    def generate_graph(self):
-        
-        new_graph = graph.graph_obj(self.config_sets[0]["name"].widget.text(), [])
-        self.energy_form = self.energy_list[self.config_sets[1]["e_units"].widget.currentIndex()]
-        
-        # Atmospheric radiance
-        if self.atmos_toplot[0].isChecked():
-            # loop through all selected sites
-            for group in self.atmos_collection:
-                index = group.inputs["site"].widget.currentIndex()
-                # only add to graph if a site is selected
-                if index > 0:
-                    generate.add_radiance(self, new_graph, self.atmos_files[index - 1])
-        
-        # Atmospheric transmission
-        if self.atmos_toplot[1].isChecked():
-            # loop through all selected sites
-            for group in self.atmos_collection:
-                index = group.inputs["site"].widget.currentIndex()
-                # only add to graph if a site is selected
-                if index > 0:
-                    generate.add_trans(self, new_graph, self.atmos_files[index - 1])
-        
-        # Galactic emission
-        if self.galactic_toplot.isChecked():
-            # loop through all selected coordinates
-            for group in self.galactic_collection:
-                index = group.inputs["gcrd"].widget.currentIndex()
-                # only add to graph if a coordinate is selected
-                if index > 0:
-                    generate.add_galactic(self, new_graph, self.galactic_files[index - 1])
-        
-        # Thermal mirror emission
-        if self.mirror_toplot.isChecked():
-            # loop through all selected mirror types
-            for group in self.mirror_collection:
-                
-                try: # check if given temperature is a number
-                    temp = float(group.inputs["temp"].widget.text())
-                except ValueError:
-                    continue # not filled in properly, so skip
-                
-                index = str(group.inputs["type"].widget.currentText())
-                
-                # only add to graph if a type is selected
-                if len(index) > 0:
-                    generate.add_mirror(self, new_graph, index,
-                        temp, self.mirror_consts[index])
-        
-        # Zodiacal emission
-        if self.zodiac_toplot.isChecked():
-            # loop through all selected coordinates
-            for group in self.zodiac_collection:
-                index = group.inputs["ecrd"].widget.currentIndex()
-                # only add to graph if a coordinate is selected
-                if index > 0:
-                    generate.add_zodiac(self, new_graph,
-                        self.zodiac_files[index - 1])
-        
-        # Cosmic infrared background
-        if self.other_toplot.isChecked() and self.other_set["cib"].widget.isChecked():
-            generate.add_cib(self, new_graph)
-        
-        # Cosmic microwave background
-        if self.other_toplot.isChecked() and self.other_set["cmb"].widget.isChecked():
-            generate.add_cmb(self, new_graph)
-        
-        # Signal
-        if self.signal_toplot.isChecked():
-            # loop through all aperture/site/source sets
-            for group in self.signal_collection:
-                
-                try: # check if given aperture is a number
-                    aperture = float(group.inputs["aperture"].widget.text())
-                except ValueError:
-                    continue # not filled in properly, so skip
-                
-                site = group.inputs["site"].widget.currentIndex()
-                source = group.inputs["source"].widget.currentIndex()
-                
-                # only add if all fields are filled in
-                if site > 0 and source > 0:
-                    generate.add_signal(self, new_graph,
-                        aperture,
-                        self.atmos_files[site - 1],
-                        self.source_files[source - 1])
-        
-        # loop through all sets of inputs
-        i = 0
-        for group in self.compos_collection:
-            if group.inputs["is_plot"].widget.isChecked() != True:
-                continue # not selected for plotting
-            if i == len(self.compos_collection) - 1:
-                break # ignore last group
-            i += 1
-            
-            # fetch all valid selected input values (assume "None" by default)
-            dataset_label = str(i)
-            galactic = aux.name_file("", "")
-            mirror_temp = ""
-            mirror_type = ""
-            zodiac = aux.name_file("", "")
-            aperture = ""
-            atmos_site = aux.name_file("", "")
-            site = aux.name_file("", "")
-            source = aux.name_file("", "")
-            mirror_constant = -1
-            mirror_temp = -1
-            aperture = -1
-            
-            # label for graph
-            if len(group.inputs["_label"].widget.text()) > 0:
-                dataset_label = group.inputs["_label"].widget.text()
-            
-            # atmospheric radiance
-            atmos_index1 = group.inputs["n_atmos"].widget.currentIndex()
-            if atmos_index1 > 0:
-                atmos_index2 = self.atmos_collection[atmos_index1-1].inputs["site"].widget.currentIndex()
-                atmos_site = self.atmos_files[atmos_index2-1]
-            
-            # galactic emission
-            galactic_index1 = group.inputs["n_galactic"].widget.currentIndex()
-            if galactic_index1 > 0:
-                galactic_index2 = self.galactic_collection[galactic_index1-1].inputs["gcrd"].widget.currentIndex()
-                galactic = self.galactic_files[galactic_index2-1]
-            
-            # thermal mirror emission
-            mirror_index = group.inputs["n_mirror"].widget.currentIndex()
-            if mirror_index > 0:
-                type_index = str(self.mirror_collection[mirror_index-1].inputs["type"].widget.currentText())
-                
-                mirror_constant = self.mirror_consts[type_index]
-                try:
-                    mirror_temp = float(self.mirror_collection[mirror_index-1].inputs["temp"].widget.text())
-                except Exception:
-                    pass
-            
-            # zodiacal emission
-            zodiac_index1 = group.inputs["n_zodiac"].widget.currentIndex()
-            if zodiac_index1 > 0:
-                zodiac_index2 = self.zodiac_collection[zodiac_index1-1].inputs["ecrd"].widget.currentIndex()
-                zodiac = self.zodiac_files[zodiac_index2-1]
-                
-            cib = group.inputs["o_cib"].widget.isChecked()
-            cmb = group.inputs["o_cmb"].widget.isChecked()
-            
-            # signal
-            signal_index = group.inputs["signal"].widget.currentIndex()
-            if signal_index > 0:
-                site_index = self.signal_collection[signal_index-1].inputs["site"].widget.currentIndex()
-                source_index = self.signal_collection[signal_index-1].inputs["source"].widget.currentIndex()
-                
-                try:
-                    aperture = float(self.signal_collection[signal_index-1].inputs["aperture"].widget.text())
-                except Exception:
-                    pass
-                source = self.source_files[source_index-1]
-                if site_index > 0:
-                    site = self.atmos_files[site_index-1] # override atmospheric radiance site if provided
-            
-            if self.compos_what == 0: # total noise
-                generate.add_noise(self, new_graph, dataset_label, atmos_site,
-                        galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
-            
-            elif self.compos_what == 1: # total temperature
-                generate.add_temp(self, new_graph, dataset_label, atmos_site,
-                        galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
-            
-            elif self.compos_what == 2: # integration time
-                
-                try: # check if given signal:noise ratio is a number
-                    snr = float(group.inputs["snr"].widget.text())
-                except ValueError:
-                    continue # not filled in properly, so skip
-            
-                generate.add_integ(self, new_graph, dataset_label, atmos_site, galactic,
-                        mirror_temp, mirror_constant, zodiac, cib, cmb, aperture,
-                        site, source, snr)
 
-        self.plot.redraw(new_graph)
+    # Closing current project
+    def close_project(self, accept_func, ignore_func):
+        
+        # check if there are unsaved changes
+        if self.changed:
+            reply = QtGui.QMessageBox.question(self, "Save Unsaved Changes?",
+                "You have made unsaved changes to your project. Would you like to save them?",
+                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No, QtGui.QMessageBox.Cancel)
+            
+            # save project
+            if reply == QtGui.QMessageBox.Yes:
+                if len(self.proj_file) > 0: # currently editing a project already
+                    project.save(self, self.proj_file)
+                    accept_func()
+                else: # no project file opened -- ask for file name
+                    proj_file = QtGui.QFileDialog.getSaveFileName(self, "Save Project",
+                            filter="Atmospheric Modeling Project (*.atmodel)")
+                    if len(proj_file) > 0: # save project file if a name is selected
+                        project.save(self, proj_file)
+                        accept_func()
+                    else: # no file name selected
+                        ignore_func()
+            
+            # don't save project and quit
+            elif reply == QtGui.QMessageBox.No:
+                accept_func()
+            
+            # don't close the window
+            else:
+                ignore_func()
+    
+    # Window close event
+    def closeEvent(self, event):
+        self.close_project(event.accept, event.ignore)

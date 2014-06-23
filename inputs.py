@@ -4,10 +4,11 @@
 from PyQt4 import QtCore, QtGui
 
 import aux
+import config
 import dyngui
 
 # Project Configuration
-def config(gui):
+def pconfig(gui):
     
     inputs1 = {} # identifying information
     
@@ -92,67 +93,69 @@ def config(gui):
     bling = QtGui.QComboBox()
     bling.addItems(["W/Hz^1/2", "photons/s*Hz^1/2"])
     inputs3["b_units"] = dyngui.input_obj("Units of BLING", bling)
-    
-    # send update when changed
-    def bling_changed(new_index):
-        gui.bling_units = new_index
-        gui.changed = True
-    
-    QtCore.QObject.connect(bling,
-        QtCore.SIGNAL("currentIndexChanged(int)"), bling_changed)
+    conn_changed(gui, bling, "currentIndexChanged(int)")
     
     return inputs1, inputs2, inputs3
 
 # Atmospheric Radiance & Transmission
-def atmos(gui):
+def atmos(gui, fields = {"site" : 0}):
     
     inputs = {}
     site = QtGui.QComboBox()
     site.addItem("")
     add_list(site, gui.atmos_files)
+    site.setCurrentIndex(int(fields["site"]))
+    
     conn_update(gui, site, "currentIndexChanged(int)")
     inputs["site"] = dyngui.input_obj("Site", site)
     
     return inputs
 
 # Galactic Emission
-def galactic(gui):
+def galactic(gui, fields = {"gcrd" : 0}):
     
     inputs = {}
     
     coord = QtGui.QComboBox()
     coord.addItem("")
     add_list(coord, gui.galactic_files)
+    coord.setCurrentIndex(int(fields["gcrd"]))
+    
     conn_update(gui, coord, "currentIndexChanged(int)")
     inputs["gcrd"] = dyngui.input_obj("Galactic Coord", coord)
     
     return inputs
 
 # Thermal Mirror Emission
-def mirror(gui):
+def mirror(gui, fields = {"temp" : "", "type" : 0}):
     
     inputs = {}
     
     inputs["temp"] = dyngui.input_obj("Temperature (K)", QtGui.QLineEdit())
+    inputs["temp"].widget.setText(str(fields["temp"]))
     conn_update(gui, inputs["temp"].widget, "textChanged(QString)")
     
     mirror_type = QtGui.QComboBox()
     mirror_type.addItem("")
     for material, const in gui.mirror_consts.items():
         mirror_type.addItem(material)
+    mirror_type.setCurrentIndex(int(fields["type"]))
+    
     conn_update(gui, mirror_type, "currentIndexChanged(int)")
     inputs["type"] = dyngui.input_obj("Mirror Type", mirror_type)
     
     return inputs
     
 # Zodiacal Emission
-def zodiac(gui):
+def zodiac(gui, fields = {"ecrd" : 0}):
     
     inputs = {}
     
     coord = QtGui.QComboBox()
     coord.addItem("")
     add_list(coord, gui.zodiac_files)
+    coord.setCurrentIndex(int(fields["ecrd"]))
+    
     conn_update(gui, coord, "currentIndexChanged(int)")
     inputs["ecrd"] = dyngui.input_obj("Ecliptic Coord", coord)
     
@@ -174,73 +177,93 @@ def other(gui):
     return inputs
     
 # Signal
-def signal(gui):
+def signal(gui, fields = {"aperture" : "", "site" : 0, "source" : 0}):
     
     inputs = {}
     
     inputs["aperture"] = dyngui.input_obj("Aperture (m)", QtGui.QLineEdit())
+    inputs["aperture"].widget.setText(str(fields["aperture"]))
     conn_update(gui, inputs["aperture"].widget, "textChanged(QString)")
     
     site = QtGui.QComboBox()
     site.addItem("")
     add_list(site, gui.atmos_files)
+    site.setCurrentIndex(int(fields["site"]))
+    
     conn_update(gui, site, "currentIndexChanged(int)")
     inputs["site"] = dyngui.input_obj("Site", site)
     
     source = QtGui.QComboBox()
     source.addItem("")
     add_list(source, gui.source_files)
+    source.setCurrentIndex(int(fields["source"]))
+    
     conn_update(gui, source, "currentIndexChanged(int)")
     inputs["source"] = dyngui.input_obj("Source", source)
     
     return inputs
     
 # Composite Data Calculations
-def compos(gui):
+def compos(gui, fields = {"_label" : "", "is_plot" : False,
+        "n_atmos" : 0, "n_galactic" : 0, "n_mirror" : 0, "n_zodiac" : 0,
+        "o_cib" : False, "o_cmb" : False,
+        "signal" : 0, "snr" : "", "specres" : ""}):
     
     inputs = {}
+    
+    # label for composite graph
+    label = QtGui.QLineEdit()
+    label.setText(str(fields["_label"]))
+    conn_update(gui, label, "textChanged(QString)")
     
     # initialize drop down boxes
     atmos = QtGui.QComboBox()
     dyngui.update_list(atmos, gui.atmos_collection)
+    atmos.setCurrentIndex(int(fields["n_atmos"]))
     conn_update(gui, atmos, "currentIndexChanged(int)")
     
     galactic = QtGui.QComboBox()
     dyngui.update_list(galactic, gui.galactic_collection)
+    galactic.setCurrentIndex(int(fields["n_galactic"]))
     conn_update(gui, galactic, "currentIndexChanged(int)")
     
     mirror = QtGui.QComboBox()
     dyngui.update_list(mirror, gui.mirror_collection)
+    mirror.setCurrentIndex(int(fields["n_mirror"]))
     conn_update(gui, mirror, "currentIndexChanged(int)")
     
     zodiac = QtGui.QComboBox()
     dyngui.update_list(zodiac, gui.zodiac_collection)
+    zodiac.setCurrentIndex(int(fields["n_zodiac"]))
     conn_update(gui, zodiac, "currentIndexChanged(int)")
     
     signal = QtGui.QComboBox()
     dyngui.update_list(signal, gui.signal_collection)
+    signal.setCurrentIndex(int(fields["signal"]))
     conn_update(gui, signal, "currentIndexChanged(int)")
     
     # initialize checkboxes
     cib = QtGui.QCheckBox("Cosmic Infrared Background")
-    cib.setCheckState(QtCore.Qt.Unchecked)
+    cib.setCheckState(fields["o_cib"] == "True" and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
     conn_update(gui, cib, "stateChanged(int)")
     
     cmb = QtGui.QCheckBox("Cosmic Microwave Background")
-    cmb.setCheckState(QtCore.Qt.Unchecked)
+    cmb.setCheckState(fields["o_cmb"] == "True" and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
     conn_update(gui, cmb, "stateChanged(int)")
     
     isplot = QtGui.QCheckBox("Plot this data")
-    isplot.setCheckState(QtCore.Qt.Unchecked)
+    isplot.setCheckState(fields["is_plot"] == "True" and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
     conn_update(gui, isplot, "stateChanged(int)")
     
     # signal:noise ratio
     snr = QtGui.QLineEdit()
+    snr.setText(str(fields["snr"]))
     conn_update(gui, snr, "textChanged(QString)")
     
-    # label for composite graph
-    label = QtGui.QLineEdit()
-    conn_update(gui, label, "textChanged(QString)")
+    # spectral resolution
+    specres = QtGui.QLineEdit()
+    specres.setText(str(fields["specres"]))
+    conn_update(gui, specres, "textChanged(QString)")
     
     inputs["_label"] = dyngui.input_obj("Label", label)
     inputs["is_plot"] = dyngui.input_obj("", isplot)
@@ -251,7 +274,8 @@ def compos(gui):
     inputs["o_cib"] = dyngui.input_obj("", cib)
     inputs["o_cmb"] = dyngui.input_obj("", cmb)
     inputs["signal"] = dyngui.input_obj("Signal", signal)
-    inputs["snr"] = dyngui.input_obj("Signal:Noise", QtGui.QLineEdit())
+    inputs["snr"] = dyngui.input_obj("Signal:Noise", snr)
+    inputs["specres"] = dyngui.input_obj("Resolution", specres)
     
     # clear all inputs in this set
     def clear():
@@ -265,6 +289,7 @@ def compos(gui):
         inputs["o_cmb"].widget.setCheckState(QtCore.Qt.Unchecked)
         inputs["signal"].widget.setCurrentIndex(0)
         inputs["snr"].widget.setText("")
+        inputs["specres"].widget.setText("")
         update_all(gui)
     
     inputs["z_clear"] = dyngui.input_obj("", QtGui.QPushButton("Clear Fields"))
@@ -281,12 +306,13 @@ def compos(gui):
         if len(inputs["n_zodiac"].widget) > 1:
             inputs["n_zodiac"].widget.setCurrentIndex(1)
         
-        inputs["o_cib"].widget.setCheckState(QtCore.Qt.Checked)
-        inputs["o_cmb"].widget.setCheckState(QtCore.Qt.Checked)
+        inputs["o_cib"].widget.setCheckState(config.use_cib and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
+        inputs["o_cmb"].widget.setCheckState(config.use_cmb and QtCore.Qt.Checked or QtCore.Qt.Unchecked)
         
         if len(inputs["signal"].widget) > 1:
             inputs["signal"].widget.setCurrentIndex(1)
-        inputs["snr"].widget.setText("3") # default signal:noise = 3
+        inputs["snr"].widget.setText(config.snr) # default signal:noise
+        inputs["specres"].widget.setText(config.spec_res) # default spectral resolution
         update_all(gui)
     
     inputs["z_default"] = dyngui.input_obj("", QtGui.QPushButton("Use Default"))
@@ -294,33 +320,33 @@ def compos(gui):
     
     return inputs
 
-# return a function (fx) equivalent to another (func) being passed an argument (arg)
-def func_arg(func, arg):
-    
-    def fx():
-        return func(arg)
-    
-    return fx
-
 # connect widgets to update function
 def conn_update(gui, widget, sig):
-    QtCore.QObject.connect(widget, QtCore.SIGNAL(sig), func_arg(update_all, gui))
+    QtCore.QObject.connect(widget, QtCore.SIGNAL(sig), aux.func_arg(update_all, gui))
+
+# connect widgets to changed function
+def conn_changed(gui, widget, sig):
+    QtCore.QObject.connect(widget, QtCore.SIGNAL(sig), aux.func_arg(changed, gui))
 
 # add file list to drop down list
 def add_list(drop_down, file_list):
     for item in file_list:
         drop_down.addItem(item.name)
 
+# mark that project has changed
+def changed(gui):
+    gui.changed = True
+        
 # Propogate changes by updating all dynamic elements
 def update_all(gui):
     
     # update all collections of widget groups
-    dyngui.update_collection(gui.atmos_collection, gui.atmos_list, func_arg(atmos, gui))
-    dyngui.update_collection(gui.galactic_collection, gui.galactic_list, func_arg(galactic, gui))
-    dyngui.update_collection(gui.mirror_collection, gui.mirror_list, func_arg(mirror, gui))
-    dyngui.update_collection(gui.zodiac_collection, gui.zodiac_list, func_arg(zodiac, gui))
-    dyngui.update_collection(gui.signal_collection, gui.signal_list, func_arg(signal, gui))
-    dyngui.update_tabcollect(gui.compos_collection, gui.compos_tabs, func_arg(compos, gui))
+    dyngui.update_collection(gui.atmos_collection, gui.atmos_list, aux.func_arg(atmos, gui))
+    dyngui.update_collection(gui.galactic_collection, gui.galactic_list, aux.func_arg(galactic, gui))
+    dyngui.update_collection(gui.mirror_collection, gui.mirror_list, aux.func_arg(mirror, gui))
+    dyngui.update_collection(gui.zodiac_collection, gui.zodiac_list, aux.func_arg(zodiac, gui))
+    dyngui.update_collection(gui.signal_collection, gui.signal_list, aux.func_arg(signal, gui))
+    dyngui.update_tabcollect(gui.compos_collection, gui.compos_tabs, aux.func_arg(compos, gui))
     
     # update composite tab
     for group in gui.compos_collection:
