@@ -68,7 +68,7 @@ class Graph(FigureCanvas):
 
         #define axes
         self.axes = self.figure.add_subplot(111)
-        self.axes.grid(True) # enable grid lines
+        self.axes.grid(True, which='both') # enable grid lines
 
         data = graph_data.dataset_list
 
@@ -130,6 +130,7 @@ class Graph(FigureCanvas):
 
             #define twin axes
             twinx = self.axes.twinx()
+            twinx.grid(True, which='both')
 
             #plot on twin axes
             for n in xrange(len(set1)):
