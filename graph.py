@@ -51,6 +51,26 @@ def custom_locator(logrange, numticks):
     subs = [0.1*np.round(10**(i/subslen+1)) for i in xrange(int(subslen))]
     return ticker.LogLocator(subs=subs)
 
+# create cursor coordinate format to be used for only one y-axis
+def basic_format_coord(x, y):
+    # x, y: data coords [of right axis] under cursor
+    return '({:.2e},{:.2e})'.format(x,y)
+
+# create cursor coordinate format to be used if there is a twin axis
+def twin_format_coord(right, left):
+    # right, left: twin axis and axis objects, respectively
+    def format_coord(x, y):
+        # x, y: data coords [of right axis] under cursor
+        # tansform to display coords and back to left data coords
+        display_array = right.transData.transform(np.array([(x,y)]))
+        inv = left.transData.inverted()
+        left_array = inv.transform(display_array)
+        # output string
+        coords = [left_array[0], (x, y)]
+        return ('Left: {:s}, Right: {:s}'
+                .format(*['({:.2e},{:.2e})'.format(x, y) for x,y in coords]))
+    return format_coord
+
 class Graph(FigureCanvas):
     def __init__(self):
         # initializing the canvas
@@ -127,6 +147,9 @@ class Graph(FigureCanvas):
         self.axes.get_yaxis().set_minor_formatter(ticker.FuncFormatter(exp_ticks))
         # remove unneeded major ticks
         self.axes.get_yaxis().set_major_locator(ticker.NullLocator())
+        
+        # cursor coordinate format
+        self.axes.format_coord = basic_format_coord
 
         if len(set1) > 0:
 
@@ -151,6 +174,9 @@ class Graph(FigureCanvas):
             twinx.yaxis.set_minor_formatter(ticker.FuncFormatter(exp_ticks))
             # remove unneeded major ticks
             twinx.yaxis.set_major_locator(ticker.NullLocator())
+            
+            # cursor coordinate format
+            twinx.format_coord = twin_format_coord(twinx, self.axes)
 
             # making legends (they will never die)
             leg2 = twinx.legend(loc='lower right',prop={'size':7})
