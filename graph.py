@@ -31,7 +31,7 @@ data_set = collections.namedtuple("data_set",
 # a single coordinate pair
 coord_obj = collections.namedtuple("coord_obj", "x y")
 
-#custom LaTeX tick format for the log scale graph
+# custom LaTeX tick format for the log scale graph
 def exp_ticks(value, index):
     exp = np.floor(np.log10(value))
     base = value/10**exp
@@ -40,10 +40,10 @@ def exp_ticks(value, index):
     else:
         return '${0:n}\!\\times10^{{{1:d}}}$'.format(float(base), int(exp))
 
-#method for automatic placement of ticks on each axis
+# method for automatic placement of ticks on each axis
 def custom_locator(logrange, numticks):
-    #logrange: difference of log of upper and lower bound of data
-    #numticks: tries to place a maximum number of ticks of numticks+1
+    # logrange: difference of log of upper and lower bound of data
+    # numticks: tries to place a maximum number of ticks of numticks+1
     if numticks/logrange < 1:
         subslen = 1
     else:
@@ -53,11 +53,11 @@ def custom_locator(logrange, numticks):
 
 class Graph(FigureCanvas):
     def __init__(self):
-        #initializing the canvas
+        # initializing the canvas
         self.figure = plt.figure()
         FigureCanvas.__init__(self, self.figure)
 
-    #this happens every time Generate is clicked
+    # this happens every time Generate is clicked
     def redraw(self, graph_data):
 
         #clear figure
@@ -66,17 +66,17 @@ class Graph(FigureCanvas):
         # store all graph data for future use
         self.graph_data = graph_data
 
-        #define axes
+        # define axes
         self.axes = self.figure.add_subplot(111)
-        self.axes.grid(True) # enable grid lines
+        self.axes.grid(True, which='both') # enable grid lines
 
         data = graph_data.dataset_list
 
-        #check to make sure there aren't too many data sets
+        # check to make sure there aren't too many data sets
         if len(data) > 6:
             print("Error: Tried to plot more than six data sets")
             return
-        #sort data by units and also make sure there aren't too many units
+        # sort data by units and also make sure there aren't too many units
         for n in xrange(len(data)):
             if n == 0:
                 set0 = [data[n]]
@@ -95,10 +95,10 @@ class Graph(FigureCanvas):
             else:
                 set0.append(data[n])
 
-        #colors to give to plots
+        # colors to give to plots
         color_list=['r','g','b','m','c','k']
 
-        #setting default scale to log and plotting data
+        # setting default scale to log and plotting data
         self.axes.set_xscale('log')
         self.axes.set_yscale('log')
         for n in xrange(len(set0)):
@@ -106,53 +106,53 @@ class Graph(FigureCanvas):
             self.y = [set0[n].coord_list[i][1] for i in xrange(len(set0[n].coord_list))]
             self.axes.plot(self.x, self.y, c=color_list[n], label=str(set0[n].label))
 
-        #axis labels
+        # axis labels
         self.axes.set_xlabel(set0[0].xname + ' (' + set0[0].xunits + ')')
         self.axes.set_ylabel(set0[0].yname + ' (' + set0[0].yunits + ')')
         self.axes.set_xscale('log')
         self.axes.set_yscale('log')
 
-        #format xaxis
+        # format xaxis
         xlogrange = np.round(np.log10(self.axes.get_xbound()[1]/self.axes.get_xbound()[0]))
         xloc = custom_locator(xlogrange,10)
-        self.axes.get_xaxis().set_major_locator(xloc)
-        self.axes.get_xaxis().set_minor_locator(ticker.NullLocator())
-        self.axes.get_xaxis().set_minor_formatter(ticker.NullFormatter())
-        self.axes.get_xaxis().set_major_formatter(ticker.FuncFormatter(exp_ticks))
+        self.axes.get_xaxis().set_minor_locator(xloc)
+        self.axes.get_xaxis().set_minor_formatter(ticker.FuncFormatter(exp_ticks))
+        # remove unneeded major ticks
+        self.axes.get_xaxis().set_major_locator(ticker.NullLocator())
 
-        #format yaxis
+        # format yaxis
         ylogrange = np.round(np.log10(self.axes.get_ybound()[1]/self.axes.get_ybound()[0]))
         yloc = custom_locator(ylogrange,10)
-        self.axes.get_yaxis().set_major_locator(yloc)
-        self.axes.get_yaxis().set_minor_locator(ticker.NullLocator())
-        self.axes.get_yaxis().set_minor_formatter(ticker.NullFormatter())
-        self.axes.get_yaxis().set_major_formatter(ticker.FuncFormatter(exp_ticks))
+        self.axes.get_yaxis().set_minor_locator(yloc)
+        self.axes.get_yaxis().set_minor_formatter(ticker.FuncFormatter(exp_ticks))
+        # remove unneeded major ticks
+        self.axes.get_yaxis().set_major_locator(ticker.NullLocator())
 
         if len(set1) > 0:
 
-            #define twin axes
+            # define twin axes
             twinx = self.axes.twinx()
-            twinx.grid(True)
+            twinx.grid(True, which='both') # enable gride lines on twin axis
 
-            #plot on twin axes
+            # plot on twin axes
             for n in xrange(len(set1)):
                 self.x = [set1[n].coord_list[i][0] for i in xrange(len(set1[n].coord_list))]
                 self.y = [set1[n].coord_list[i][1] for i in xrange(len(set1[n].coord_list))]
                 twinx.plot(self.x, self.y, c=color_list[n+len(set0)], label=str(set1[n].label))
 
-            #name and scale twin axes
+            # name and scale twin axes
             twinx.set_ylabel(set1[0].yname + ' (' + set1[0].yunits + ')')
             twinx.set_yscale('log')
 
-            #format twix axis
+            # format twix axis
             ylogrange2 = np.round(np.log10(twinx.get_ybound()[1]/twinx.get_ybound()[0]))
             yloc2 = custom_locator(ylogrange2,10)
-            twinx.yaxis.set_major_locator(yloc2)
-            twinx.yaxis.set_minor_locator(ticker.NullLocator())
-            twinx.yaxis.set_minor_formatter(ticker.NullFormatter())
-            twinx.yaxis.set_major_formatter(ticker.FuncFormatter(exp_ticks))
+            twinx.yaxis.set_minor_locator(yloc2)
+            twinx.yaxis.set_minor_formatter(ticker.FuncFormatter(exp_ticks))
+            # remove unneeded major ticks
+            twinx.yaxis.set_major_locator(ticker.NullLocator())
 
-            #making legends (they will never die)
+            # making legends (they will never die)
             leg2 = twinx.legend(loc='lower right',prop={'size':7})
             frame2 = leg2.get_frame()
             frame2.set_alpha(0.5)
