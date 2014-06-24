@@ -68,7 +68,7 @@ class Graph(FigureCanvas):
 
         #define axes
         self.axes = self.figure.add_subplot(111)
-        self.axes.grid(True, which='both') # enable grid lines
+        self.axes.grid(True) # enable grid lines
 
         data = graph_data.dataset_list
 
@@ -115,22 +115,24 @@ class Graph(FigureCanvas):
         #format xaxis
         xlogrange = np.round(np.log10(self.axes.get_xbound()[1]/self.axes.get_xbound()[0]))
         xloc = custom_locator(xlogrange,10)
-        self.axes.get_xaxis().set_minor_locator(xloc)
-        self.axes.get_xaxis().set_major_formatter(ticker.NullFormatter())
-        self.axes.get_xaxis().set_minor_formatter(ticker.FuncFormatter(exp_ticks))
+        self.axes.get_xaxis().set_major_locator(xloc)
+        self.axes.get_xaxis().set_minor_locator(ticker.NullLocator())
+        self.axes.get_xaxis().set_minor_formatter(ticker.NullFormatter())
+        self.axes.get_xaxis().set_major_formatter(ticker.FuncFormatter(exp_ticks))
 
         #format yaxis
         ylogrange = np.round(np.log10(self.axes.get_ybound()[1]/self.axes.get_ybound()[0]))
         yloc = custom_locator(ylogrange,10)
-        self.axes.get_yaxis().set_minor_locator(yloc)
-        self.axes.get_yaxis().set_major_formatter(ticker.NullFormatter())
-        self.axes.get_yaxis().set_minor_formatter(ticker.FuncFormatter(exp_ticks))
+        self.axes.get_yaxis().set_major_locator(yloc)
+        self.axes.get_yaxis().set_minor_locator(ticker.NullLocator())
+        self.axes.get_yaxis().set_minor_formatter(ticker.NullFormatter())
+        self.axes.get_yaxis().set_major_formatter(ticker.FuncFormatter(exp_ticks))
 
         if len(set1) > 0:
 
             #define twin axes
             twinx = self.axes.twinx()
-            twinx.grid(True, which='both')
+            twinx.grid(True)
 
             #plot on twin axes
             for n in xrange(len(set1)):
@@ -145,9 +147,10 @@ class Graph(FigureCanvas):
             #format twix axis
             ylogrange2 = np.round(np.log10(twinx.get_ybound()[1]/twinx.get_ybound()[0]))
             yloc2 = custom_locator(ylogrange2,10)
-            twinx.yaxis.set_minor_locator(yloc2)
-            twinx.yaxis.set_major_formatter(ticker.NullFormatter())
-            twinx.yaxis.set_minor_formatter(ticker.FuncFormatter(exp_ticks))
+            twinx.yaxis.set_major_locator(yloc2)
+            twinx.yaxis.set_minor_locator(ticker.NullLocator())
+            twinx.yaxis.set_minor_formatter(ticker.NullFormatter())
+            twinx.yaxis.set_major_formatter(ticker.FuncFormatter(exp_ticks))
 
             #making legends (they will never die)
             leg2 = twinx.legend(loc='lower right',prop={'size':7})
