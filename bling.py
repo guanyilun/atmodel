@@ -4,7 +4,7 @@
 import math
 import numpy
 
-import aux
+import auxil as aux
 import cal
 import const
 import graph

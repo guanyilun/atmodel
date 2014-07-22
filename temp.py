@@ -6,7 +6,7 @@ from excel import ExcelXWriter, ExcelReader
 import math
 import numpy
 
-import aux
+import auxil as aux
 import cal
 import graph
     

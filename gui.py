@@ -8,7 +8,7 @@ from matplotlib.backends.backend_qt4agg \
 import os
 import sys
 
-import aux
+import auxil as aux
 import config
 import dyngui
 import generate

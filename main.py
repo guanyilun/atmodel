@@ -4,7 +4,7 @@ import os
 import sys
 from PyQt4 import QtGui
 
-import aux
+import auxil as aux
 import const
 from gui import *
 

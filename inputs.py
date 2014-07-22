@@ -3,7 +3,7 @@
 
 from PyQt4 import QtCore, QtGui
 
-import aux
+import auxil as aux
 import config
 import dyngui
 
