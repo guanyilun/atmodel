@@ -1,4 +1,4 @@
-import gc, const, plotter, file_refs
+import gc, const, plotter
 import math
 import numpy as np
 from scipy import interpolate
