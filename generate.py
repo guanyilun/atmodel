@@ -44,12 +44,12 @@ def add_radiance(gui, graph_obj, site_file, spec_res):
 
 # Add atmospheric transmission to plot
 def add_trans(gui, graph_obj, site_file):
-    trans_list, freq_list = sigtrans.trans(site_file.file, gui.interp.freq_range)
+    trans_list = sigtrans.trans(gui, site_file.file)
     
     # build and return list of coordinates
     crdlist = []
     for i, trans_val in enumerate(trans_list):
-        crdlist.append(graph.coord_obj(freq_list[i], trans_val))
+        crdlist.append(graph.coord_obj(gui.interp.freq_list[i], trans_val))
     
     # build data set and add to graph
     data_set = new_dataset("Atmos Trans ("+site_file.name+")", gui.energy_form,
@@ -127,12 +127,12 @@ def add_cmb(gui, graph_obj, spec_res):
 
 # Add signal to plot
 def add_signal(gui, graph_obj, aperture, site_file, source_file, spec_res):
-    sig_list, freq_list = sigtrans.signal(aperture, site_file.file, source_file.file, spec_res, gui.interp.freq_range)
+    sig_list = sigtrans.signal(gui, aperture, site_file.file, source_file.file, spec_res)
     
     # build and return list of coordinates
     crdlist = []
     for i, signal_val in enumerate(sig_list):
-        crdlist.append(graph.coord_obj(freq_list[i], signal_val))
+        crdlist.append(graph.coord_obj(gui.interp.freq_list[i], signal_val))
     
     # build data set and add to graph
     data_set = new_dataset("Signal ("+str(aperture)+" m, "+site_file.name+", "+source_file.name+")",

@@ -9,17 +9,22 @@ import cal
 import graph
 
 # Atmospheric Transmission
-def trans(site_file, freq_range):
+def trans(gui, site_file):
     site = ExcelReader(site_file)
-    freq_list = numpy.array(site.read_from_col('Hz',freq_range.min, freq_range.max), dtype='float')
-    return numpy.array(site.read_from_col(0, freq_range.min, freq_range.max, 'COMBIN TRANS'), dtype='float'), freq_list
+    freq_raw = numpy.array(site.read_from_col('Hz',
+            gui.interp.freq_range.min, gui.interp.freq_range.max), dtype='float')
+    trans_raw = numpy.array(site.read_from_col(0,
+            gui.interp.freq_range.min, gui.interp.freq_range.max, 'COMBIN TRANS'), dtype='float')
+    
+    return gui.interp.interpolate(freq_raw.tolist(), trans_raw.tolist())
 
 # Compute Signal
-def signal(aperture, site_file, source_file, spec_res, freq_range):
+def signal(gui, aperture, site_file, source_file, spec_res):
     
     source = ExcelReader(source_file)
-    freq_list = numpy.array(source.read_from_col('Hz',freq_range.min, freq_range.max), dtype='float')
-    intensity = numpy.array(source.read_from_col('W M-2 Hz-1', freq_range.min, freq_range.max), dtype='float')
-    trans_list, fl2 = trans(site_file, freq_range)
-    print len(freq_list),len(trans_list)
-    return cal.TS(freq_list, intensity, trans_list, aperture, spec_res), freq_list
+    freq_raw = numpy.array(source.read_from_col('Hz',freq_range.min, freq_range.max), dtype='float')
+    intens_raw = numpy.array(source.read_from_col('W M-2 Hz-1', freq_range.min, freq_range.max), dtype='float')
+    intensity = gui.interp.interpolate(freq_raw.tolist(), intens_raw.tolist())
+    
+    trans_list = trans(gui, site_file)
+    return cal.TS(gui.interp.freq_list, intensity, trans_list, aperture, spec_res)
