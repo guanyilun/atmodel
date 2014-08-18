@@ -36,7 +36,7 @@ def add_radiance(gui, graph_obj, site_file, spec_res):
         data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
                 "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.radiance(site_file.file, gui.interp.freq_range))
+        temp_list = temp.temp_list(gui, temp.radiance(gui, site_file.file))
         data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
                 "Temperature", "K", temp_list)
     
@@ -64,7 +64,7 @@ def add_galactic(gui, graph_obj, galactic_file, spec_res):
         data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
                 gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.generic_temp(galactic_file.file, gui.interp.freq_range))
+        temp_list = temp.temp_list(gui, temp.generic_temp(gui, galactic_file.file))
         data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
                 gui.energy_form, "Temperature", "K", temp_list)
     
@@ -79,7 +79,7 @@ def add_mirror(gui, graph_obj, metal_name, mirror_temp, constant, spec_res):
         data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
                 gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.mirror(mirror_temp, constant, gui.interp.freq_range))
+        temp_list = temp.temp_list(gui, temp.mirror(gui, mirror_temp, constant))
         data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
                 gui.energy_form, "Temperature", "K", temp_list)
     
@@ -93,7 +93,7 @@ def add_zodiac(gui, graph_obj, zodiac_file, spec_res):
         data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
                 gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.generic_temp(zodiac_file.file, gui.interp.freq_range))
+        temp_list = temp.temp_list(gui, temp.generic_temp(gui, zodiac_file.file))
         data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
                 gui.energy_form, "Temperature", "K", temp_list)
     
@@ -108,7 +108,7 @@ def add_cib(gui, graph_obj, spec_res):
                 "data/Backgrounds/CIB/cib.xlsx", spec_res))
         data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.generic_temp("data/Backgrounds/CIB/cib.xlsx", gui.interp.freq_range))
+        temp_list = temp.temp_list(gui, temp.generic_temp(gui, "data/Backgrounds/CIB/cib.xlsx"))
         data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "Temperature", "K", temp_list)
     
     graph_obj.dataset_list.append(data_set)
@@ -120,7 +120,7 @@ def add_cmb(gui, graph_obj, spec_res):
         noise_list = bling.noise_list(gui, bling.cmb(gui, spec_res))
         data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.cmb(gui.interp.freq_range))
+        temp_list = temp.temp_list(gui, temp.cmb(gui))
         data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "Temperature", "K", temp_list)
     
     graph_obj.dataset_list.append(data_set)
@@ -146,20 +146,21 @@ def add_signal(gui, graph_obj, aperture, site_file, source_file, spec_res):
 def add_noise(gui, graph_obj, label, site_file, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb, spec_res):
     
-    blingsq_tot, mfreq = bling.noise_total(site_file.file, galactic_file.file, mirror_temp,
-        mirror_constant, zodiac_file.file, cib, cmb, spec_res, gui.interp.freq_range)
+    blingsq_tot, mfreq = bling.noise_total(gui, site_file.file,
+        galactic_file.file, mirror_temp, mirror_constant, zodiac_file.file,
+        cib, cmb, spec_res)
     data_set = new_dataset("Total Noise ("+label+")", gui.energy_form, "BLING", bling_units(gui),
-            bling.noise_list(gui, blingsq_tot, mfreq))
+            bling.noise_list(gui, blingsq_tot))
     graph_obj.dataset_list.append(data_set)
 
 # Add total temp to plot
 def add_temp(gui, graph_obj, label, atmos_site, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb):
     
-    temp_tot, mfreq = temp.total(site, galactic_file.file, mirror_temp,
-        mirror_constant, zodiac_file.file, cib, cmb, gui.interp.freq_range)
+    temp_tot = temp.total(gui, site, galactic_file.file, mirror_temp,
+        mirror_constant, zodiac_file.file, cib, cmb)
     data_set = new_dataset("Total Temp ("+label+")", gui.energy_form, "Temperature", "K",
-            temp.temp_list(temp_tot, mfreq))
+            temp.temp_list(gui, temp_tot))
     graph_obj.dataset_list.append(data_set)
 
 # Add integration time to plot
