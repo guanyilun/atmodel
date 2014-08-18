@@ -37,7 +37,7 @@ class ExcelReader:
         except:
             self.row_start = Row - 1
         if self.row_start < self.row_offset + 1:
-            self.row_start = self.row_offset + 1# constrain start
+            self.row_start = self.row_offset + 1 # constrain start
         
         try:
             #now that we have determined what value row to start reading from, we use the same technique to determine what row to terminate reading from

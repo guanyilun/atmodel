@@ -37,7 +37,8 @@ class Interpolate:
         lnspace = (math.log(wl_range.max) - math.log(wl_range.min)) / divisions
         
         for i in range(1, divisions):
-            self.freq_list.insert(0, const.c / math.exp(math.log(wl_range.min) + i * lnspace))
+            self.freq_list.append(const.c / math.exp(math.log(wl_range.min) + i * lnspace))
+        self.freq_list.sort()
         
         return self.freq_list
     
