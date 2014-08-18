@@ -1,4 +1,4 @@
-# py
+# generate.py
 # generate graph given inputs
 
 import math
@@ -32,11 +32,11 @@ def new_dataset(label, energy_form, dep_type, dep_units, data_hz):
 def add_radiance(gui, graph_obj, site_file, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.radiance(site_file.file, spec_res, gui.freq_range))
+        noise_list = bling.noise_list(gui, bling.radiance(gui, site_file.file, spec_res))
         data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
                 "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.radiance(site_file.file, gui.freq_range))
+        temp_list = temp.temp_list(*temp.radiance(site_file.file, gui.interp.freq_range))
         data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
                 "Temperature", "K", temp_list)
     
@@ -44,7 +44,7 @@ def add_radiance(gui, graph_obj, site_file, spec_res):
 
 # Add atmospheric transmission to plot
 def add_trans(gui, graph_obj, site_file):
-    trans_list, freq_list = sigtrans.trans(site_file.file, gui.freq_range)
+    trans_list, freq_list = sigtrans.trans(site_file.file, gui.interp.freq_range)
     
     # build and return list of coordinates
     crdlist = []
@@ -60,11 +60,11 @@ def add_trans(gui, graph_obj, site_file):
 def add_galactic(gui, graph_obj, galactic_file, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.generic_noise(galactic_file.file, spec_res, gui.freq_range))
+        noise_list = bling.noise_list(gui, bling.generic_noise(gui, galactic_file.file, spec_res))
         data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
                 gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.generic_temp(galactic_file.file, gui.freq_range))
+        temp_list = temp.temp_list(*temp.generic_temp(galactic_file.file, gui.interp.freq_range))
         data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
                 gui.energy_form, "Temperature", "K", temp_list)
     
@@ -74,11 +74,12 @@ def add_galactic(gui, graph_obj, galactic_file, spec_res):
 def add_mirror(gui, graph_obj, metal_name, mirror_temp, constant, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.mirror(mirror_temp, constant, spec_res, gui.freq_range))
+        noise_list = bling.noise_list(gui, bling.mirror(gui,
+                mirror_temp, constant, spec_res))
         data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
                 gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.mirror(mirror_temp, constant, gui.freq_range))
+        temp_list = temp.temp_list(*temp.mirror(mirror_temp, constant, gui.interp.freq_range))
         data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
                 gui.energy_form, "Temperature", "K", temp_list)
     
@@ -88,11 +89,11 @@ def add_mirror(gui, graph_obj, metal_name, mirror_temp, constant, spec_res):
 def add_zodiac(gui, graph_obj, zodiac_file, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.generic_noise(zodiac_file.file, spec_res, gui.freq_range))
+        noise_list = bling.noise_list(gui, bling.generic_noise(gui, zodiac_file.file, spec_res))
         data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
                 gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.generic_temp(zodiac_file.file, gui.freq_range))
+        temp_list = temp.temp_list(*temp.generic_temp(zodiac_file.file, gui.interp.freq_range))
         data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
                 gui.energy_form, "Temperature", "K", temp_list)
     
@@ -103,10 +104,11 @@ def add_cib(gui, graph_obj, spec_res):
     # TODO: convert to equation fit
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.generic_noise("data/Backgrounds/CIB/cib.xlsx", spec_res, gui.freq_range))
+        noise_list = bling.noise_list(gui, bling.generic_noise(gui,
+                "data/Backgrounds/CIB/cib.xlsx", spec_res))
         data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.generic_temp("data/Backgrounds/CIB/cib.xlsx", gui.freq_range))
+        temp_list = temp.temp_list(*temp.generic_temp("data/Backgrounds/CIB/cib.xlsx", gui.interp.freq_range))
         data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "Temperature", "K", temp_list)
     
     graph_obj.dataset_list.append(data_set)
@@ -115,17 +117,17 @@ def add_cib(gui, graph_obj, spec_res):
 def add_cmb(gui, graph_obj, spec_res):
     
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, *bling.cmb(spec_res, gui.freq_range))
+        noise_list = bling.noise_list(gui, bling.cmb(gui, spec_res))
         data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
     else: # temperature
-        temp_list = temp.temp_list(*temp.cmb(gui.freq_range))
+        temp_list = temp.temp_list(*temp.cmb(gui.interp.freq_range))
         data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "Temperature", "K", temp_list)
     
     graph_obj.dataset_list.append(data_set)
 
 # Add signal to plot
 def add_signal(gui, graph_obj, aperture, site_file, source_file, spec_res):
-    sig_list, freq_list = sigtrans.signal(aperture, site_file.file, source_file.file, spec_res, gui.freq_range)
+    sig_list, freq_list = sigtrans.signal(aperture, site_file.file, source_file.file, spec_res, gui.interp.freq_range)
     
     # build and return list of coordinates
     crdlist = []
@@ -145,7 +147,7 @@ def add_noise(gui, graph_obj, label, site_file, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb, spec_res):
     
     blingsq_tot, mfreq = bling.noise_total(site_file.file, galactic_file.file, mirror_temp,
-        mirror_constant, zodiac_file.file, cib, cmb, spec_res, gui.freq_range)
+        mirror_constant, zodiac_file.file, cib, cmb, spec_res, gui.interp.freq_range)
     data_set = new_dataset("Total Noise ("+label+")", gui.energy_form, "BLING", bling_units(gui),
             bling.noise_list(gui, blingsq_tot, mfreq))
     graph_obj.dataset_list.append(data_set)
@@ -155,7 +157,7 @@ def add_temp(gui, graph_obj, label, atmos_site, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb):
     
     temp_tot, mfreq = temp.total(site, galactic_file.file, mirror_temp,
-        mirror_constant, zodiac_file.file, cib, cmb, gui.freq_range)
+        mirror_constant, zodiac_file.file, cib, cmb, gui.interp.freq_range)
     data_set = new_dataset("Total Temp ("+label+")", gui.energy_form, "Temperature", "K",
             temp.temp_list(temp_tot, mfreq))
     graph_obj.dataset_list.append(data_set)
@@ -166,8 +168,8 @@ def add_integ(gui, graph_obj, label, atmos_site, galactic_file, mirror_temp, mir
     
     # compute noise and signal and, with signal:noise ratio, integration time
     blingsq_tot, mfreq = bling.noise_total(atmos_site.file, galactic_file.file, mirror_temp,
-        mirror_constant, zodiac_file.file, cib, cmb, spec_res, gui.freq_range)
-    sig_list, slist = sigtrans.signal(aperture, site_file.file, source_file.file, spec_res, gui.freq_range)
+        mirror_constant, zodiac_file.file, cib, cmb, spec_res, gui.interp.freq_range)
+    sig_list, slist = sigtrans.signal(aperture, site_file.file, source_file.file, spec_res, gui.interp.freq_range)
     integ_time = cal.IT(blingsq_tot, snr, sig_list) # array of integration times
     
     # build and return list of coordinates

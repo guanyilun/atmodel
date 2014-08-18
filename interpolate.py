@@ -1,6 +1,7 @@
 # interpolate.py
 # create and manage data sets
 
+import math
 from scipy.interpolate import interp1d
 
 import auxil
@@ -18,25 +19,25 @@ class Interpolate:
         
         # compute list of frequencies
         self.freq_list = [freq_range.min]
-        spacing = (freq_range.max - freq_range.min) / divisions
+        lnspace = (math.log(freq_range.max) - math.log(freq_range.min)) / divisions
         
         for i in range(1, divisions):
-            self.freq_list.append(freq_list.min + i * division)
+            self.freq_list.append(math.exp(math.log(freq_range.min) + i * lnspace))
         
         return self.freq_list
         
     # update frequency interval with wavelength
-    def set_wl_m (self, wl_range, division = 1000):
+    def set_wl_m (self, wl_range, divisions = 1000):
         self.freq_range = \
             auxil.interval(const.c / wl_range.max, const.c / wl_range.min)
         self.divisions = divisions
         
         # compute list of frequencies with even wavelength spacing
-        self.freq_list = [freq_range.min]
-        spacing = (wl_range.max - wl_range.min) / divisions
+        self.freq_list = [self.freq_range.min]
+        lnspace = (math.log(wl_range.max) - math.log(wl_range.min)) / divisions
         
         for i in range(1, divisions):
-            self.freq_list.append(const.c / (wl_range.max - i * division))
+            self.freq_list.insert(0, const.c / math.exp(math.log(wl_range.min) + i * lnspace))
         
         return self.freq_list
     
@@ -46,10 +47,11 @@ class Interpolate:
     def interpolate (self, freq, data):
         
         # define interpolation function
-        f = interp1d(freq, data)
+        f = interp1d(freq, data, bounds_error=False)
         
         # create new list of dependent coordinates
         new_data = []
+        
         for x in self.freq_list:
             new_data.append(f(x))
         

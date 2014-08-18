@@ -7,7 +7,8 @@ import numpy
 
 name_file = collections.namedtuple("name_file", "name file")
 interval = collections.namedtuple("interval", "min max")
-energy_form = collections.namedtuple("energy_form", "type units to_hz from_hz")
+energy_form = collections.namedtuple("energy_form",
+    "type units to_hz from_hz to_m is_freq")
 
 # generate list of frequencies (in Hz) with identical form as data
 def generate_freq(freq_range):
@@ -31,6 +32,13 @@ def generate_freq(freq_range):
     zero_array = numpy.array(zero_list, dtype="float")
     
     return freq_array, zero_array
+
+# generate a zero list
+def get_zero (freq_list):
+    zero = []
+    for freq in freq_list:
+        zero.append(0)
+    return zero
 
 # Get column pair from data file
 def get_col(file_name, col1, col1n, col2, col2n, freq_range):

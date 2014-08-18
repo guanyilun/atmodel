@@ -5,6 +5,7 @@ from PyQt4 import QtCore, QtGui
 
 import auxil as aux
 import config
+import const
 import dyngui
 
 # Project Configuration
@@ -36,8 +37,8 @@ def pconfig(gui):
     def e_units_changed(new_index): # handle changed in selected units of photon energy
         
         # do unit conversions for min and max energies
-        energy_min = gui.energy_list[new_index].from_hz(gui.freq_range.min)
-        energy_max = gui.energy_list[new_index].from_hz(gui.freq_range.max)
+        energy_min = gui.energy_list[new_index].from_hz(gui.interp.freq_range.min)
+        energy_max = gui.energy_list[new_index].from_hz(gui.interp.freq_range.max)
         
         # assign to "min" and "max" text fields by numerical value
         #  (ie. smaller wavelengths correspond to higher energy, so need to reverse)
@@ -73,9 +74,16 @@ def pconfig(gui):
             freq2 = energy_form.to_hz(float(inputs2["energy2"].widget.text()))
             
             if freq1 < freq2:
-                gui.freq_range = aux.interval(freq1, freq2)
+                freq_range = aux.interval(freq1, freq2)
             else:
-                gui.freq_range = aux.interval(freq2, freq1)
+                freq_range = aux.interval(freq2, freq1)
+        
+            # set interpolation range
+            if energy_form.is_freq:
+                gui.interp.set_freq_hz(freq_range)
+            else:
+                gui.interp.set_wl_m(aux.interval(const.c / freq_range.max,
+                    const.c / freq_range.min))
             
         except Exception:
             pass # assume fields are incomplete, so ignore now and try again later

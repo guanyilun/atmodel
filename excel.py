@@ -1,7 +1,8 @@
+import math
+import os
 from xlrd import open_workbook
 from xlwt import Workbook
 from xlsxwriter.workbook import Workbook
-import os
 
 c = 299792458
 unit_conversions = {'THz':10**12,'Hz':1,'micron':10**(-6),'um':10**(-6),'m':1,'CM-1':c*10**2,'CM^-1':c*10**2}
@@ -32,9 +33,12 @@ class ExcelReader:
                     raise Exception()
                 Row = Row + 1 #if the row we look at is smaller than what we want, we go to the next row
                 Current_Value = self.sheet.cell(Row, self.col).value
-            self.row_start = Row #the row we want to start reading from is the first row with a value that isn't less than the starting frequency we want
+            self.row_start = Row - 1 #the row we want to start reading from is the row before the first row with a value that isn't less than the starting frequency we want
         except:
-            self.row_start = Row
+            self.row_start = Row - 1
+        if self.row_start < self.row_offset + 1:
+            self.row_start = self.row_offset + 1# constrain start
+        
         try:
             #now that we have determined what value row to start reading from, we use the same technique to determine what row to terminate reading from
             while Current_Value <= freq_end and Current_Value >= freq_start: #search through column until we find the frequency we want to end at(the first frequency greater than what we enter)
@@ -42,8 +46,8 @@ class ExcelReader:
                 Row += 1
                 Current_Value = self.sheet.cell(Row, self.col).value
                 
-            self.row_end = Row #the row we want to end reading from is the last row the while loop iterated through which is one less than the "Row" it will give
-        except:
+            self.row_end = Row + 1 #the row we want to end reading from is the last row the while loop iterated through which is one less than the "Row" it will give
+        except: # we've past the last one
             self.row_end = Row
 
     def read_from_col(self, units, freq_start, freq_end, title = ' '): #reads independent variable(freq in Hz) terms to a namedtuple with the data    

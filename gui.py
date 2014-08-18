@@ -15,6 +15,7 @@ import generate
 import graph
 from graph import *
 import inputs
+from interpolate import *
 import project
 
 class gui(QtGui.QWidget):
@@ -30,7 +31,7 @@ class gui(QtGui.QWidget):
         self.zodiac_files = zodiac # list of ecliptic emission files
         
         # Project settings
-        self.freq_range = aux.interval(1e11, 1e13) # frequency range for plot (Hz)
+        self.interp = Interpolate(aux.interval(1e11, 1e13)) # frequency range (Hz)
         self.bling_units = 0 # use W/Hz^1/2 as default units of BLING
         self.noise_what = 0 # plot BLING by default for noise
         self.compos_what = 0 # plot total BLING by default for composite

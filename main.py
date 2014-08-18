@@ -57,13 +57,29 @@ def main():
     def wn_cm_inv2(hz): # wavenumber (cm^-1)
         return 1e2 * hz / const.c
     
-    energy_list = [aux.energy_form("Frequency", "Hz", freq_hz1, freq_hz2),
-                   aux.energy_form("Frequency", "THz", freq_thz1, freq_thz2),
-                   aux.energy_form("Wavelength", "m", wl_m1, wl_m2),
-                   aux.energy_form("Wavelength", "microns", wl_microns1, wl_microns2),
-                   aux.energy_form("Wavelength", "nm", wl_nm1, wl_nm2),
-                   aux.energy_form("Wavenumber", "m^-1", wn_m_inv1, wn_m_inv2),
-                   aux.energy_form("Wavenumber", "cm^-1", wn_cm_inv1, wn_cm_inv2)]
+    # convert from units of photon energy to wavelength in m
+    def freq_hz3(hz): # frequency (Hz)
+        return const.c / hz
+    def freq_thz3(thz): # frequency (THz)
+        return const.c / (1e12 * thz)
+    def wl_m3(m): # wavelength (m)
+        return m
+    def wl_microns3(um): # wavelength (microns)
+        return 1e-6 * um
+    def wl_nm3(nm): # wavelength (nm)
+        return 1e-9 * nm
+    def wn_m_inv3(m_inv): # wavenumber (m^-1)
+        return 1.0 / m_inv
+    def wn_cm_inv3(cm_inv): # wavenumber (cm^-1)
+        return 1.0 / (1e-2 * cm_inv)
+    
+    energy_list = [aux.energy_form("Frequency", "Hz", freq_hz1, freq_hz2, freq_hz3, True),
+                   aux.energy_form("Frequency", "THz", freq_thz1, freq_thz2, freq_thz3, True),
+                   aux.energy_form("Wavelength", "m", wl_m1, wl_m2, wl_m3, False),
+                   aux.energy_form("Wavelength", "microns", wl_microns1, wl_microns2, wl_microns3, False),
+                   aux.energy_form("Wavelength", "nm", wl_nm1, wl_nm2, wl_nm3, False),
+                   aux.energy_form("Wavenumber", "m^-1", wn_m_inv1, wn_m_inv2, wn_m_inv3, True),
+                   aux.energy_form("Wavenumber", "cm^-1", wn_cm_inv1, wn_cm_inv2, wn_cm_inv3, True)]
     
     # create name file pairs
     atmos_files = []
