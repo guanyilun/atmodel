@@ -52,7 +52,7 @@ def custom_locator(logrange, numticks):
     return ticker.LogLocator(subs=subs)
 
 # create cursor coordinate format to be used for only one y-axis
-def basic_format_coord(data_set):
+def basic_format_coord(x, y):
     # x, y: data coords [of right axis] under cursor
     return '({:.2e},{:.2e})'.format(x,y)
 
