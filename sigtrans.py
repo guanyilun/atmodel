@@ -33,6 +33,6 @@ def signal(gui, aperture, site_file, source_file, spec_res):
             gui.interp.freq_range.min, gui.interp.freq_range.max), dtype='float')
 
     intensity = gui.interp.interpolate(freq_raw.tolist(), intens_raw.tolist())
-
     trans_list = trans(gui, site_file)
+
     return cal.TS(numpy.array(gui.interp.freq_list), intensity, trans_list, aperture, spec_res)
