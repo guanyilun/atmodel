@@ -147,7 +147,7 @@ def add_signal(gui, graph_obj, aperture, site_file, source_file, spec_res):
 def add_noise(gui, graph_obj, label, site_file, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb, spec_res):
 
-    blingsq_tot, mfreq = bling.noise_total(gui, site_file.file,
+    blingsq_tot = bling.noise_total(gui, site_file.file,
         galactic_file.file, mirror_temp, mirror_constant, zodiac_file.file,
         cib, cmb, spec_res)
     data_set = new_dataset("Total Noise ("+label+")", gui.energy_form, "BLING", bling_units(gui),
@@ -359,23 +359,25 @@ def process(gui):
             if site_index > 0:
                 site = gui.atmos_files[site_index-1] # override atmospheric radiance site if provided
 
+        try: # check if given spectral resolution is a number
+            spec_res = float(group.inputs["specres"].widget.text())
+        except ValueError:
+            continue # not filled in properly, so skip
+
         if gui.compos_what == 0: # total noise
             add_noise(gui, new_graph, dataset_label, atmos_site,
-                    galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
+                    galactic, mirror_temp, mirror_constant, zodiac, cib, cmb,
+                    spec_res)
 
         elif gui.compos_what == 1: # total temperature
             add_temp(gui, new_graph, dataset_label, atmos_site,
-                    galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
+                    galactic, mirror_temp, mirror_constant, zodiac, cib, cmb,
+                    spec_res)
 
         elif gui.compos_what == 2: # integration time
 
             try: # check if given signal:noise ratio is a number
                 snr = float(group.inputs["snr"].widget.text())
-            except ValueError:
-                continue # not filled in properly, so skip
-
-            try: # check if given spectral resolution is a number
-                spec_res = float(group.inputs["specres"].widget.text())
             except ValueError:
                 continue # not filled in properly, so skip
 
