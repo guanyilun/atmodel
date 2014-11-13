@@ -21,7 +21,7 @@ def bling_sub(freq, temp, resol):  #calculates BLING(squared) for "Cosmic Infrar
 ##                       2) Calculate integration constants and integration range
 ##                       3) Calculate BLING(squared) from antenna temperature
 ## 1) Interpolate temperature vs. frequency
-    f = interpolate.InterpolatedUnivariateSpline(freq, temp, k=1)  #linear interpolation of "temp" vs. "freq"
+    f = interpolate.interp1d(freq, temp, bounds_error=False)  #linear interpolation of "temp" vs. "freq"
 
 ## 2) Calculate integration constants and integration range
     resol = float(resol)  #ensure "resol" is a float not an integer
@@ -36,7 +36,7 @@ def bling_sub(freq, temp, resol):  #calculates BLING(squared) for "Cosmic Infrar
     ranges = (np.arange(*(list(i)+[step_size])) for i in int_range)  #"i in int_range" refers to each row(which has a start and end to the integration range)
         #for each row, an array is created with values ranging from the starting value to the ending value, in increments of "step_size"
 
-## 3) Calculate BLING(squared from antenna temperature
+## Calculate BLING(squared from antenna temperature
     blingSUB_squared = np.array([c*np.sum(i*f(i)) for i in ranges])  #"i in ranges" refers to each row(of the bounds plus "step_size") from the array created above
         #for each row, each of the 2 bounds is multiplied by its corresponding temperature from the linear interpolation done at the start and then are summed
         #summing does the integral for each frequency
@@ -50,7 +50,7 @@ def bling_CMB(freq, resol):  #calculates BLING(squared) for "Cosmic Microwave Ba
 ##                       2) Calculate antenna temperature from intensity
 ##                       3) Calculate BLING(squared) from antenna temperature
 ## 1) Calculate intensity from frequency
-    
+
     resol = float(resol)  #ensure "resol" is a float not an integer
     temp = []  #create list to be filled with calculated temperatures
     c1 = const.h / (const.k * cmb_temp)  #constants from equation 2.16 in Denny
@@ -66,7 +66,7 @@ def bling_CMB(freq, resol):  #calculates BLING(squared) for "Cosmic Microwave Ba
     temp = np.array(temp)  #turn "temp" list into "temp" array
 
 ## 3) Calculate BLING(squared) from antenna temperature
-    f = interpolate.InterpolatedUnivariateSpline(freq, temp, k=1) #linear interpolation of "temp" vs. "freq"
+    f = interpolate.interp1d(freq, temp, bounds_error=False) #linear interpolation of "temp" vs. "freq"
     step_size = 1.5e5  #characterize the level of details wanted from interpolation
         #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
     c = 2 * const.h * const.k * step_size  #2 is number of polarization modes, constants come from equation 2.15 in Denny(without the radical) and "step_size" is the increment of the Riemann sum
@@ -86,14 +86,14 @@ def bling_CMB(freq, resol):  #calculates BLING(squared) for "Cosmic Microwave Ba
 
     return blingCMB_squared
 
-        
+
 def bling_AR(freq, rad, resol):  #calculates BLING(squared) for "Atmospheric Radiance"
 ##    What will be done: 1) Interpolate radiance vs. frequency
 ##                       2) Calculate antenna temperature from radiance
 ##                       3) Calculate BLING(squared) from antenna temperature
 ## 1) Interpolate radiance vs. frequency
     rad = rad / (3e6)  #radiance files are given in W/cm^2/st/cm^-1 but are converted to W/m^2/st/Hz
-    rad = interpolate.InterpolatedUnivariateSpline(freq, rad, k=1)  #linear interpolation of "rad" vs. "freq"
+    rad = interpolate.interp1d(freq, rad, bounds_error=False)  #linear interpolation of "rad" vs. "freq"
 
 ## 2) Calculate antenna temperature from radiance
     temp = []  #create list to be filled with calculated temperatures
@@ -103,7 +103,7 @@ def bling_AR(freq, rad, resol):  #calculates BLING(squared) for "Atmospheric Rad
     temp = np.array(temp)  #turn "temp" list into "temp" array
 
 ## 3) Calculate BLING(squared) from antenna temperature
-    f = interpolate.InterpolatedUnivariateSpline(freq, temp, k=1)  #linear interpolation of "temp" vs. "freq"
+    f = interpolate.interp1d(freq, temp, bounds_error=False)  #linear interpolation of "temp" vs. "freq"
     step_size = 1.5e5  #characterize the level of details wanted from interpolation
         #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
     c = const.h * const.k * step_size  #constants come from equation 2.15 in Denny(without the radical) and "step_size" is the increment of the Riemann sum
@@ -140,7 +140,7 @@ def bling_TME(freq, resol, sigma, mirror_temp, wavelength):  #calculates BLING(s
 ## 2) Calculate effective temperature from emissivity and mirror temperature
     effective_temp = []  #create list to be filled with effective temperatures
     mirror_temp = float(mirror_temp)  #ensure "mirror_temp" is a float not an integer
-    f = interpolate.InterpolatedUnivariateSpline(freq, em, k=1)  #linear interpolation of "em" vs. "freq"
+    f = interpolate.interp1d(freq, em, bounds_error=False)  #linear interpolation of "em" vs. "freq"
     c2 = const.h / (const.k * mirror_temp)  #a constant from equation 2.20 in Denny
     c3 = const.h / const.k  #a constant from equation 2.20 in Denny
     for i in freq:
@@ -151,7 +151,7 @@ def bling_TME(freq, resol, sigma, mirror_temp, wavelength):  #calculates BLING(s
     temp = np.array(effective_temp)  #turn "effective_temp" list into "temp" array
 
 ## 3) Calculate BLING(squared) from effective temperature
-    f = interpolate.InterpolatedUnivariateSpline(freq, temp, k=1)  #linear interpolation of "temp" vs. "freq"
+    f = interpolate.interp1d(freq, temp, bounds_error=False)  #linear interpolation of "temp" vs. "freq"
     step_size = 1.5e5  #characterize the level of details wanted from interpolation
         #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
     c = 2 * const.h * const.k * step_size  #2 is number of polarization modes, constants come from equation 2.15 in Denny(without the radical) and "step_size" is the increment of the Riemann sum
@@ -187,7 +187,7 @@ def temp_TME(freq, sigma, mirror_temp, wavelength):  #calculates antenna tempera
 ## 2) Calculate effective temperature from emissivity and mirror temperature
     effective_temp = []  #create list to be filled with effective temperatures
     mirror_temp = float(mirror_temp)  #ensure "mirror_temp" is a float not an integer
-    f = interpolate.InterpolatedUnivariateSpline(freq, em, k=1)  #linear interpolation of "em" vs. "freq"
+    f = interpolate.interp1d(freq, em, bounds_error=False)  #linear interpolation of "em" vs. "freq"
     c2 = const.h / (const.k * mirror_temp)  #a constant from equation 2.20 in Denny
     c3 = const.h / const.k  #a constant from equation 2.20 in Denny
     for i in freq:
@@ -223,7 +223,7 @@ def temp_AR(freq, rad):  #calculates antenna temperature for "Atmospheric Radian
 ##                       2) Calculate antenna temperature from radiance
 ## 1) Interpolate radiance vs. frequency
     rad = rad / (3e6)  #radiance files are given in W/cm^2/st/cm^-1 but are converted to W/m^2/st/Hz
-    rad = interpolate.InterpolatedUnivariateSpline(freq, rad, k=1)  #linear interpolation of "rad" vs. "freq"
+    rad = interpolate.interp1d(freq, rad, bounds_error=False)  #linear interpolation of "rad" vs. "freq"
 
 ## 2) Calculate antenna temperature from radiance
     temp = []  #create list to be filled with calculated temperatures
@@ -237,18 +237,18 @@ def temp_AR(freq, rad):  #calculates antenna temperature for "Atmospheric Radian
 def IT(bling_TOT, ratio, ts):  #calculates Integration Time
     return np.array((bling_TOT * ratio / ts)**2, dtype='float')  #follows equation 4.1 in Denny
 
-    
+
 def TS(freq, inte, tau, d, resol):  #calculates Total Signal
     try: assert len(freq)==len(tau)  #if the "freq" array is not the same length as the "tau" array, program will say this is an error
     except AssertionError:
         raise ValueError("The two arrays must have the same length.")
 
-    f = interpolate.InterpolatedUnivariateSpline(freq, inte, k=1)  #linear interpolation of "inte" vs. "freq"
-    g = interpolate.InterpolatedUnivariateSpline(freq, tau, k=1)   #linear interpolation of "tau" vs. "freq"
+    f = interpolate.interp1d(freq, inte, bounds_error=False)  #linear interpolation of "inte" vs. "freq"
+    g = interpolate.interp1d(freq, tau, bounds_error=False)   #linear interpolation of "tau" vs. "freq"
     resol = float(resol)  #ensure "resol" is a float not an integer
-    
+
     inte_resol = 1000.0
-    step_size = 0.1 * 3 * 10e10 / inte_resol   #characterize the level of details wanted from interpolation 
+    step_size = 0.1 * 3 * 10e10 / inte_resol   #characterize the level of details wanted from interpolation
     c = np.pi*(d/2.0)**2 * step_size  #constants come from equation 3.13 in Denny et al and "step_size" is the increment of the Riemann sum
     int_range_length = freq/2/resol  #2nd term in integration bounds from equation 3.13 in Denny et al
     int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
