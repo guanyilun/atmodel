@@ -5,6 +5,7 @@ from scipy import interpolate
 from excel import ExcelReader
 
 cmb_temp = 2.725 # temperature of CMB (in K)
+step_size_k = 1e-7
 
 # These calculations reference equations in 2 papers:
 # "Limitations on Observing Submillimeter and Far Infrared Galaxies" by Denny
@@ -25,7 +26,7 @@ def bling_sub(freq, temp, resol):  #calculates BLING(squared) for "Cosmic Infrar
 
 ## 2) Calculate integration constants and integration range
     resol = float(resol)  #ensure "resol" is a float not an integer
-    step_size = 1.5e5  #characterize the level of details wanted from interpolation
+    step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))  #characterize the level of details wanted from interpolation
         #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
     c = 2 * const.h * const.k * step_size  #2 is number of modes, constants come from equation 2.15 in Denny(without the radical), "step_size" is the increment of the Riemann sum
     int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
@@ -67,7 +68,7 @@ def bling_CMB(freq, resol):  #calculates BLING(squared) for "Cosmic Microwave Ba
 
 ## 3) Calculate BLING(squared) from antenna temperature
     f = interpolate.interp1d(freq, temp, bounds_error=False) #linear interpolation of "temp" vs. "freq"
-    step_size = 1.5e5  #characterize the level of details wanted from interpolation
+    step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))  #characterize the level of details wanted from interpolation
         #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
     c = 2 * const.h * const.k * step_size  #2 is number of polarization modes, constants come from equation 2.15 in Denny(without the radical) and "step_size" is the increment of the Riemann sum
     int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
@@ -104,7 +105,7 @@ def bling_AR(freq, rad, resol):  #calculates BLING(squared) for "Atmospheric Rad
 
 ## 3) Calculate BLING(squared) from antenna temperature
     f = interpolate.interp1d(freq, temp, bounds_error=False)  #linear interpolation of "temp" vs. "freq"
-    step_size = 1.5e5  #characterize the level of details wanted from interpolation
+    step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))  #characterize the level of details wanted from interpolation
         #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
     c = const.h * const.k * step_size  #constants come from equation 2.15 in Denny(without the radical) and "step_size" is the increment of the Riemann sum
     int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
@@ -152,7 +153,7 @@ def bling_TME(freq, resol, sigma, mirror_temp, wavelength):  #calculates BLING(s
 
 ## 3) Calculate BLING(squared) from effective temperature
     f = interpolate.interp1d(freq, temp, bounds_error=False)  #linear interpolation of "temp" vs. "freq"
-    step_size = 1.5e5  #characterize the level of details wanted from interpolation
+    step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))  #characterize the level of details wanted from interpolation
         #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
     c = 2 * const.h * const.k * step_size  #2 is number of polarization modes, constants come from equation 2.15 in Denny(without the radical) and "step_size" is the increment of the Riemann sum
     int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
