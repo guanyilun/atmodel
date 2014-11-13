@@ -169,15 +169,15 @@ def add_integ(gui, graph_obj, label, atmos_site, galactic_file, mirror_temp, mir
         zodiac_file, cib, cmb, aperture, site_file, source_file, snr, spec_res):
 
     # compute noise and signal and, with signal:noise ratio, integration time
-    blingsq_tot, mfreq = bling.noise_total(atmos_site.file, galactic_file.file, mirror_temp,
-        mirror_constant, zodiac_file.file, cib, cmb, spec_res, gui.interp.freq_range)
-    sig_list, slist = sigtrans.signal(aperture, site_file.file, source_file.file, spec_res, gui.interp.freq_range)
+    blingsq_tot = bling.noise_total(gui, atmos_site.file, galactic_file.file, mirror_temp,
+        mirror_constant, zodiac_file.file, cib, cmb, spec_res)
+    sig_list = sigtrans.signal(gui, aperture, site_file.file, source_file.file, spec_res)
     integ_time = cal.IT(blingsq_tot, snr, sig_list) # array of integration times
 
     # build and return list of coordinates
     crdlist = []
     for i, integ_val in enumerate(integ_time):
-        crdlist.append(graph.coord_obj(mfreq[i], integ_val))
+        crdlist.append(graph.coord_obj(gui.interp.freq_list[i], integ_val))
 
     # build data set and add to graph
     data_set = new_dataset("Integration Time ("+label+")", gui.energy_form, "Time", "s", crdlist)
@@ -371,8 +371,7 @@ def process(gui):
 
         elif gui.compos_what == 1: # total temperature
             add_temp(gui, new_graph, dataset_label, atmos_site,
-                    galactic, mirror_temp, mirror_constant, zodiac, cib, cmb,
-                    spec_res)
+                    galactic, mirror_temp, mirror_constant, zodiac, cib, cmb)
 
         elif gui.compos_what == 2: # integration time
 
