@@ -279,19 +279,31 @@ class gui(QtGui.QWidget):
         menu = QtGui.QToolBar()
         menu_layout.addWidget(menu)
 
+        # create new project
+        def new_proj ():
+            # check for changes
+            if self.changed: # ask to save existing project
+                self.close_project(lambda: project.new(self), lambda: None)
+            else: # no changes to be saved -> just open new project
+                project.new(self)
+
+        newprj = QtGui.QAction("&New", self)
+        newprj.setToolTip("Reset interface")
+        newprj.setShortcut("Ctrl+N")
+        newprj.triggered.connect(new_proj)
+        menu.addAction(newprj)
+
         # open project file
-        def open_proj():
+        def open_proj ():
             proj_file = QtGui.QFileDialog.getOpenFileName(self, "Open Project",
                     filter="Atmospheric Modeling Project (*.atmodel)")
             if len(proj_file) > 0: # open project file if a file is selected
                 project.open(self, proj_file)
 
-        # check for changes to existing project first
-        def open_func():
-            def ignore():
-                pass # do nothing if ignored
+        def open_func ():
+            # check for changes to existing project first
             if self.changed: # ask to save existing project
-                self.close_project(open_proj, ignore)
+                self.close_project(open_proj, lambda: None)
             else: # no changes to be saved -> just open new project
                 open_proj()
 
@@ -302,7 +314,7 @@ class gui(QtGui.QWidget):
         menu.addAction(openprj)
 
         # save project file
-        def save_func():
+        def save_func ():
             if len(self.proj_file) > 0: # currently editing a project already
                 project.save(self, self.proj_file)
             else: # no project file opened -- ask for file name
@@ -315,7 +327,7 @@ class gui(QtGui.QWidget):
         menu.addAction(saveprj)
 
         # save project file with different name
-        def saveas_func():
+        def saveas_func ():
             proj_file = QtGui.QFileDialog.getSaveFileName(self, "Save Project",
                     filter="Atmospheric Modeling Project (*.atmodel)")
             if len(proj_file) > 0: # save project file if a name is selected
@@ -327,7 +339,7 @@ class gui(QtGui.QWidget):
         menu.addAction(saveas)
 
         # export data
-        def export_func():
+        def export_func ():
 
             # allow data export only if graph exists
             if hasattr(self.plot, "graph_data"):
