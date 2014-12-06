@@ -1,7 +1,6 @@
 import math
 import os
 from xlrd import open_workbook
-from xlwt import Workbook
 from xlsxwriter.workbook import Workbook
 
 c = 299792458
@@ -59,8 +58,8 @@ class ExcelReader:
             for row in range(self.row_start, self.row_end):
                 value = self.sheet.cell(row,int(self.col)).value
                 col_unit = str(self.sheet.cell(row,int(self.units_col)))[7:-1]
-                print col_unit
-                print value
+                print(col_unit)
+                print(value)
                 if value != None and col_unit == units:
                     result.append(value)
         else:

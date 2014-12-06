@@ -384,4 +384,4 @@ def process(gui):
                     mirror_temp, mirror_constant, zodiac, cib, cmb, aperture,
                     site, source, snr, spec_res)
 
-    gui.plot.redraw(new_graph)
+    return new_graph

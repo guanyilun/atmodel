@@ -17,6 +17,7 @@ from graph import *
 import inputs
 from interpolate import *
 import project
+import work
 
 class gui(QtGui.QWidget):
 
@@ -39,6 +40,11 @@ class gui(QtGui.QWidget):
         self.collections = {} # dictionary of collections of data input widgets
         self.groups = {} # dictionary of lone widget groups not part of a collection
         self.floating = {} # free-floating widgets not in any group or collection
+
+        # calculation in separate worker thread
+        self.main_thread = QtCore.QThread.currentThread()
+        self.worker = work.Worker(self.main_thread)
+        self.worker.ready.connect(self.done_work)
 
         self.init_UI()
 
@@ -348,13 +354,27 @@ class gui(QtGui.QWidget):
         buttons.addStretch(1)
         right.addLayout(buttons)
 
-        # generate graph
-        gen_btn = QtGui.QPushButton("Generate Graph")
-        buttons.addWidget(gen_btn)
+        # label stating "in progress"
+        self.in_progress = QtGui.QLabel()
+        buttons.addWidget(self.in_progress)
 
-        def do_generate():
-            generate.process(self)
-        QtCore.QObject.connect(gen_btn,
+        # generate graph
+        self.gen_btn = QtGui.QPushButton("Generate Graph")
+        buttons.addWidget(self.gen_btn)
+
+        def do_generate ():
+            # start calculations
+            self.thread = QtCore.QThread()
+            self.worker.moveToThread(self.thread)
+            self.thread.started.connect(self.worker.run)
+            self.worker.update(generate.process, self)
+            self.thread.start()
+
+            # do interface changes to notify of work in progress
+            self.in_progress.setText("Working...")
+            self.gen_btn.setEnabled(False)
+
+        QtCore.QObject.connect(self.gen_btn,
                 QtCore.SIGNAL("clicked()"), do_generate)
 
         ###
@@ -366,6 +386,16 @@ class gui(QtGui.QWidget):
         self.setLayout(top)
 
         self.show()
+
+    # done generating graph
+    def done_work (self):
+        new_graph = self.worker.get()
+        self.plot.redraw(new_graph)
+        self.thread.quit()
+
+        # restore interface
+        self.in_progress.clear()
+        self.gen_btn.setEnabled(True)
 
     # Closing current project
     def close_project(self, accept_func, ignore_func):
