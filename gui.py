@@ -340,26 +340,17 @@ class gui(QtGui.QWidget):
         export.triggered.connect(export_func)
         menu.addAction(export)
 
-        ## Graph and toolbar
-        graph_layout = QtGui.QVBoxLayout()
-        right.addLayout(graph_layout)
-
+        ## main graph + buttons
         self.plot = Graph()
-        self.toolbar = NavigationToolbar(self.plot, parent=None)
-        graph_layout.addWidget(self.plot)
-        graph_layout.addWidget(self.toolbar)
+        right.addWidget(self.plot)
 
-        ## buttons
+        # buttons
         buttons = QtGui.QHBoxLayout()
-        buttons.addStretch(1)
         right.addLayout(buttons)
-
-        # label stating "in progress"
-        self.in_progress = QtGui.QLabel()
-        buttons.addWidget(self.in_progress)
 
         # generate graph
         self.gen_btn = QtGui.QPushButton("Generate Graph")
+        self.gen_btn.setStyleSheet("font-weight: bold; height: 1.8em")
         buttons.addWidget(self.gen_btn)
 
         def do_generate ():
@@ -376,6 +367,15 @@ class gui(QtGui.QWidget):
 
         QtCore.QObject.connect(self.gen_btn,
                 QtCore.SIGNAL("clicked()"), do_generate)
+
+        # label stating "in progress"
+        self.in_progress = QtGui.QLabel()
+        buttons.addWidget(self.in_progress)
+        buttons.addStretch(1)
+
+        # add toolbar for graph
+        self.toolbar = NavigationToolbar(self.plot, parent=None)
+        buttons.addWidget(self.toolbar)
 
         ###
 
