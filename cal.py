@@ -248,8 +248,7 @@ def TS(freq, inte, tau, d, resol):  #calculates Total Signal
     g = interpolate.interp1d(freq, tau, bounds_error=False)   #linear interpolation of "tau" vs. "freq"
     resol = float(resol)  #ensure "resol" is a float not an integer
 
-    inte_resol = 1000.0
-    step_size = 0.1 * 3 * 10e10 / inte_resol   #characterize the level of details wanted from interpolation
+    step_size = step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))   #characterize the level of details wanted from interpolation
     c = np.pi*(d/2.0)**2 * step_size  #constants come from equation 3.13 in Denny et al and "step_size" is the increment of the Riemann sum
     int_range_length = freq/2/resol  #2nd term in integration bounds from equation 3.13 in Denny et al
     int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
