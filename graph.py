@@ -82,7 +82,7 @@ class Graph(FigureCanvas):
 
         #clear figure
         plt.clf()
-        
+
         # store all graph data for future use
         self.graph_data = graph_data
 
@@ -91,6 +91,8 @@ class Graph(FigureCanvas):
         self.axes.grid(True, which='both') # enable grid lines
 
         data = graph_data.dataset_list
+        if len(data) < 1: # no data to plot
+            raise Exception("no data to plot")
 
         # check to make sure there aren't too many data sets
         if len(data) > 6:
@@ -147,7 +149,7 @@ class Graph(FigureCanvas):
         self.axes.get_yaxis().set_minor_formatter(ticker.FuncFormatter(exp_ticks))
         # remove unneeded major ticks
         self.axes.get_yaxis().set_major_locator(ticker.NullLocator())
-        
+
         # cursor coordinate format
         self.axes.format_coord = basic_format_coord
 
@@ -174,7 +176,7 @@ class Graph(FigureCanvas):
             twinx.yaxis.set_minor_formatter(ticker.FuncFormatter(exp_ticks))
             # remove unneeded major ticks
             twinx.yaxis.set_major_locator(ticker.NullLocator())
-            
+
             # cursor coordinate format
             twinx.format_coord = twin_format_coord(twinx, self.axes)
 
@@ -186,7 +188,7 @@ class Graph(FigureCanvas):
         leg1 = self.axes.legend(loc='lower left',prop={'size':7})
         frame1 = leg1.get_frame()
         frame1.set_alpha(0.5)
-        
+
         # set title of graph
         self.axes.set_title(graph_data.title)
 
@@ -195,32 +197,32 @@ class Graph(FigureCanvas):
 
     # Update the graph title
     def set_title(self, new_title):
-        
+
         # only update title if graph is not empty
         if hasattr(self, "graph_data"):
-            
+
             self.axes.set_title(new_title)
             self.graph_data = graph_obj(new_title, self.graph_data.dataset_list)
             self.draw()
 
     # Export data current on the graph to a file
     def export(self, file_path):
-        
+
         # only export data from graph if the graph exists
         if hasattr(self, "graph_data"):
-            
+
             writer = ExcelXWriter(str(file_path))
-            
+
             # export all data sets
             for data_set in self.graph_data.dataset_list:
-                
+
                 # extract separate coordinate lists from list of coordinates
                 xlist = []
                 ylist = []
                 for coord in data_set.coord_list:
                     xlist.append(coord.x)
                     ylist.append(coord.y)
-                
+
                 writer.write_col(data_set.label, # name of data set
                     # independent coordinate name / units + data
                     [data_set.xname + " (" + data_set.xunits + ")"] + xlist)

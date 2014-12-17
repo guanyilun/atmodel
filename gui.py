@@ -362,7 +362,7 @@ class gui(QtGui.QWidget):
 
         # generate graph
         self.gen_btn = QtGui.QPushButton("Generate Graph")
-        self.gen_btn.setStyleSheet("font-weight: bold; height: 1.8em")
+        self.gen_btn.setStyleSheet("background-color: #ffffff; font-weight: bold; height: 1.8em")
         buttons.addWidget(self.gen_btn)
 
         def do_generate ():
@@ -401,12 +401,15 @@ class gui(QtGui.QWidget):
 
     # done generating graph
     def done_work (self):
-        new_graph = self.worker.get()
-        self.plot.redraw(new_graph)
-        self.thread.quit()
+        try:
+            new_graph = self.worker.get()
+            self.plot.redraw(new_graph)
+            self.thread.quit()
+            self.in_progress.clear()
+        except Exception as e:
+            self.in_progress.setText(str(e))
 
         # restore interface
-        self.in_progress.clear()
         self.gen_btn.setEnabled(True)
 
     # Closing current project

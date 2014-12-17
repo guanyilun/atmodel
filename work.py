@@ -4,6 +4,7 @@ from PyQt4 import QtCore, QtGui
 
 class Worker (QtCore.QObject):
     ready = QtCore.pyqtSignal()
+    fail = QtCore.pyqtSignal()
 
     def __init__ (self, main_thread):
         QtCore.QObject.__init__(self)
