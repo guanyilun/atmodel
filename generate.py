@@ -278,11 +278,12 @@ def process(gui):
             except Exception:
                 signal_res = config.spec_res
 
-            # only add if all fields are filled in
-            if site > 0 and source > 0:
+            # only add if source is filled in (assume site=space by default)
+            if source > 0:
                 add_signal(gui, new_graph,
                     aperture,
-                    gui.atmos_files[site - 1],
+                    site > 0 and gui.atmos_files[site - 1]
+                              or aux.name_file("", False),
                     gui.source_files[source - 1],
                     gui.signal_res.text())
 

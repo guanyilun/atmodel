@@ -5,11 +5,15 @@ from excel import ExcelXWriter, ExcelReader
 import math
 import numpy
 
+import auxil as aux
 import cal
 import graph
 
 # Atmospheric Transmission
 def trans(gui, site_file):
+    if not site_file: # return full transmission (ie. space) if no site given
+        return numpy.array(aux.get_one(gui.interp.freq_list))
+
     site = ExcelReader(site_file)
     freq_raw = numpy.array(site.read_from_col('Hz',
             gui.interp.freq_range.min, gui.interp.freq_range.max), dtype='float')
