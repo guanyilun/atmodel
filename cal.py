@@ -246,22 +246,24 @@ def TS(freq, inte, tau, d, resol):  #calculates Total Signal
 
     f = interpolate.interp1d(freq, inte, bounds_error=False)  #linear interpolation of "inte" vs. "freq"
     g = interpolate.interp1d(freq, tau, bounds_error=False)   #linear interpolation of "tau" vs. "freq"
-    resol = float(resol)  #ensure "resol" is a float not an integer
 
-    step_size = step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))   #characterize the level of details wanted from interpolation
-    c = np.pi*(d/2.0)**2 * step_size  #constants come from equation 3.13 in Denny et al and "step_size" is the increment of the Riemann sum
-    int_range_length = freq/2/resol  #2nd term in integration bounds from equation 3.13 in Denny et al
-    int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
-    int_range[:,0]=freq - int_range_length  #fill up 1st column of 0's array with bottom integration bound from equation 3.13 in Denny
-    int_range[:,1]=freq + int_range_length  #fill up 1st column of 0's array with top integration bound from equation 3.13 in Denny
+    # array of integration bounds (one bound / integral per frequency of interest)
+    # bounds are centered at each frequency with width given by resol (as proportion of frequency)
+    int_range = np.zeros((len(freq), 2))
+    half_resol = 0.5 * freq / float(resol) # (half) resolution in absolute units of frequency
+    int_range[:,0] = freq - half_resol # lower bound from equation 2.13 in Denny
+    int_range[:,1] = freq + half_resol # upper bound from equation 2.13 in Denny
 
-    ranges = (np.arange(*(list(i)+[step_size])) for i in int_range)  #"i in int_range" refers to each row(which has a start and end to the integration range)
-        #for each row, an array is created with values ranging from the starting value to the ending value, in increments of "step_size"
+    # a list of evenly spaced points to serve as an integration mesh for each frequency
+    # mesh points are spaced step_size apart
+    step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))
+    ranges = (np.arange(*(list(i)+[step_size])) for i in int_range)
 
-    ts = np.array([c*np.sum(f(i)*g(i)) for i in ranges])  #"i in ranges" refers to each row(of the bounds plus "step_size") from the array created above
-        #for each row, each of the 2 bounds is multiplied by the corresponding intensity and transmission functions from the linear interpolation done at the start
-        #summing does the integral for each frequency
-        #multiplying by the constants finishes equation 3.13 in Denny et al
+    # signal(freq) = area * sum(step_size * intensity(freq) * transmission(freq))
+    #  signal is the total power collected in a "resol" wide range of frequencies
+    #  centered on each frequency
+    area = np.pi * (0.5 * d)**2 # area of mirror collecting the signal
+    ts = np.array([area * step_size * np.sum(f(i)*g(i)) for i in ranges])
 
     return ts
 
