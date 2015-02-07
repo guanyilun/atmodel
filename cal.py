@@ -4,12 +4,16 @@ import numpy as np
 from scipy import integrate, interpolate
 from excel import ExcelReader
 
-cmb_temp = 2.725 # temperature of CMB (in K)
-step_size_k = 1e-7
-
 # These calculations reference equations in 2 papers:
 # "Limitations on Observing Submillimeter and Far Infrared Galaxies" by Denny
 # and "Fundamental Limits of Detection in the Far Infrared" by Denny et al
+
+# turn a continuous function into a mesh function
+def mesh_func (freq, func):
+    mesh = []
+    for freq_i in freq:
+        mesh.append(func(freq_i))
+    return mesh
 
 # calculate BLING^2 for a list of frequencies and a temperature function
 def bling_sq (freq, temp_func, resol, polar_modes=2):
@@ -22,7 +26,7 @@ def bling_sq (freq, temp_func, resol, polar_modes=2):
             freq_i + 0.5 * freq_i / float(resol))[0])
     return bsq
 
-# calculate BLING^2 for CIB, Galactic and Zodiacal Emission
+# BLING^2 for CIB, Galactic and Zodiacal Emission
 def bling_sub (freq, temp, resol):
 
     # interpolant of provided mesh function
@@ -30,112 +34,83 @@ def bling_sub (freq, temp, resol):
     return bling_sq(freq, temp_func, resol, polar_modes=2)
 
 
-# calculate BLING^2 for CMB (assume Planck distribution)
+###############################
+# Cosmic Microwave Background #
+###############################
+
+cmb_T0 = 2.725 # temperature of CMB (in K)
+
+# assume Planck distribution for CMB temperature
+#   inten = 2*h*freq^3/c^2 * 1/(exp((h*freq)/(k*T))-1)
+#   temp = 1/2 * inten * c^2/(k*freq^2)
+#        = h*freq / [k * (exp((h*freq)/(k*T))-1)]
+cmb_temp = lambda f: const.h * f / \
+    (const.k * (math.exp(const.h * f / (const.k * cmb_T0)) - 1))
+
+# BLING^2 for CMB (assume Planck distribution)
 def bling_CMB (freq, resol):
+    return bling_sq(freq, cmb_temp, resol, polar_modes=2)
 
-    # assume Planck distribution for CMB temperature
-    #   inten = 2*h*freq^3/c^2 * 1/(exp((h*freq)/(k*T))-1)
-    #   temp = 1/2 * inten * c^2/(k*freq^2)
-    #        = h*freq / [k * (exp((h*freq)/(k*T))-1)]
-    temp_func = lambda f: const.h * f / \
-        (const.k * (math.exp(const.h * f / (const.k * cmb_temp)) - 1))
+# temperature mesh for CMB
+def temp_CMB (freq):
+    return mesh_func(freq, cmb_temp)
 
-    # compute BLING using analytic Planck distribution for temperature
-    return bling_sq(freq, temp_func, resol, polar_modes=2)
+########################
+# Atmospheric Radiance #
+########################
 
-
-# calculate BLING^2 for atmospheric radiance
-def bling_AR (freq, rad, resol):
-
+# create continuous temperature function
+def ar_temp (freq, rad):
     # continuous interpolant function for radiance
     rad = rad / 3e6 # convert from W/cm^2/sr/cm^-1 to W/m^2/st/Hz
     rad_func = interpolate.interp1d(freq, rad, bounds_error=False)
 
     # calculate temperature at a frequency from radiance
-    temp_func = lambda f: 0.5 * rad_func(f) * const.c**2 / (const.k * f**2)
-    return bling_sq(freq, temp_func, resol, polar_modes=1)
+    return lambda f: 0.5 * rad_func(f) * const.c**2 / (const.k * f**2)
+
+# BLING^2 for atmospheric radiance
+def bling_AR (freq, rad, resol):
+    return bling_sq(freq, ar_temp(freq, rad), resol, polar_modes=1)
+
+# temperature mesh for atmospheric radiance
+def temp_AR (freq, rad):
+    return mesh_func(freq, ar_temp(freq, rad))
 
 
-# calculate BLING^2 for thermal mirror emission
-def bling_TME(freq, resol, sigma, mirror_temp):
+###########################
+# Thermal Mirror Emission #
+###########################
 
+# create continuous temperature function
+def tme_temp (sigma, mirror_temp):
     # compute emissivity
     em_const = 16 * np.pi * const.eps0 / sigma
     em = lambda f: math.sqrt(em_const * f)
 
     # compute temperature function from emissivity and actual mirror temperature
     # (assume Planck distribution)
-    temp_func = lambda f: em(f) * const.h * f / \
+    return lambda f: em(f) * const.h * f / \
         (const.k * (math.exp(const.h * f / (const.k * mirror_temp)) - 1))
-    return bling_sq(freq, temp_func, resol, polar_modes=2)
+
+# BLING^2 for thermal mirror emission
+def bling_TME (freq, resol, sigma, mirror_temp):
+    return bling_sq(freq, tme_temp(sigma, mirror_temp), resol, polar_modes=2)
+
+# temperature mesh for thermal mirror emission
+def temp_TME(freq, sigma, mirror_temp):
+    return mesh_func(freq, tme_temp(sigma, mirror_temp))
+
+###
 
 
-def temp_TME(freq, sigma, mirror_temp, wavelength):  #calculates antenna temperature for "Thermal Mirror Emission"
-##    What will be done: 1) Calculate emissivity from surface electrical conductivity("sigma") of specific metal
-##                       1) Calculate effective temperature from emissivity and mirror temperature
-## 1) Calculate emissivity from surface electrical conductivity("sigma") of specific metal
-    em = []  #create list to be filled with emissivities, depending on wavelength
-    w_l = wavelength * (1e-6)  #convert wavelength from microns to meters
-    c1 = 16 * np.pi * const.c * const.eps0 / sigma  #constants from equation 2.17 in Denny
-    for i in w_l:
-        emis = (c1 / i)**.5  #emissivity a function of the radical of the constants divided by wavelength from equation 2.17 in Denny
-        em.append(emis)  #add calculated emissivities to "em" list
-    em = np.array(em)  #turn "em" list into "em" array
+# integration time needed
+def IT (bling_TOT, snr, ts):
+    # snr = signal / noise
+    #     = (signal / bling) * sqrt(time)
+    # time = (bling * snr / signal)^2
+    return (bling_TOT * snr / ts)**2
 
-## 2) Calculate effective temperature from emissivity and mirror temperature
-    effective_temp = []  #create list to be filled with effective temperatures
-    mirror_temp = float(mirror_temp)  #ensure "mirror_temp" is a float not an integer
-    f = interpolate.interp1d(freq, em, bounds_error=False)  #linear interpolation of "em" vs. "freq"
-    c2 = const.h / (const.k * mirror_temp)  #a constant from equation 2.20 in Denny
-    c3 = const.h / const.k  #a constant from equation 2.20 in Denny
-    for i in freq:
-        denom = np.exp(c2 * i) - 1  #calculate part of the denominator in equation 2.20 in Denny
-        temp_eff = f(i) * i * c3 / denom  #calculate effective temperature from the product of frequency, corresponding emissivity, constants, and the denominator from equation 2.20 in Denny
-            #.5 comes from modes=2
-        effective_temp.append(temp_eff)  #add calculated effective temperatures to "effective_temp" list
-    temp = np.array(effective_temp)  #turn "effective_temp" list into "temp" array
-    return temp
-
-
-def temp_CMB(freq):  #calculates antenna temperature for "Cosmic Microwave Background"
-##    What will be done: 1) Calculate intensity from frequency
-##                       2) Calculate antenna temperature from intensity
-## 1) Calculate intensity from frequency
-    temp = []  #create list to be filled with calculated temperatures
-    c1 = const.h / (const.k * cmb_temp)  #constants from equation 2.16 in Denny
-    c2 = 2 * const.h / (const.c ** 2)  #constants from equation 2.16 in Denny
-    for i in freq:
-        denom = np.exp(c1 * i) - 1  #calculate part of the denominator in equation 2.16 in Denny
-        intensity = c2 * (i ** 3)/denom  #calculate intensity from equation 2.16 in Denny
-
-## 2) Calculate antenna temperature from intensity
-        antenna_temp = intensity * (const.c ** 2)/(const.k * (i**2))  #calculate antenna temperature from equation 2.7 in Denny
-            #.5 comes from modes=2
-        temp.append(antenna_temp)  #add calculated temperature to "temp" list
-    temp = np.array(temp)  #turn "temp" list into "temp" array
-    return temp
-
-
-def temp_AR(freq, rad):  #calculates antenna temperature for "Atmospheric Radiance"
-##    What will be done: 1) Interpolate radiance vs. frequency
-##                       2) Calculate antenna temperature from radiance
-## 1) Interpolate radiance vs. frequency
-    rad = rad / (3e6)  #radiance files are given in W/cm^2/st/cm^-1 but are converted to W/m^2/st/Hz
-    rad = interpolate.interp1d(freq, rad, bounds_error=False)  #linear interpolation of "rad" vs. "freq"
-
-## 2) Calculate antenna temperature from radiance
-    temp = []  #create list to be filled with calculated temperatures
-    for i in freq:
-        antenna_temp = .5 * rad(i) * (const.c ** 2)/(const.k * (i**2))  #calculate antenna temperature from equation 2.7 in Denny
-        temp.append(antenna_temp)  #add calculated temperature to "temp" list
-    temp = np.array(temp)  #turn "temp" list into "temp" array
-    return temp
-
-
-def IT(bling_TOT, ratio, ts):  #calculates Integration Time
-    return np.array((bling_TOT * ratio / ts)**2, dtype='float')  #follows equation 4.1 in Denny
-
-
+# total signal
 def TS (freq, inten, trans, mirror_diam, resol):
 
     # interpolate intensity and transmission
@@ -152,4 +127,4 @@ def TS (freq, inten, trans, mirror_diam, resol):
             freq_i - 0.5 * freq_i / float(resol),
             freq_i + 0.5 * freq_i / float(resol))[0])
 
-    return np.array(signal)
+    return signal
