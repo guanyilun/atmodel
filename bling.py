@@ -60,8 +60,7 @@ def mirror(gui, mirror_temp, constant, spec_res):
 
     # compute thermal noise for a set of frequencies
     freq_list = numpy.array(gui.interp.freq_list)
-    wavelengths = const.c / freq_list
-    return cal.bling_TME(freq_list, spec_res, constant, mirror_temp, wavelengths)
+    return cal.bling_TME(freq_list, spec_res, constant, mirror_temp)
 
 # total BLING noise
 def noise_total(gui, site_file, galactic_file, mirror_temp, mirror_constant,

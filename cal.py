@@ -37,11 +37,11 @@ def bling_CMB (freq, resol):
     #   inten = 2*h*freq^3/c^2 * 1/(exp((h*freq)/(k*T))-1)
     #   temp = 1/2 * inten * c^2/(k*freq^2)
     #        = h*freq / [k * (exp((h*freq)/(k*T))-1)]
-    cmb_tmp_distr = lambda f: const.h * f / \
-            (const.k * (math.exp(const.h * f / (const.k * cmb_temp)) - 1))
+    temp_func = lambda f: const.h * f / \
+        (const.k * (math.exp(const.h * f / (const.k * cmb_temp)) - 1))
 
     # compute BLING using analytic Planck distribution for temperature
-    return bling_sq(freq, lambda f: f * cmb_temp_distr(f), resol, polar_modes=2)
+    return bling_sq(freq, temp_func, resol, polar_modes=2)
 
 
 # calculate BLING^2 for atmospheric radiance
@@ -56,52 +56,18 @@ def bling_AR (freq, rad, resol):
     return bling_sq(freq, temp_func, resol, polar_modes=1)
 
 
-def bling_TME(freq, resol, sigma, mirror_temp, wavelength):  #calculates BLING(squared) for "Thermal Mirror Emission"
-##    What will be done: 1) Calculate emissivity from surface electrical conductivity("sigma") of specific metal
-##                       1) Calculate effective temperature from emissivity and mirror temperature
-##                       2) Calculate BLING(squared) from effective temperature
-## 1) Calculate emissivity from surface electrical conductivity("sigma") of specific metal
-    em = []  #create list to be filled with emissivities, depending on wavelength
-    w_l = wavelength * (1e-6)  #convert wavelength from microns to meters
-    c1 = 16 * np.pi * const.c * const.eps0 / sigma  #constants from equation 2.17 in Denny
-    for i in w_l:
-        emis = math.sqrt(c1 / i)  #emissivity a function of the radical of the constants divided by wavelength from equation 2.17 in Denny
-        em.append(emis)  #add calculated emissivities to "em" list
-    em = np.array(em)  #turn "em" list into "em" array
+# calculate BLING^2 for thermal mirror emission
+def bling_TME(freq, resol, sigma, mirror_temp):
 
-## 2) Calculate effective temperature from emissivity and mirror temperature
-    effective_temp = []  #create list to be filled with effective temperatures
-    mirror_temp = float(mirror_temp)  #ensure "mirror_temp" is a float not an integer
-    f = interpolate.interp1d(freq, em, bounds_error=False)  #linear interpolation of "em" vs. "freq"
-    c2 = const.h / (const.k * mirror_temp)  #a constant from equation 2.20 in Denny
-    c3 = const.h / const.k  #a constant from equation 2.20 in Denny
-    for i in freq:
-        denom = np.exp(c2 * i) - 1  #calculate part of the denominator in equation 2.20 in Denny
-        temp_eff = .5 * f(i) * i * c3 / denom  #calculate effective temperature from the product of frequency, corresponding emissivity, constants, and the denominator from equation 2.20 in Denny
-            #.5 comes from modes=2
-        effective_temp.append(temp_eff)  #add calculated effective temperatures to "effective_temp" list
-    temp = np.array(effective_temp)  #turn "effective_temp" list into "temp" array
+    # compute emissivity
+    em_const = 16 * np.pi * const.eps0 / sigma
+    em = lambda f: math.sqrt(em_const * f)
 
-## 3) Calculate BLING(squared) from effective temperature
-    f = interpolate.interp1d(freq, temp, bounds_error=False)  #linear interpolation of "temp" vs. "freq"
-    step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))  #characterize the level of details wanted from interpolation
-        #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
-    c = 2 * const.h * const.k * step_size  #2 is number of polarization modes, constants come from equation 2.15 in Denny(without the radical) and "step_size" is the increment of the Riemann sum
-    int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
-    int_range_length = freq/2/resol  #2nd term in integration bounds from equation 2.15 in Denny
-    int_range[:,0]=freq - int_range_length  #fill up 1st column of 0's array with bottom integration bound from equation 2.15 in Denny
-    int_range[:,1]=freq + int_range_length  #fill up 2nd column of 0's array with top integration bound from equation 2.15 in Denny
-
-    ranges = (np.arange(*(list(i)+[step_size])) for i in int_range)  #"i in int_range" refers to each row(which has a start and end to the integration range)
-        #for each row, an array is created with values ranging from the starting value to the ending value, in increments of "step_size"
-
-    blingTME_squared = np.array([c*np.sum(i*f(i)) for i in ranges])  #"i in ranges" refers to each row(of the bounds plus "step_size") from the array created above
-        #for each row, each of the 2 bounds is multiplied by its corresponding temperature from the linear interpolation done at the start and then are summed
-        #summing does the integral for each frequency
-        #the sum is multiplied by the number of modes, physical constants, and "step_size" which gives the BLING
-        #the result should be square rooted but, since the BLINGs are to be added in quadrature, the squares of each background's BLING are added up then square rooted
-
-    return blingTME_squared
+    # compute temperature function from emissivity and actual mirror temperature
+    # (assume Planck distribution)
+    temp_func = lambda f: em(f) * const.h * f / \
+        (const.k * (math.exp(const.h * f / (const.k * mirror_temp)) - 1))
+    return bling_sq(freq, temp_func, resol, polar_modes=2)
 
 
 def temp_TME(freq, sigma, mirror_temp, wavelength):  #calculates antenna temperature for "Thermal Mirror Emission"
