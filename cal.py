@@ -1,11 +1,11 @@
 import gc, const
 import math
 import numpy as np
-from scipy import interpolate
+from scipy import integrate, interpolate
 from excel import ExcelReader
 
 cmb_temp = 2.725 # temperature of CMB (in K)
-step_size_k = 1e-7
+step_size_k = 1
 
 # These calculations reference equations in 2 papers:
 # "Limitations on Observing Submillimeter and Far Infrared Galaxies" by Denny
@@ -244,8 +244,9 @@ def TS(freq, inte, tau, d, resol):  #calculates Total Signal
     except AssertionError:
         raise ValueError("The two arrays must have the same length.")
 
-    f = interpolate.interp1d(freq, inte, bounds_error=False)  #linear interpolation of "inte" vs. "freq"
-    g = interpolate.interp1d(freq, tau, bounds_error=False)   #linear interpolation of "tau" vs. "freq"
+    # interpolate intensity and transmission
+    inten_func = interpolate.interp1d(freq, inte, bounds_error=False)
+    trans_func = interpolate.interp1d(freq, tau, bounds_error=False)
 
     # array of integration bounds (one bound / integral per frequency of interest)
     # bounds are centered at each frequency with width given by resol (as proportion of frequency)
@@ -254,16 +255,13 @@ def TS(freq, inte, tau, d, resol):  #calculates Total Signal
     int_range[:,0] = freq - half_resol # lower bound from equation 2.13 in Denny
     int_range[:,1] = freq + half_resol # upper bound from equation 2.13 in Denny
 
-    # a list of evenly spaced points to serve as an integration mesh for each frequency
-    # mesh points are spaced step_size apart
-    step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))
-    ranges = (np.arange(*(list(i)+[step_size])) for i in int_range)
-
-    # signal(freq) = area * sum(step_size * intensity(freq) * transmission(freq))
-    #  signal is the total power collected in a "resol" wide range of frequencies
-    #  centered on each frequency
+    # compute signal falling within each block of frequencies
     area = np.pi * (0.5 * d)**2 # area of mirror collecting the signal
-    ts = np.array([area * step_size * np.sum(f(i)*g(i)) for i in ranges])
 
-    return ts
+    signal = []
+    for i, range_i in enumerate(int_range):
+        signal.append(area * integrate.quad(
+            lambda f: inten_func(f) * trans_func(f),
+            int_range[i][0], int_range[i][1])[0])
 
+    return np.array(signal)
