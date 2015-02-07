@@ -5,86 +5,55 @@ from scipy import integrate, interpolate
 from excel import ExcelReader
 
 cmb_temp = 2.725 # temperature of CMB (in K)
-step_size_k = 1e-8
+step_size_k = 1e-7
 
 # These calculations reference equations in 2 papers:
 # "Limitations on Observing Submillimeter and Far Infrared Galaxies" by Denny
 # and "Fundamental Limits of Detection in the Far Infrared" by Denny et al
+
+# calculate BLING^2 for a list of frequencies and a temperature function
+def bling_sq (freq, temp_func, resol, polar_modes=2):
+    bsq = []
+    for freq_i in freq:
+        # bling^2 = 2*h*k_b*int(freq*temp(freq))
+        bsq.append(polar_modes * const.h * const.k * integrate.quad(
+            lambda f: f * temp_func(f),
+            freq_i - 0.5 * freq_i / float(resol),
+            freq_i + 0.5 * freq_i / float(resol))[0])
+    return bsq
 
 # calculate BLING^2 for CIB, Galactic and Zodiacal Emission
 def bling_sub (freq, temp, resol):
 
     # interpolant of provided mesh function
     temp_func = interpolate.interp1d(freq, temp, bounds_error=False)
-
-    bling_sq = []
-    for freq_i in freq:
-        # bling^2 = 2*h*k_b*int(freq*temp(freq))
-        bling_sq.append(2 * const.h * const.k * integrate.quad(
-            lambda f: f * temp_func(f),
-            freq_i - 0.5 * freq_i / float(resol),
-            freq_i + 0.5 * freq_i / float(resol))[0])
-
-    return bling_sq
+    return bling_sq(freq, temp_func, resol, polar_modes=2)
 
 
+# calculate BLING^2 for CMB (assume Planck distribution)
 def bling_CMB (freq, resol):
 
-    ## assume Planck distribution for CMB temperature
-    def cmb_tmp_distr (f):
-        # inten = 2*h*freq^3/c^2 * 1/(exp((h*freq)/(k*T))-1)
-        # temp = 1/2 * inten * c^2/(k*freq^2)
-        #      = h*freq / [k * (exp((h*freq)/(k*T))-1)]
-        return const.h * f / \
+    # assume Planck distribution for CMB temperature
+    #   inten = 2*h*freq^3/c^2 * 1/(exp((h*freq)/(k*T))-1)
+    #   temp = 1/2 * inten * c^2/(k*freq^2)
+    #        = h*freq / [k * (exp((h*freq)/(k*T))-1)]
+    cmb_tmp_distr = lambda f: const.h * f / \
             (const.k * (math.exp(const.h * f / (const.k * cmb_temp)) - 1))
 
-    # compute using analytic Planck distribution for temperature
-    bling_sq = []
-    for freq_i in freq:
-        # bling^2 = 2*h*k_b*int(freq*temp(freq))
-        bling_sq.append(2 * const.h * const.k * integrate.quad(
-            lambda f: f * cmb_tmp_distr(f),
-            freq_i - 0.5 * freq_i / float(resol),
-            freq_i + 0.5 * freq_i / float(resol))[0])
-
-    return bling_sq
+    # compute BLING using analytic Planck distribution for temperature
+    return bling_sq(freq, lambda f: f * cmb_temp_distr(f), resol, polar_modes=2)
 
 
-def bling_AR(freq, rad, resol):  #calculates BLING(squared) for "Atmospheric Radiance"
-##    What will be done: 1) Interpolate radiance vs. frequency
-##                       2) Calculate antenna temperature from radiance
-##                       3) Calculate BLING(squared) from antenna temperature
-## 1) Interpolate radiance vs. frequency
-    rad = rad / (3e6)  #radiance files are given in W/cm^2/st/cm^-1 but are converted to W/m^2/st/Hz
-    rad = interpolate.interp1d(freq, rad, bounds_error=False)  #linear interpolation of "rad" vs. "freq"
+# calculate BLING^2 for atmospheric radiance
+def bling_AR (freq, rad, resol):
 
-## 2) Calculate antenna temperature from radiance
-    temp = []  #create list to be filled with calculated temperatures
-    for i in freq:
-        antenna_temp = .5 * rad(i) * (const.c ** 2)/(const.k * (i**2))  #calculate antenna temperature from equation 2.7 in Denny
-        temp.append(antenna_temp)  #add calculated temperature to "temp" list
-    temp = np.array(temp)  #turn "temp" list into "temp" array
+    # continuous interpolant function for radiance
+    rad = rad / 3e6 # convert from W/cm^2/sr/cm^-1 to W/m^2/st/Hz
+    rad_func = interpolate.interp1d(freq, rad, bounds_error=False)
 
-## 3) Calculate BLING(squared) from antenna temperature
-    f = interpolate.interp1d(freq, temp, bounds_error=False)  #linear interpolation of "temp" vs. "freq"
-    step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))  #characterize the level of details wanted from interpolation
-        #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
-    c = const.h * const.k * step_size  #constants come from equation 2.15 in Denny(without the radical) and "step_size" is the increment of the Riemann sum
-    int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
-    int_range_length = freq/2/resol  #2nd term in integration bounds from equation 2.15 in Denny
-    int_range[:,0]=freq - int_range_length  #fill up 1st column of 0's array with bottom integration bound from equation 2.15 in Denny
-    int_range[:,1]=freq + int_range_length  #fill up 2nd column of 0's array with top integration bound from equation 2.15 in Denny
-
-    ranges = (np.arange(*(list(i)+[step_size])) for i in int_range)  #"i in int_range" refers to each row(which has a start and end to the integration range)
-        #for each row, an array is created with values ranging from the starting value to the ending value, in increments of "step_size"
-
-    blingAR_squared = np.array([c*np.sum(i*f(i)) for i in ranges])  #"i in ranges" refers to each row(of the bounds plus "step_size") from the array created above
-        #for each row, each of the 2 bounds is multiplied by its corresponding temperature from the linear interpolation done at the start and then are summed
-        #summing does the integral for each frequency
-        #the sum is multiplied by the number of modes, physical constants, and "step_size" which gives the BLING
-        #the result should be square rooted but, since the BLINGs are to be added in quadrature, the squares of each background's BLING are added up then square rooted
-
-    return blingAR_squared
+    # calculate temperature at a frequency from radiance
+    temp_func = lambda f: 0.5 * rad_func(f) * const.c**2 / (const.k * f**2)
+    return bling_sq(freq, temp_func, resol, polar_modes=1)
 
 
 def bling_TME(freq, resol, sigma, mirror_temp, wavelength):  #calculates BLING(squared) for "Thermal Mirror Emission"
