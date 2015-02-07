@@ -248,20 +248,14 @@ def TS(freq, inte, tau, d, resol):  #calculates Total Signal
     inten_func = interpolate.interp1d(freq, inte, bounds_error=False)
     trans_func = interpolate.interp1d(freq, tau, bounds_error=False)
 
-    # array of integration bounds (one bound / integral per frequency of interest)
-    # bounds are centered at each frequency with width given by resol (as proportion of frequency)
-    int_range = np.zeros((len(freq), 2))
-    half_resol = 0.5 * freq / float(resol) # (half) resolution in absolute units of frequency
-    int_range[:,0] = freq - half_resol # lower bound from equation 2.13 in Denny
-    int_range[:,1] = freq + half_resol # upper bound from equation 2.13 in Denny
-
-    # compute signal falling within each block of frequencies
+    # compute signal falling within each frequency block
     area = np.pi * (0.5 * d)**2 # area of mirror collecting the signal
 
     signal = []
-    for i, range_i in enumerate(int_range):
+    for freq_i in freq:
         signal.append(area * integrate.quad(
             lambda f: inten_func(f) * trans_func(f),
-            int_range[i][0], int_range[i][1])[0])
+            freq_i - 0.5 * freq_i / float(resol),
+            freq_i + 0.5 * freq_i / float(resol))[0])
 
     return np.array(signal)
