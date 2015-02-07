@@ -5,45 +5,27 @@ from scipy import integrate, interpolate
 from excel import ExcelReader
 
 cmb_temp = 2.725 # temperature of CMB (in K)
-step_size_k = 1
+step_size_k = 1e-8
 
 # These calculations reference equations in 2 papers:
 # "Limitations on Observing Submillimeter and Far Infrared Galaxies" by Denny
-# and
-# "Fundamental Limits of Detection in the Far Infrared" by Denny et al
+# and "Fundamental Limits of Detection in the Far Infrared" by Denny et al
 
-# The 1st 4 functions defined calculate BLING(squared) for the backgrounds
-# The 3 functions after calculate antenna temperature for the backgrounds(a preliminary step for the BLING functions)
-    # There is no temperature function for "bling_sub" since those backgrounds have given temperatures in data files
-# The functions after that calculate: limiting flux, integration time, and total signal
+# calculate BLING^2 for CIB, Galactic and Zodiacal Emission
+def bling_sub(freq, temp, resol):
 
-def bling_sub(freq, temp, resol):  #calculates BLING(squared) for "Cosmic Infrared Background", "Galactic Emission", and/or "Zodiacal Emission"
-##    What will be done: 1) Interpolate temperature vs. frequency
-##                       2) Calculate integration constants and integration range
-##                       3) Calculate BLING(squared) from antenna temperature
-## 1) Interpolate temperature vs. frequency
-    f = interpolate.interp1d(freq, temp, bounds_error=False)  #linear interpolation of "temp" vs. "freq"
+    # interpolant of provided mesh function
+    temp_func = interpolate.interp1d(freq, temp, bounds_error=False)
 
-## 2) Calculate integration constants and integration range
-    resol = float(resol)  #ensure "resol" is a float not an integer
-    step_size = step_size_k * (np.nanmax(freq) - np.nanmin(freq))  #characterize the level of details wanted from interpolation
-        #decreasing "step_size" can lose smoothness of plot and increasing "step_size" lengthens calculation time
-    c = 2 * const.h * const.k * step_size  #2 is number of modes, constants come from equation 2.15 in Denny(without the radical), "step_size" is the increment of the Riemann sum
-    int_range = np.zeros((len(freq), 2))  #create 2 by (length of frequency range) array full of 0's to be replaced with values
-    int_range_length = freq/2/resol  #2nd term in integration bounds from equation 2.15 in Denny
-    int_range[:,0]=freq - int_range_length  #fill up 1st column of 0's array with bottom integration bound from equation 2.15 in Denny
-    int_range[:,1]=freq + int_range_length  #fill up 2nd column of 0's array with top integration bound from equation 2.15 in Denny
+    bling_sq = []
+    for freq_i in freq:
+        # bling^2 = 2*h*k_b*int(freq*temp(freq))
+        bling_sq.append(2 * const.h * const.k * integrate.quad(
+            lambda f: f * temp_func(f),
+            freq_i - 0.5 * freq_i / float(resol),
+            freq_i + 0.5 * freq_i / float(resol))[0])
 
-    ranges = (np.arange(*(list(i)+[step_size])) for i in int_range)  #"i in int_range" refers to each row(which has a start and end to the integration range)
-        #for each row, an array is created with values ranging from the starting value to the ending value, in increments of "step_size"
-
-## Calculate BLING(squared from antenna temperature
-    blingSUB_squared = np.array([c*np.sum(i*f(i)) for i in ranges])  #"i in ranges" refers to each row(of the bounds plus "step_size") from the array created above
-        #for each row, each of the 2 bounds is multiplied by its corresponding temperature from the linear interpolation done at the start and then are summed
-        #summing does the integral for each frequency
-        #the sum is multiplied by the number of modes, physical constants, and "step_size" which gives the BLING
-        #the result should be square rooted but, since the BLINGs are to be added in quadrature, the squares of each background's BLING are added up then square rooted
-    return blingSUB_squared
+    return bling_sq
 
 
 def bling_CMB(freq, resol):  #calculates BLING(squared) for "Cosmic Microwave Background"
