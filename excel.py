@@ -50,28 +50,18 @@ class ExcelReader:
             self.row_end = Row
 
     def read_from_col(self, units, freq_start, freq_end, title = ' '): #reads independent variable(freq in Hz) terms to a namedtuple with the data
-        self.set_freq_range_Hz(freq_start,freq_end)#finds which rows should be read from that column
-        if units != 0 and title != ' ':
-            self.col = self.indep_chooser(0,title)
-            self.units_col = self.indep_chooser(0,units)
-            result = []
+        # determine first and last row to read
+        self.set_freq_range_Hz(freq_start, freq_end)
+
+        # read all rows until finished or non-numerical value encountered
+        result = []
+        try:
+            self.col = self.indep_chooser(units, title)
             for row in range(self.row_start, self.row_end):
-                value = self.sheet.cell(row,int(self.col)).value
-                col_unit = str(self.sheet.cell(row,int(self.units_col)))[7:-1]
-                print(col_unit)
-                print(value)
-                if value != None and col_unit == units:
-                    result.append(value)
-        else:
-            if units != 0:
-                self.col = self.indep_chooser(units)         #finds the first column with the correct units
-            else:
-                self.col = self.indep_chooser(0, title)
-            result = []
-            for row in range(self.row_start, self.row_end):
-                value = self.sheet.cell(row, int(self.col)).value
-                if value != None:
-                    result.append(value)
+                value = float(self.sheet.cell(row, self.col).value)
+                result.append(value)
+        except ValueError:
+            pass
         return result
 
 
