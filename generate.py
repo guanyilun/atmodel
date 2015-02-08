@@ -143,8 +143,8 @@ def add_signal(gui, graph_obj, aperture, site_file, source_file, spec_res):
 ## Composite calculations
 # (note: some parameters passed may be "None" -- these are ignored if possible)
 
-# Add total noise to plot
-def add_noise(gui, graph_obj, label, site_file, galactic_file, mirror_temp,
+# Add total BLING to plot
+def add_bling(gui, graph_obj, label, site_file, galactic_file, mirror_temp,
         mirror_constant, zodiac_file, cib, cmb, spec_res):
 
     blingsq_tot = bling.noise_total(gui, site_file.file,
@@ -366,7 +366,7 @@ def process(gui):
             continue # not filled in properly, so skip
 
         if gui.compos_what == 0: # total noise
-            add_noise(gui, new_graph, dataset_label, atmos_site,
+            add_bling(gui, new_graph, dataset_label, atmos_site,
                     galactic, mirror_temp, mirror_constant, zodiac, cib, cmb,
                     spec_res)
 

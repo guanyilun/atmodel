@@ -13,7 +13,7 @@ def mesh_func (freq, func):
     mesh = []
     for freq_i in freq:
         mesh.append(func(freq_i))
-    return mesh
+    return np.array(mesh)
 
 # calculate BLING^2 for a list of frequencies and a temperature function
 def bling_sq (freq, temp_func, resol, polar_modes=2):
@@ -24,7 +24,7 @@ def bling_sq (freq, temp_func, resol, polar_modes=2):
             lambda f: f * temp_func(f),
             freq_i - 0.5 * freq_i / float(resol),
             freq_i + 0.5 * freq_i / float(resol))[0])
-    return bsq
+    return np.array(bsq)
 
 # BLING^2 for CIB, Galactic and Zodiacal Emission
 def bling_sub (freq, temp, resol):
@@ -106,7 +106,7 @@ def temp_TME(freq, sigma, mirror_temp):
 # integration time needed
 def IT (bling_TOT, snr, ts):
     # snr = signal / noise
-    #     = (signal / bling) * sqrt(time)
+    #     = (signal_0 / bling) * sqrt(time)
     # time = (bling * snr / signal)^2
     return (bling_TOT * snr / ts)**2
 

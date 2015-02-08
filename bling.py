@@ -66,39 +66,26 @@ def mirror(gui, mirror_temp, constant, spec_res):
 def noise_total(gui, site_file, galactic_file, mirror_temp, mirror_constant,
         zodiac_file, add_cib, add_cmb, spec_res):
 
-    zero_array = numpy.array(aux.get_zero(gui.interp.freq_list))
+    # start off with zero noise
+    blingsq_tot = numpy.zeros(len(gui.interp.freq_list))
 
     # compute all the individual noise sources if enough info provided
     if len(site_file) > 0:
-        radiance_bsq = radiance(gui, site_file, spec_res)
-    else:
-        radiance_bsq = zero_array.copy()
+        blingsq_tot += radiance(gui, site_file, spec_res)
 
     if len(galactic_file) > 0:
-        galactic_bsq = generic_noise(gui, galactic_file, spec_res)
-    else:
-        galactic_bsq = zero_array.copy()
+        blingsq_tot += generic_noise(gui, galactic_file, spec_res)
 
     if mirror_temp != -1 and mirror_constant != -1:
-        mirror_bsq = mirror(gui, mirror_temp, mirror_constant, spec_res)
-    else:
-        mirror_bsq = zero_array.copy()
+        blingsq_tot += mirror(gui, mirror_temp, mirror_constant, spec_res)
 
     if len(zodiac_file) > 0:
-        zodiac_bsq = generic_noise(gui, zodiac_file, spec_res)
-    else:
-        zodiac_bsq = zero_array.copy()
+        blingsq_tot += generic_noise(gui, zodiac_file, spec_res)
 
     if add_cib == True:
-        cib_bsq = generic_noise(gui, "data/Backgrounds/CIB/cib.xlsx", spec_res)
-    else:
-        cib_bsq = zero_array.copy()
+        blingsq_tot += generic_noise(gui, "data/Backgrounds/CIB/cib.xlsx", spec_res)
 
     if add_cmb == True:
-        cmb_bsq = cmb(gui, spec_res)
-    else:
-        cmb_bsq = zero_array.copy()
+        blingsq_tot += cmb(gui, spec_res)
 
-    # combine the noise
-    blingsq_tot = radiance_bsq + galactic_bsq + mirror_bsq + zodiac_bsq + cib_bsq + cmb_bsq
     return blingsq_tot

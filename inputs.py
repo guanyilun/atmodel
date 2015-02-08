@@ -199,7 +199,9 @@ def signal(gui, fields = {"aperture" : "", "site" : 0, "source" : 0}):
     site.setCurrentIndex(int(fields["site"]))
 
     conn_update(gui, site, "currentIndexChanged(int)")
-    inputs["site"] = dyngui.input_obj("Site (Default=\nSpace)", site)
+    inputs["site"] = dyngui.input_obj("Site", site)
+    inputs["site"].widget.setToolTip("Leave empty for 100% transmission")
+    inputs["site"].widget.setMouseTracking(True)
 
     source = QtGui.QComboBox()
     source.addItem("")
