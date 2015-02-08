@@ -1,4 +1,4 @@
-import gc, const
+import const
 import math
 import numpy as np
 from scipy import integrate, interpolate
@@ -20,7 +20,7 @@ def bling_sq (freq, temp_func, resol, polar_modes=2):
     bsq = []
     for freq_i in freq:
         # bling^2 = 2*h*k_b*int(freq*temp(freq))
-        bsq.append(polar_modes * const.h * const.k * integrate.quad(
+        bsq.append(polar_modes * const.h * const.k * integrate.fixed_quad(
             lambda f: f * temp_func(f),
             freq_i - 0.5 * freq_i / float(resol),
             freq_i + 0.5 * freq_i / float(resol))[0])
@@ -84,7 +84,7 @@ def temp_AR (freq, rad):
 # create continuous temperature function
 def tme_temp (sigma, mirror_temp):
     # compute emissivity
-    em_const = 16 * np.pi * const.eps0 / sigma
+    em_const = 16 * math.pi * const.eps0 / sigma
     em = lambda f: math.sqrt(em_const * f)
 
     # compute temperature function from emissivity and actual mirror temperature
@@ -118,11 +118,11 @@ def TS (freq, inten, trans, mirror_diam, resol):
     trans_func = interpolate.interp1d(freq, trans, bounds_error=False)
 
     # compute signal falling within each frequency block
-    area = np.pi * (0.5 * mirror_diam)**2 # area of mirror collecting the signal
+    area = math.pi * (0.5 * mirror_diam)**2 # area of mirror collecting the signal
 
     signal = []
     for freq_i in freq:
-        signal.append(area * integrate.quad(
+        signal.append(area * integrate.fixed_quad(
             lambda f: inten_func(f) * trans_func(f),
             freq_i - 0.5 * freq_i / float(resol),
             freq_i + 0.5 * freq_i / float(resol))[0])
