@@ -45,7 +45,7 @@ cmb_T0 = 2.725 # temperature of CMB (in K)
 #   temp = 1/2 * inten * c^2/(k*freq^2)
 #        = h*freq / [k * (exp((h*freq)/(k*T))-1)]
 cmb_temp = lambda f: const.h * f / \
-    (const.k * (math.exp(const.h * f / (const.k * cmb_T0)) - 1))
+    (const.k * (np.exp(const.h * f / (const.k * cmb_T0)) - 1))
 
 # BLING^2 for CMB (assume Planck distribution)
 def bling_CMB (freq, resol):
@@ -85,12 +85,12 @@ def temp_AR (freq, rad):
 def tme_temp (sigma, mirror_temp):
     # compute emissivity
     em_const = 16 * math.pi * const.eps0 / sigma
-    em = lambda f: math.sqrt(em_const * f)
+    em = lambda f: np.sqrt(em_const * f)
 
     # compute temperature function from emissivity and actual mirror temperature
     # (assume Planck distribution)
     return lambda f: em(f) * const.h * f / \
-        (const.k * (math.exp(const.h * f / (const.k * mirror_temp)) - 1))
+        (const.k * (np.exp(const.h * f / (const.k * mirror_temp)) - 1))
 
 # BLING^2 for thermal mirror emission
 def bling_TME (freq, resol, sigma, mirror_temp):
