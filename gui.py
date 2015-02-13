@@ -382,6 +382,7 @@ class gui(QtGui.QWidget):
 
         # label stating "in progress"
         self.in_progress = QtGui.QLabel()
+        self.in_progress.setFixedWidth(100)
         # give this cell extra column space to no push the navbar
         buttons.addWidget(self.in_progress, 1, 1, 1, 13)
 
