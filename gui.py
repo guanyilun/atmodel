@@ -357,13 +357,13 @@ class gui(QtGui.QWidget):
         right.addWidget(self.plot)
 
         # buttons
-        buttons = QtGui.QHBoxLayout()
+        buttons = QtGui.QGridLayout() #QtGui.QHBoxLayout()
         right.addLayout(buttons)
 
         # generate graph
         self.gen_btn = QtGui.QPushButton("Generate Graph")
         self.gen_btn.setStyleSheet("background-color: #ffffff; font-weight: bold; height: 1.8em")
-        buttons.addWidget(self.gen_btn)
+        buttons.addWidget(self.gen_btn, 1, 0)
 
         def do_generate ():
             # start calculations
@@ -382,12 +382,12 @@ class gui(QtGui.QWidget):
 
         # label stating "in progress"
         self.in_progress = QtGui.QLabel()
-        buttons.addWidget(self.in_progress)
-        buttons.addStretch(1)
+        # give this cell extra column space to no push the navbar
+        buttons.addWidget(self.in_progress, 1, 1, 1, 8)
 
         # add toolbar for graph
         self.toolbar = NavigationToolbar(self.plot, parent=None)
-        buttons.addWidget(self.toolbar)
+        buttons.addWidget(self.toolbar, 1, 9)
 
         ###
 
