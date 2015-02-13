@@ -27,12 +27,19 @@ def bling_sq (freq, temp_func, resol, polar_modes=2):
     return np.array(bsq)
 
 # BLING^2 for CIB, Galactic and Zodiacal Emission
+#   temp is a mesh function of discrete points freq
 def bling_sub (freq, temp, resol):
 
     # interpolant of provided mesh function
     temp_func = interpolate.interp1d(freq, temp, bounds_error=False)
     return bling_sq(freq, temp_func, resol, polar_modes=2)
 
+# compute intensity (W/sr*Hz*m^2) from temperature
+def intensity (freq, temp):
+    intens = []
+    for i, temp_i in enumerate(temp):
+        temp_i * freq[i]**2 * const.k / const.c**2
+    return np.array(intens)
 
 ###############################
 # Cosmic Microwave Background #
