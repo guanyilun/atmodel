@@ -384,11 +384,11 @@ class gui(QtGui.QWidget):
         self.in_progress = QtGui.QLabel()
         self.in_progress.setFixedWidth(100)
         # give this cell extra column space to no push the navbar
-        buttons.addWidget(self.in_progress, 1, 1, 1, 13)
+        buttons.addWidget(self.in_progress, 1, 1)
 
         # add toolbar for graph
         self.toolbar = NavigationToolbar(self.plot, parent=None)
-        buttons.addWidget(self.toolbar, 1, 14)
+        buttons.addWidget(self.toolbar, 1, 2)
 
         ###
 
