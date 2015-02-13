@@ -118,11 +118,14 @@ def add_cib(gui, graph_obj, spec_res):
 def add_cmb(gui, graph_obj, spec_res):
 
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, bling.cmb(gui, spec_res))
-        data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
+        noise_list = bling.noise_list(gui,
+            cal.bling_CMB(numpy.array(gui.interp.freq_list), spec_res))
+        data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form,
+                               "BLING", bling_units(gui), noise_list)
     else: # temperature
         temp_list = temp.temp_list(gui, temp.cmb(gui))
-        data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form, "Temperature", "K", temp_list)
+        data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form,
+                               "Temperature", "K", temp_list)
 
     graph_obj.dataset_list.append(data_set)
 

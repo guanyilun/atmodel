@@ -66,6 +66,9 @@ def mirror(gui, mirror_temp, constant, spec_res):
 def noise_total(gui, site_file, galactic_file, mirror_temp, mirror_constant,
         zodiac_file, add_cib, add_cmb, spec_res):
 
+    # frequency list array
+    freq_arr = numpy.array(gui.interp.freq_list)
+
     # start off with zero noise
     blingsq_tot = numpy.zeros(len(gui.interp.freq_list))
 
@@ -86,6 +89,6 @@ def noise_total(gui, site_file, galactic_file, mirror_temp, mirror_constant,
         blingsq_tot += generic_noise(gui, "data/Backgrounds/CIB/cib.xlsx", spec_res)
 
     if add_cmb == True:
-        blingsq_tot += cmb(gui, spec_res)
+        blingsq_tot += cal.bling_CMB(freq_list, spec_res)
 
     return blingsq_tot
