@@ -193,6 +193,7 @@ class gui(QtGui.QWidget):
         self.noise_whatbox = QtGui.QComboBox()
         self.floating["noise_whatbox"] = self.noise_whatbox
         self.noise_whatbox.addItem("BLING")
+        self.noise_whatbox.addItem("Flux")
         self.noise_whatbox.addItem("Temperature")
 
         noise_botlo.addRow("Plot:", self.noise_whatbox)

@@ -2,7 +2,7 @@
 # generate graph given inputs
 
 import math
-import numpy
+import numpy as np
 
 import auxil as aux
 import bling
@@ -12,12 +12,27 @@ import graph
 import sigtrans
 import temp
 
-# Return selected units of BLING
-def bling_units(gui):
+# return selected units of BLING
+def bling_units (gui):
     if gui.bling_units == 0:
         return "W/Hz$^{1/2}$"
     else:
         return "photons/s$\cdot$Hz$^{1/2}$"
+
+# return selected units of flux / intensity
+def flux_units (gui):
+    return "W/sr$\cdot$Hz$\cdot$m$^2$"
+
+# build list of graph coordinates from array or list of data
+# corresponding to the globally computed list of frequencies
+def graph_list (gui, array):
+
+    # build and return list of coordinates
+    crdlist = []
+    for i, item in enumerate(array):
+        crdlist.append(graph.coord_obj(gui.interp.freq_list[i], item))
+
+    return crdlist
 
 # Create data set with proper photon energy type and units
 def new_dataset(label, energy_form, dep_type, dep_units, data_hz):
@@ -31,13 +46,22 @@ def new_dataset(label, energy_form, dep_type, dep_units, data_hz):
 
 # Add atmospheric radiance to plot
 def add_radiance(gui, graph_obj, site_file, spec_res):
+    data_name = "Atmos Radiance ("+site_file.name+")"
 
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, bling.radiance(gui, site_file.file, spec_res))
-        data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
-                "BLING", bling_units(gui), noise_list)
+        bling_list = graph_list(gui, bling.radiance(gui, site_file.file, spec_res))
+        data_set = new_dataset(data_name, gui.energy_form,
+                "BLING", bling_units(gui), bling_list)
+
+    elif gui.noise_what == 1: # flux
+        flux_list = graph_list(gui,
+            cal.intensity(gui.interp.freq_array,
+                          temp.radiance(gui, site_file.file)))
+        data_set = new_dataset(data_name, gui.energy_form,
+                               "Flux", flux_units(gui), flux_list)
+
     else: # temperature
-        temp_list = temp.temp_list(gui, temp.radiance(gui, site_file.file))
+        temp_list = graph_list(gui, temp.radiance(gui, site_file.file))
         data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
                 "Temperature", "K", temp_list)
 
@@ -59,72 +83,118 @@ def add_trans(gui, graph_obj, site_file):
 
 # Add galactic emission to plot
 def add_galactic(gui, graph_obj, galactic_file, spec_res):
+    data_name = "Galactic Emission ("+galactic_file.name+")"
 
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, bling.generic_noise(gui, galactic_file.file, spec_res))
-        data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
-                gui.energy_form, "BLING", bling_units(gui), noise_list)
+        bling_list = graph_list(gui, bling.generic(gui, galactic_file.file, spec_res))
+        data_set = new_dataset(data_name,
+                gui.energy_form, "BLING", bling_units(gui), bling_list)
+
+    elif gui.noise_what == 1: # flux
+        flux_list = graph_list(gui,
+            cal.intensity(gui.interp.freq_array,
+                          temp.generic(gui, galactic_file.file)))
+        data_set = new_dataset(data_name, gui.energy_form,
+                               "Flux", flux_units(gui), flux_list)
+
     else: # temperature
-        temp_list = temp.temp_list(gui, temp.generic_temp(gui, galactic_file.file))
-        data_set = new_dataset("Galactic Emission ("+galactic_file.name+")",
+        temp_list = graph_list(gui, temp.generic(gui, galactic_file.file))
+        data_set = new_dataset(data_name,
                 gui.energy_form, "Temperature", "K", temp_list)
 
     graph_obj.dataset_list.append(data_set)
 
 # Add thermal mirror emission to plot
 def add_mirror(gui, graph_obj, metal_name, mirror_temp, constant, spec_res):
+    data_name = "Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)"
 
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, bling.mirror(gui,
+        bling_list = graph_list(gui, bling.mirror(gui,
                 mirror_temp, constant, spec_res))
-        data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
-                gui.energy_form, "BLING", bling_units(gui), noise_list)
+        data_set = new_dataset(data_name,
+                gui.energy_form, "BLING", bling_units(gui), bling_list)
+
+    elif gui.noise_what == 1: # flux
+        flux_list = graph_list(gui,
+            cal.intensity(gui.interp.freq_array,
+                          temp.mirror(gui, mirror_temp, constant)))
+        data_set = new_dataset(data_name, gui.energy_form,
+                               "Flux", flux_units(gui), flux_list)
+
     else: # temperature
-        temp_list = temp.temp_list(gui, temp.mirror(gui, mirror_temp, constant))
-        data_set = new_dataset("Thermal Mirror ("+metal_name+", "+str(mirror_temp)+" K)",
+        temp_list = graph_list(gui, temp.mirror(gui, mirror_temp, constant))
+        data_set = new_dataset(data_name,
                 gui.energy_form, "Temperature", "K", temp_list)
 
     graph_obj.dataset_list.append(data_set)
 
 # Add zodiacal emission to plot
 def add_zodiac(gui, graph_obj, zodiac_file, spec_res):
+    data_name = "Zodiacal Emission ("+zodiac_file.name+")"
 
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, bling.generic_noise(gui, zodiac_file.file, spec_res))
-        data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
-                gui.energy_form, "BLING", bling_units(gui), noise_list)
+        bling_list = graph_list(gui, bling.generic(gui, zodiac_file.file, spec_res))
+        data_set = new_dataset(data_name,
+                gui.energy_form, "BLING", bling_units(gui), bling_list)
+
+    elif gui.noise_what == 1: # flux
+        flux_list = graph_list(gui,
+            cal.intensity(gui.interp.freq_array,
+                          temp.generic(gui, zodiac_file.file)))
+        data_set = new_dataset(data_name, gui.energy_form,
+                               "Flux", flux_units(gui), flux_list)
+
     else: # temperature
-        temp_list = temp.temp_list(gui, temp.generic_temp(gui, zodiac_file.file))
-        data_set = new_dataset("Zodiacal Emission ("+zodiac_file.name+")",
+        temp_list = graph_list(gui, temp.generic(gui, zodiac_file.file))
+        data_set = new_dataset(data_name,
                 gui.energy_form, "Temperature", "K", temp_list)
 
     graph_obj.dataset_list.append(data_set)
 
 # Add cosmic infrared background to plot
 def add_cib(gui, graph_obj, spec_res):
-    # TODO: convert to equation fit
+    data_name = "Cosmic Infrared Bkgd"
 
+    # TODO: convert to equation fit
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui, bling.generic_noise(gui,
+        bling_list = graph_list(gui, bling.generic(gui,
                 "data/Backgrounds/CIB/cib.xlsx", spec_res))
-        data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "BLING", bling_units(gui), noise_list)
+        data_set = new_dataset(data_name, gui.energy_form,
+                               "BLING", bling_units(gui), bling_list)
+
+    elif gui.noise_what == 1: # flux
+        flux_list = graph_list(gui,
+            cal.intensity(gui.interp.freq_array,
+                temp.generic(gui, "data/Backgrounds/CIB/cib.xlsx")))
+        data_set = new_dataset(data_name, gui.energy_form,
+                               "Flux", flux_units(gui), flux_list)
+
     else: # temperature
-        temp_list = temp.temp_list(gui, temp.generic_temp(gui, "data/Backgrounds/CIB/cib.xlsx"))
-        data_set = new_dataset("Cosmic Infrared Bkgd", gui.energy_form, "Temperature", "K", temp_list)
+        temp_list = graph_list(gui,
+            temp.generic(gui, "data/Backgrounds/CIB/cib.xlsx"))
+        data_set = new_dataset(data_name, gui.energy_form,
+                               "Temperature", "K", temp_list)
 
     graph_obj.dataset_list.append(data_set)
 
 # Add cosmic microwave background to plot
 def add_cmb(gui, graph_obj, spec_res):
+    data_name = "Cosmic Microwave Bkgd"
 
     if gui.noise_what == 0: # BLING
-        noise_list = bling.noise_list(gui,
-            cal.bling_CMB(numpy.array(gui.interp.freq_list), spec_res))
-        data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form,
-                               "BLING", bling_units(gui), noise_list)
+        bling_list = graph_list(gui, bling.cmb(gui, spec_res))
+        data_set = new_dataset(data_name, gui.energy_form,
+                               "BLING", bling_units(gui), bling_list)
+
+    elif gui.noise_what == 1: # flux
+        flux_list = graph_list(gui,
+            cal.intensity(gui.interp.freq_array, temp.cmb(gui)))
+        data_set = new_dataset(data_name, gui.energy_form,
+                               "Flux", flux_units(gui), flux_list)
+
     else: # temperature
-        temp_list = temp.temp_list(gui, temp.cmb(gui))
-        data_set = new_dataset("Cosmic Microwave Bkgd", gui.energy_form,
+        temp_list = graph_list(gui, temp.cmb(gui))
+        data_set = new_dataset(data_name, gui.energy_form,
                                "Temperature", "K", temp_list)
 
     graph_obj.dataset_list.append(data_set)
@@ -154,7 +224,7 @@ def add_bling(gui, graph_obj, label, site_file, galactic_file, mirror_temp,
         galactic_file.file, mirror_temp, mirror_constant, zodiac_file.file,
         cib, cmb, spec_res)
     data_set = new_dataset("Total Noise ("+label+")", gui.energy_form, "BLING", bling_units(gui),
-            bling.noise_list(gui, blingsq_tot))
+            graph_list(gui, blingsq_tot))
     graph_obj.dataset_list.append(data_set)
 
 # Add total temp to plot
@@ -164,7 +234,7 @@ def add_temp(gui, graph_obj, label, atmos_site, galactic_file, mirror_temp,
     temp_tot = temp.total(gui, site, galactic_file.file, mirror_temp,
         mirror_constant, zodiac_file.file, cib, cmb)
     data_set = new_dataset("Total Temp ("+label+")", gui.energy_form, "Temperature", "K",
-            temp.temp_list(gui, temp_tot))
+            graph_list(gui, temp_tot))
     graph_obj.dataset_list.append(data_set)
 
 # Add integration time to plot

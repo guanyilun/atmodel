@@ -38,7 +38,8 @@ def bling_sub (freq, temp, resol):
 def intensity (freq, temp):
     intens = []
     for i, temp_i in enumerate(temp):
-        temp_i * freq[i]**2 * const.k / const.c**2
+        intens.append(temp_i * freq[i]**2 * const.k / const.c**2)
+
     return np.array(intens)
 
 ###############################
