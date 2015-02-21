@@ -41,7 +41,7 @@ def total (gui, site_file, galactic_file, mirror_temp, mirror_constant,
         temp_tot += radiance(gui, site_file)
 
     if len(galactic_file) > 0:
-        temp_tot += generic(galactic_file)
+        temp_tot += generic(gui, galactic_file)
 
     if mirror_temp != -1 and mirror_constant != -1:
         temp_tot += mirror(gui, mirror_temp, mirror_constant)

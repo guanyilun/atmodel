@@ -252,6 +252,7 @@ class gui(QtGui.QWidget):
         self.compos_whatbox = QtGui.QComboBox()
         self.floating["compos_whatbox"] = self.compos_whatbox
         self.compos_whatbox.addItem("Total BLING")
+        self.compos_whatbox.addItem("Total Noise Flux")
         self.compos_whatbox.addItem("Total Temperature")
         self.compos_whatbox.addItem("Integration Time")
 
