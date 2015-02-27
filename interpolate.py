@@ -2,6 +2,7 @@
 # create and manage data sets
 
 import math
+import numpy as np
 from operator import itemgetter
 from scipy.interpolate import interp1d
 
@@ -25,6 +26,7 @@ class Interpolate:
         for i in range(1, divisions):
             self.freq_list.append(math.exp(math.log(freq_range.min) + i * lnspace))
 
+        self.freq_array = np.array(self.freq_list)
         return self.freq_list
 
     # update frequency interval with wavelength
@@ -41,6 +43,7 @@ class Interpolate:
             self.freq_list.append(const.c / math.exp(math.log(wl_range.min) + i * lnspace))
         self.freq_list.sort()
 
+        self.freq_array = np.array(self.freq_list)
         return self.freq_list
 
     # create data set interpolated to defined set of frequencies
