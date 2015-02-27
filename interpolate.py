@@ -7,6 +7,7 @@ from operator import itemgetter
 from scipy.interpolate import interp1d
 
 import auxil
+import cal
 import const
 
 class Interpolate:
@@ -56,7 +57,7 @@ class Interpolate:
             key=lambda pair: pair[0])))
 
         # define interpolation function
-        f = interp1d(freq, data, bounds_error=False)
+        f = cal.interp_or_zero(freq, data)
 
         # create new list of dependent coordinates
         new_data = []

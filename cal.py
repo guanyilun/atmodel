@@ -8,6 +8,13 @@ from excel import ExcelReader
 # "Limitations on Observing Submillimeter and Far Infrared Galaxies" by Denny
 # and "Fundamental Limits of Detection in the Far Infrared" by Denny et al
 
+# generate interpolant or zero function
+def interp_or_zero (x, y):
+    try:
+        return interpolate.interp1d(x, y, bounds_error=False)
+    except:
+        return lambda x1: 0
+
 # turn a continuous function into a mesh function
 def mesh_func (freq, func):
     mesh = []
@@ -31,7 +38,7 @@ def bling_sq (freq, temp_func, resol, polar_modes=2):
 def bling_sub (freq, temp, resol):
 
     # interpolant of provided mesh function
-    temp_func = interpolate.interp1d(freq, temp, bounds_error=False)
+    temp_func = interp_or_zero(freq, temp)
     return bling_sq(freq, temp_func, resol, polar_modes=2)
 
 # compute intensity (W/sr*Hz*m^2) from temperature
@@ -71,7 +78,7 @@ def temp_CMB (freq):
 def ar_temp (freq, rad):
     # continuous interpolant function for radiance
     rad = rad / 3e6 # convert from W/cm^2/sr/cm^-1 to W/m^2/st/Hz
-    rad_func = interpolate.interp1d(freq, rad, bounds_error=False)
+    rad_func = interp_or_zero(freq, rad)
 
     # calculate temperature at a frequency from radiance
     return lambda f: 0.5 * rad_func(f) * const.c**2 / (const.k * f**2)
@@ -122,8 +129,8 @@ def IT (bling_TOT, snr, ts):
 def TS (freq, inten, trans, mirror_diam, resol):
 
     # interpolate intensity and transmission
-    inten_func = interpolate.interp1d(freq, inten, bounds_error=False)
-    trans_func = interpolate.interp1d(freq, trans, bounds_error=False)
+    inten_func = interp_or_zero(freq, inten)
+    trans_func = interp_or_zero(freq, trans)
 
     # compute signal falling within each frequency block
     area = math.pi * (0.5 * mirror_diam)**2 # area of mirror collecting the signal
