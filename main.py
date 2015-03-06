@@ -16,8 +16,8 @@ def add_files(file_list, directory):
 
         # shorten displayed name
         name = obj[0:obj.find(".")]
-        if len(name) > 20:
-            name = name[0:17] + "..."
+        if len(name) > 30:
+            name = name[0:26] + "..."
 
         file_list.append(aux.name_file(name, directory + obj))
 
