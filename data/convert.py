@@ -37,7 +37,8 @@ galactic_tempDeCosta0 = read(galactic_sheet, 1, 7)
 galactic_tempDeCosta90 = read(galactic_sheet, 1, 11)
 galactic_tempSchlege0 = read(galactic_sheet, 1, 6)
 galactic_tempSchlege90 = read(galactic_sheet, 1, 10)
-
+galactic_tempmerged0 = read(galactic_sheet, 1, 8)
+galactic_tempmerged90 = read(galactic_sheet, 1, 12)
 
 def write(file, col1, col2, title1, title2):
 	out_file = Workbook(file)
@@ -62,6 +63,10 @@ write("Backgrounds/Galactic Emission/glat=0, glong=0(Schlegel).xlsx",
 	galactic_freq,galactic_tempSchlege0, "Freq (Hz)", "Temperature(K)")
 write("Backgrounds/Galactic Emission/glat=90, glong=180(Schlegel).xlsx", 
 	galactic_freq,galactic_tempSchlege90, "Freq (Hz)", "Temperature (K)")
+write("Backgrounds/Galactic Emission/glat=0, glong=0.xlsx",
+	galactic_freq,galactic_tempmerged0, "Freq (Hz)", "Temperature (K)")
+write("Backgrounds/Galactic Emission/glat=90, glong=180.xlsx",
+	galactic_freq,galactic_tempmerged90, "Freq (Hz)", "Temperature (K)")
 	
 	
 
