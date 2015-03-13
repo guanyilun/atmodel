@@ -60,7 +60,7 @@ class ExcelReader:
             for row in range(self.row_start, self.row_end):
                 value = float(self.sheet.cell(row, self.col).value)
                 result.append(value)
-        except ValueError:
+        except Exception:
             pass
         return result
 
