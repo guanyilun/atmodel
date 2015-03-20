@@ -29,14 +29,10 @@ def signal(gui, aperture, site_file, source_file, spec_res):
     freq_raw = numpy.array(source.read_from_col('Hz',
         gui.interp.freq_range.min, gui.interp.freq_range.max), dtype='float')
 
-    try:
-        intens_raw = numpy.array(source.read_from_col('W M-2 Hz-1',
-            gui.interp.freq_range.min, gui.interp.freq_range.max), dtype='float')
-    except NameError:
-        intens_raw = 1e-26 * numpy.array(source.read_from_col('Jy',
-            gui.interp.freq_range.min, gui.interp.freq_range.max), dtype='float')
+    intens_raw = 1e-26 * numpy.array(source.read_from_col('Jy',
+        gui.interp.freq_range.min, gui.interp.freq_range.max), dtype='float')
 
     intensity = gui.interp.interpolate(freq_raw.tolist(), intens_raw.tolist())
     trans_list = trans(gui, site_file)
 
-    return cal.TS(numpy.array(gui.interp.freq_list), intensity, trans_list, aperture, spec_res)
+    return cal.TS(gui.interp.freq_array, intensity, trans_list, aperture, spec_res)

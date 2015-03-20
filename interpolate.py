@@ -52,9 +52,10 @@ class Interpolate:
     #                 (freq, data) => (self.freq_list, new_data)
     def interpolate (self, freq, data):
 
-        # sort in monotonically ascending order
-        freq, data = (list(x) for x in zip(*sorted(zip(freq, data),
-            key=lambda pair: pair[0])))
+        # sort in monotonically ascending order with no duplicate frequencies
+        freq, data = auxil.unique_freq(*(
+            list(x) for x in zip(*sorted(zip(freq, data),
+            key=lambda pair: pair[0]))))
 
         # define interpolation function
         f = cal.interp_or_zero(freq, data)

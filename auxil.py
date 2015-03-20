@@ -61,6 +61,17 @@ def get_col(file_name, col1, col1n, col2, col2n, freq_range):
     return [numpy.array(data.read_from_col(col1, freq_range.min, freq_range.max, col1n), dtype='float'),
         numpy.array(data.read_from_col(col2, freq_range.min, freq_range.max, col2n), dtype='float')]
 
+# remove duplicate frequencies for frequency, data pairs
+def unique_freq (freq, data):
+    assert(len(freq) == len(data))
+    new_freq = []
+    new_data = []
+    for i, freq_i in enumerate(freq):
+        if freq_i not in new_freq:
+            new_freq.append(freq_i)
+            new_data.append(data[i])
+    return new_freq, new_data
+
 # return a function (fx) equivalent to another (func) being passed an argument (arg)
 def func_arg(func, arg):
 
