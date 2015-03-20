@@ -34,6 +34,7 @@ class gui(QtGui.QWidget):
         # Project settings
         self.interp = Interpolate(aux.interval(1e11, 1e13)) # frequency range (Hz)
         self.bling_units = 0 # use W/Hz^1/2 as default units of BLING
+        self.flux_units = 0 # use W/sr*Hz*m^2 as default units of flux
         self.noise_what = 0 # plot BLING by default for noise
         self.compos_what = 0 # plot total BLING by default for composite
 
