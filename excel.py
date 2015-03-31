@@ -15,39 +15,45 @@ class ExcelReader:
         self.sheet = self.book.sheet_by_index(0)
 
 
-    def set_freq_range_Hz(self,freq_start,freq_end):
-        col = self.indep_chooser('Hz')
-        if col != None:
-            self.col = col
+    def set_freq_range_Hz(self, freq_start, freq_end):
+        try:
+            self.col = self.indep_chooser('Hz')
+        except NameError:
+            self.col = self.indep_chooser(0, 'Frequency')
+
+        if float(self.sheet.cell(self.row_offset + 2, self.col).value) \
+           < float(self.sheet.cell(self.row_offset + 1, self.col).value):
+            self.asc = False
         else:
-            col = self.indep_chooser(0, 'Frequency')
-            if col != None:
-                self.col = col
-        Row = self.row_offset + 1 #the first row we will test is the one following the rows skipped
-        Current_Value = self.sheet.cell(Row, int(self.col)).value #this is the value from column 1 of the "Row" above
+            self.asc = True
+
+        row = self.row_offset + 1
         try:
-            #look for the first row to read from by going through the data and finding the first value greater than or equal to the starting frequency
-            while Current_Value < freq_start or Current_Value > freq_end: #search through frequency column until we find the frequency we want to start at(the first frequency greater than what we enter)
-                if Current_Value > freq_start and Current_Value < freq_end:
-                    raise Exception()
-                Row = Row + 1 #if the row we look at is smaller than what we want, we go to the next row
-                Current_Value = self.sheet.cell(Row, self.col).value
-            self.row_start = Row - 1 #the row we want to start reading from is the row before the first row with a value that isn't less than the starting frequency we want
-        except:
-            self.row_start = Row - 1
-        if self.row_start < self.row_offset + 1:
-            self.row_start = self.row_offset + 1 # constrain start
+            while self.asc \
+                  and float(self.sheet.cell(row, self.col).value) < freq_start \
+                or not self.asc \
+                  and float(self.sheet.cell(row, self.col).value) > freq_end:
+                row = row + 1
+            self.row_start = max(self.row_offset + 1, row - 1)
+
+        # no data in range
+        except Exception:
+            self.row_start = 0
+            self.row_end = 0
+            return
 
         try:
-            #now that we have determined what value row to start reading from, we use the same technique to determine what row to terminate reading from
-            while Current_Value <= freq_end and Current_Value >= freq_start: #search through column until we find the frequency we want to end at(the first frequency greater than what we enter)
-                #inlcuding the equal sign establishes an inclusive range if one of the cells is equal to the desired ending frequency
-                Row += 1
-                Current_Value = self.sheet.cell(Row, self.col).value
+            while self.asc \
+                  and float(self.sheet.cell(row, self.col).value) < freq_end \
+                or not self.asc \
+                  and float(self.sheet.cell(row, self.col).value) > freq_start:
+                row = row + 1
+            self.row_end = row + 1 # read one extra row for interpolation
 
-            self.row_end = Row + 1 #the row we want to end reading from is the last row the while loop iterated through which is one less than the "Row" it will give
-        except: # we've past the last one
-            self.row_end = Row
+        # reached the end of data
+        except Exception:
+            self.row_end = row
+
 
     def read_from_col(self, units, freq_start, freq_end, title = ' '): #reads independent variable(freq in Hz) terms to a namedtuple with the data
         # determine first and last row to read
@@ -60,7 +66,7 @@ class ExcelReader:
             for row in range(self.row_start, self.row_end):
                 value = float(self.sheet.cell(row, self.col).value)
                 result.append(value)
-        except ValueError:
+        except Exception:
             pass
         return result
 

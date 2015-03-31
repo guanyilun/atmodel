@@ -7,6 +7,7 @@ import numpy as np
 import auxil as aux
 import bling
 import cal
+import const
 import dyngui
 import graph
 import sigtrans
@@ -21,7 +22,18 @@ def bling_units (gui):
 
 # return selected units of flux / intensity
 def flux_units (gui):
-    return "W/sr$\cdot$Hz$\cdot$m$^2$"
+    if gui.flux_units == 0:
+        return "W/sr$\cdot$Hz$\cdot$m$^2$"
+    else:
+        return "photons/sr$\cdot$Hz$\cdot$m$^2$"
+
+# convert flux to requested units
+def flux_convert (gui, flux_list):
+    if gui.flux_units == 0: # already in W/sr*Hz*m^2
+        return flux_list
+
+    elif gui.flux_units == 1: # convert to photons/sr*Hz*m^2
+        return flux_list / (const.h * gui.interp.freq_array)
 
 # build list of graph coordinates from array or list of data
 # corresponding to the globally computed list of frequencies
@@ -55,8 +67,8 @@ def add_radiance (gui, graph_obj, site_file, spec_res):
 
     elif gui.noise_what == 1: # flux
         flux_list = graph_list(gui,
-            cal.intensity(gui.interp.freq_array,
-                          temp.radiance(gui, site_file.file)))
+            flux_convert(gui, cal.intensity(gui.interp.freq_array,
+                                            temp.radiance(gui, site_file.file))))
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
@@ -92,8 +104,8 @@ def add_galactic (gui, graph_obj, galactic_file, spec_res):
 
     elif gui.noise_what == 1: # flux
         flux_list = graph_list(gui,
-            cal.intensity(gui.interp.freq_array,
-                          temp.generic(gui, galactic_file.file)))
+            flux_convert(gui, cal.intensity(gui.interp.freq_array,
+                              temp.generic(gui, galactic_file.file))))
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
@@ -116,8 +128,8 @@ def add_mirror (gui, graph_obj, metal_name, mirror_temp, constant, spec_res):
 
     elif gui.noise_what == 1: # flux
         flux_list = graph_list(gui,
-            cal.intensity(gui.interp.freq_array,
-                          temp.mirror(gui, mirror_temp, constant)))
+            flux_convert(gui, cal.intensity(gui.interp.freq_array,
+                              temp.mirror(gui, mirror_temp, constant))))
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
@@ -139,8 +151,8 @@ def add_zodiac (gui, graph_obj, zodiac_file, spec_res):
 
     elif gui.noise_what == 1: # flux
         flux_list = graph_list(gui,
-            cal.intensity(gui.interp.freq_array,
-                          temp.generic(gui, zodiac_file.file)))
+            flux_convert(gui, cal.intensity(gui.interp.freq_array,
+                              temp.generic(gui, zodiac_file.file))))
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
@@ -164,8 +176,8 @@ def add_cib (gui, graph_obj, spec_res):
 
     elif gui.noise_what == 1: # flux
         flux_list = graph_list(gui,
-            cal.intensity(gui.interp.freq_array,
-                temp.generic(gui, "data/Backgrounds/CIB/cib.xlsx")))
+            flux_convert(cal.intensity(gui.interp.freq_array,
+                         temp.generic(gui, "data/Backgrounds/CIB/cib.xlsx"))))
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
@@ -188,7 +200,8 @@ def add_cmb (gui, graph_obj, spec_res):
 
     elif gui.noise_what == 1: # flux
         flux_list = graph_list(gui,
-            cal.intensity(gui.interp.freq_array, temp.cmb(gui)))
+            flux_convert(gui,
+                         cal.intensity(gui.interp.freq_array, temp.cmb(gui))))
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
@@ -234,7 +247,7 @@ def add_flux (gui, graph_obj, label, atmos_site, galactic_file, mirror_temp,
 
     temp_tot = temp.total(gui, atmos_site.file, galactic_file.file, mirror_temp,
         mirror_constant, zodiac_file.file, cib, cmb)
-    flux_tot = cal.intensity(gui.interp.freq_array, temp_tot)
+    flux_tot = flux_convert(gui, cal.intensity(gui.interp.freq_array, temp_tot))
     data_set = new_dataset("Total Flux ("+label+")", gui.energy_form,
                            "Flux", flux_units(gui), graph_list(gui, flux_tot))
     graph_obj.dataset_list.append(data_set)
@@ -275,6 +288,7 @@ def process (gui):
 
     gui.energy_form = gui.energy_list[gui.config_sets[1]["e_units"].widget.currentIndex()]
     gui.bling_units = gui.config_sets[2]["b_units"].widget.currentIndex()
+    gui.flux_units = gui.config_sets[2]["f_units"].widget.currentIndex()
     gui.compos_what = gui.compos_whatbox.currentIndex()
     gui.noise_what = gui.noise_whatbox.currentIndex()
 

@@ -96,12 +96,17 @@ def pconfig(gui):
     QtCore.QObject.connect(inputs2["energy2"].widget,
             QtCore.SIGNAL("textChanged(QString)"), energy_changed)
 
-    inputs3 = {} # units of bling
+    inputs3 = {} # units
 
-    bling = QtGui.QComboBox()
+    bling = QtGui.QComboBox() # units of bling
     bling.addItems(["W/Hz^1/2", "photons/s*Hz^1/2"])
     inputs3["b_units"] = dyngui.input_obj("Units of BLING", bling)
     conn_changed(gui, bling, "currentIndexChanged(int)")
+
+    flux = QtGui.QComboBox() # units of flux
+    flux.addItems(["W/sr*Hz*m^2", "photons/sr*Hz*m^2"])
+    inputs3["f_units"] = dyngui.input_obj("Units of Flux", flux)
+    conn_changed(gui, flux, "currentIndexChanged(int)")
 
     return inputs1, inputs2, inputs3
 
