@@ -53,14 +53,15 @@ class Interpolate:
     def interpolate (self, freq, data):
 
         # sort in monotonically ascending order with no duplicate frequencies
-        freq, data = auxil.unique_freq(*(
-            list(x) for x in zip(*sorted(zip(freq, data),
-            key=lambda pair: pair[0]))))
+        if len(freq) > 0:
+            freq, data = auxil.unique_freq(*(
+                list(x) for x in zip(*sorted(zip(freq, data),
+                key=lambda pair: pair[0]))))
 
-        # remove zero frequency lines
-        while freq[0] == 0:
-            freq.remove(freq[0])
-            data.remove(data[0])
+            # remove zero frequency lines
+            while freq[0] == 0:
+                freq.remove(freq[0])
+                data.remove(data[0])
 
         # define interpolation function
         f = cal.interp_or_zero(freq, data)
