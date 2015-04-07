@@ -90,9 +90,17 @@ class Graph(FigureCanvas):
         self.axes = self.figure.add_subplot(111)
         self.axes.grid(True, which='both') # enable grid lines
 
-        data = graph_data.dataset_list
+        data = []
+        # remove all data without positive values
+        for ds in graph_data.dataset_list:
+            for crd in ds.coord_list:
+                if crd.y > 0:
+                    data.append(ds)
+                    break
+
         if len(data) < 1: # no data to plot
             raise Exception("no data to plot")
+
 
         # check to make sure there aren't too many data sets
         if len(data) > 6:
