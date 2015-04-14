@@ -37,7 +37,7 @@ class ExcelReader:
             self.row_start = max(self.row_offset + 1, row - 1)
 
         # no data in range
-        except IndexError, ValueError:
+        except:
             self.row_start = 0
             self.row_end = 0
             return
@@ -51,7 +51,7 @@ class ExcelReader:
             self.row_end = row + 1 # read one extra row for interpolation
 
         # reached the end of data
-        except IndexError, ValueError:
+        except:
             self.row_end = row
 
 
