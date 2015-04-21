@@ -7,6 +7,7 @@ import numpy as np
 import auxil as aux
 import bling
 import cal
+import config
 import const
 import dyngui
 import graph
@@ -375,7 +376,7 @@ def process (gui):
             try:
                 signal_res = float(gui.signal_res.text())
             except Exception:
-                signal_res = config.spec_res
+                signal_res = float(config.spec_res)
 
             # only add if source is filled in (assume site=space by default)
             if source > 0:
@@ -384,7 +385,7 @@ def process (gui):
                     site > 0 and gui.atmos_files[site - 1]
                               or aux.name_file("", False),
                     gui.source_files[source - 1],
-                    gui.signal_res.text())
+                    signal_res)
 
     # loop through all sets of inputs
     i = 0
