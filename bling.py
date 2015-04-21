@@ -66,6 +66,6 @@ def noise_total(gui, site_file, galactic_file, mirror_temp, mirror_constant,
         blingsq_tot += generic(gui, "data/Backgrounds/CIB/cib.xlsx", spec_res)
 
     if add_cmb == True:
-        blingsq_tot += cal.bling_CMB(freq_list, spec_res)
+        blingsq_tot += cal.bling_CMB(gui.interp.freq_list, spec_res)
 
     return convert(gui, blingsq_tot)
