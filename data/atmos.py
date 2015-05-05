@@ -42,21 +42,34 @@ def write(file, col1, col2, col3, title1, title2, title3):
 		sheet.write (i+1,2,val)
 	out_file.close()
 
-freq = []
-rad = []
-trans = []
+#For range 5-50 microns
+freq1 = []
+rad1 = []
+trans1 = []
+#For range 0.2-5 microns
+freq2 = []
+rad2 = []
+trans2 = []
+
 for site in sites:
-	f = read(site[0],1,0)+ read(site[2],1,0)
-	for i,f_i in enumerate(f):
-		f[i] = f_i * 29979245800
-	freq.append(f)
-	rad.append(read(site[0],1,1)+ read(site[2],1,1))
-	trans.append(read(site[1],1,1)+ read(site[3],1,1))
+	f1 = read(site[0],1,0)
+	f2 = read(site[2],1,0)
+	for i,f1_i in enumerate(f1):
+		f1[i] = f1_i * 29979245800
+	for i,f2_i in enumerate(f2):
+		f2[i] = f2_i * 29979245800
+	freq1.append(f1)
+	freq2.append(f2)
+	rad1.append(read(site[0],1,1))
+	rad2.append(read(site[2],1,1))
+	trans1.append(read(site[1],1,1))
+	trans2.append(read(site[3],1,1))
 
 for i,alt in enumerate(altitudes):
-	write("Backgrounds/Atmospheric sites/"+str(alt)+"Km.xlsx",\
-		freq[i],rad[i],trans[i],"Freq (Hz)","TOTAL RAD","COMBIN TRANS")
-
+	write("Backgrounds/Atmospheric sites/"+str(alt)+"Km-5-50microns.xlsx",\
+		freq1[i],rad1[i],trans1[i],"Freq (Hz)","TOTAL RAD","COMBIN TRANS")
+	write("Backgrounds/Atmospheric sites/"+str(alt)+"Km-0.2-5microns.xlsx",\
+		freq2[i],rad2[i],trans2[i],"Freq (Hz)","TOTAL RAD","COMBIN TRANS")
 
 
 
