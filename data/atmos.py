@@ -68,7 +68,7 @@ for site in sites:
 for i,alt in enumerate(altitudes):
 	write("Backgrounds/Atmospheric sites/"+str(alt)+"Km-5-50microns.xlsx",\
 		freq1[i],rad1[i],trans1[i],"Freq (Hz)","TOTAL RAD","COMBIN TRANS")
-	write("Backgrounds/Atmospheric sites/"+str(alt)+"Km-0.2-5microns.xlsx",\
+	write("Backgrounds/Atmospheric sites/"+str(alt)+"Km-0_2-5microns.xlsx",\
 		freq2[i],rad2[i],trans2[i],"Freq (Hz)","TOTAL RAD","COMBIN TRANS")
 
 
