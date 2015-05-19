@@ -53,7 +53,7 @@ class Interpolate:
     def interpolate (self, freq, data):
 
         # sort in monotonically ascending order with no duplicate frequencies
-        if len(freq) > 0:
+        if len(freq) == len(data) and len(freq) > 0:
             freq, data = auxil.unique_freq(*(
                 list(x) for x in zip(*sorted(zip(freq, data),
                 key=lambda pair: pair[0]))))
