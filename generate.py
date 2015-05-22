@@ -26,7 +26,7 @@ def flux_units (gui):
     if gui.flux_units == 0:
         return "W/sr$\cdot$Hz$\cdot$m$^2$"
     else:
-        return "photons/sr$\cdot$Hz$\cdot$m$^2$"
+        return "photons/s$\cdot$sr$\cdot$Hz$\cdot$m$^2$"
 
 # convert flux to requested units
 def flux_convert (gui, flux_list):

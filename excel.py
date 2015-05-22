@@ -22,7 +22,7 @@ class ExcelReader:
             self.col = self.indep_chooser(0, 'Frequency')
 
         if float(self.sheet.cell(self.row_offset + 2, self.col).value) \
-           < float(self.sheet.cell(self.row_offset + 1, self.col).value):
+           <= float(self.sheet.cell(self.row_offset + 1, self.col).value):
             self.asc = False
         else:
             self.asc = True
