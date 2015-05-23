@@ -104,7 +104,8 @@ def pconfig(gui):
     conn_changed(gui, bling, "currentIndexChanged(int)")
 
     flux = QtGui.QComboBox() # units of flux
-    flux.addItems(["W/sr*Hz*m^2", "photons/s*sr*Hz*m^2"])
+    flux.addItems(["W/sr*Hz*m^2", "photons/s*sr*Hz*m^2",
+                   "W/sr*micron*m^2", "photons/s*sr*micron*m^2"])
     inputs3["f_units"] = dyngui.input_obj("Units of Flux", flux)
     conn_changed(gui, flux, "currentIndexChanged(int)")
 

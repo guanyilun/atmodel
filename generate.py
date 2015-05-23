@@ -25,8 +25,12 @@ def bling_units (gui):
 def flux_units (gui):
     if gui.flux_units == 0:
         return "W/sr$\cdot$Hz$\cdot$m$^2$"
-    else:
+    elif gui.flux_units == 1:
         return "photons/s$\cdot$sr$\cdot$Hz$\cdot$m$^2$"
+    elif gui.flux_units == 2:
+        return "W/sr$\cdot\mu$m$\cdot$m$^2$"
+    else: # 3
+        return "photons/s$\cdot$sr$\cdot\mu$m$\cdot$m$^2$"
 
 # return selected units of signal
 def signal_units (gui):
@@ -42,6 +46,18 @@ def flux_convert (gui, flux_list):
 
     elif gui.flux_units == 1: # convert to photons/sr*Hz*m^2
         return flux_list / (const.h * gui.interp.freq_array)
+
+    elif gui.flux_units == 2: # convert to W/sr*micron*m^2
+        # f_nu * dnu = -f_lambda * dlambda
+        # -> f_lambda = -f_nu * dnu / dlambda
+        #             = -f_nu d/dlambda (c/lambda)
+        #             = f_nu * c/lambda^2
+        #             = f_nu * nu^2 / c
+        return flux_list * gui.interp.freq_array * gui.interp.freq_array \
+            / (1e6 * const.c)
+
+    else: # converto to photons/s*sr*micron*m^2
+        return flux_list * gui.interp.freq_array / (1e6 * const.c * const.h)
 
 # build list of graph coordinates from array or list of data
 # corresponding to the globally computed list of frequencies
