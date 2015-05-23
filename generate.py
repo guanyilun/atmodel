@@ -28,6 +28,13 @@ def flux_units (gui):
     else:
         return "photons/s$\cdot$sr$\cdot$Hz$\cdot$m$^2$"
 
+# return selected units of signal
+def signal_units (gui):
+    if gui.signal_units == 0:
+        return "W"
+    else:
+        return "photons/s"
+
 # convert flux to requested units
 def flux_convert (gui, flux_list):
     if gui.flux_units == 0: # already in W/sr*Hz*m^2
@@ -217,15 +224,17 @@ def add_cmb (gui, graph_obj, spec_res):
 def add_signal (gui, graph_obj, aperture, site_file, source_file, spec_res):
     sig_list = sigtrans.signal(gui, aperture, site_file.file, source_file.file, spec_res)
 
-    # build and return list of coordinates
+    # build and return list of coordinates (freq, signal)
     crdlist = []
     for i, signal_val in enumerate(sig_list):
+        if gui.signal_units == 1: # convert W -> photons/s
+          signal_val /= const.h * gui.interp.freq_list[i]
         crdlist.append(graph.coord_obj(gui.interp.freq_list[i], signal_val))
 
     # build data set and add to graph
     data_set = new_dataset(
         "Signal ("+str(aperture)+" m, "+site_file.name+", "+source_file.name+")",
-         gui.energy_form, "Signal", "W", crdlist)
+         gui.energy_form, "Signal", signal_units(gui), crdlist)
     graph_obj.dataset_list.append(data_set)
 
 ## Composite calculations
@@ -290,6 +299,7 @@ def process (gui):
     gui.energy_form = gui.energy_list[gui.config_sets[1]["e_units"].widget.currentIndex()]
     gui.bling_units = gui.config_sets[2]["b_units"].widget.currentIndex()
     gui.flux_units = gui.config_sets[2]["f_units"].widget.currentIndex()
+    gui.signal_units = gui.config_sets[2]["s_units"].widget.currentIndex()
     gui.compos_what = gui.compos_whatbox.currentIndex()
     gui.noise_what = gui.noise_whatbox.currentIndex()
 

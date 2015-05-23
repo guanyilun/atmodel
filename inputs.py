@@ -108,6 +108,11 @@ def pconfig(gui):
     inputs3["f_units"] = dyngui.input_obj("Units of Flux", flux)
     conn_changed(gui, flux, "currentIndexChanged(int)")
 
+    signal = QtGui.QComboBox() # units of signal
+    signal.addItems(["W", "photons/s"])
+    inputs3["s_units"] = dyngui.input_obj("Units of Signal", signal)
+    conn_changed(gui, signal, "currentIndexChanged(int)")
+
     return inputs1, inputs2, inputs3
 
 # Atmospheric Radiance & Transmission
