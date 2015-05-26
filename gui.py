@@ -191,11 +191,6 @@ class gui(QtGui.QWidget):
         self.floating["noise_res"] = self.noise_res
         noise_botlo.addRow("Resolution:", self.noise_res)
 
-        # mirror diameter for diffraction limited flux
-        self.mirror_difflim = QtGui.QLineEdit(config.mirror_difflim)
-        self.floating["noise_mir"] = self.mirror_difflim
-        noise_botlo.addRow("Mirror Diam (m):", self.mirror_difflim)
-
         # what to plot (BLING or Temperature)
         self.noise_whatbox = QtGui.QComboBox()
         self.floating["noise_whatbox"] = self.noise_whatbox

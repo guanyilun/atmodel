@@ -59,6 +59,17 @@ def flux_convert (gui, flux_list):
     else: # converto to photons/s*sr*micron*m^2
         return flux_list * gui.interp.freq_array / (1e6 * const.c * const.h)
 
+# compute diffraction limited flux
+def flux_dl (gui, flux_list, spec_res):
+    # flux = flux_per_hz * freq / spec_res
+    #      = flux_per_hz_sr_m^2 * (c/freq)^2 * freq / spec_res
+    #      = flux_per_hz_sr_m^2 * c^2 / (freq * spec_res)
+    flux = flux_list * const.c**2 / (gui.interp.freq_array * spec_res)
+    if gui.signal_units == 0: # already in W
+        return graph_list(gui, flux)
+    elif gui.signal_units == 1: # convert to photons/s
+        return graph_list(gui, flux / (const.h * gui.interp.freq_array))
+
 # build list of graph coordinates from array or list of data
 # corresponding to the globally computed list of frequencies
 def graph_list (gui, array):
@@ -96,10 +107,16 @@ def add_radiance (gui, graph_obj, site_file, spec_res):
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
-    else: # temperature
+    elif gui.noise_what == 2: # temperature
         temp_list = graph_list(gui, temp.radiance(gui, site_file.file))
-        data_set = new_dataset("Atmos Radiance ("+site_file.name+")", gui.energy_form,
+        data_set = new_dataset(data_name, gui.energy_form,
                 "Temperature", "K", temp_list)
+
+    else: # diffraction-limited flux
+        intensity = cal.intensity(gui.interp.freq_array,
+                                  temp.radiance(gui, site_file.file))
+        data_set = new_dataset(data_name, gui.energy_form,
+            "Flux", signal_units(gui), flux_dl(gui, intensity, spec_res))
 
     graph_obj.dataset_list.append(data_set)
 
@@ -133,10 +150,16 @@ def add_galactic (gui, graph_obj, galactic_file, spec_res):
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
-    else: # temperature
+    elif gui.noise_what == 2: # temperature
         temp_list = graph_list(gui, temp.generic(gui, galactic_file.file))
         data_set = new_dataset(data_name,
                 gui.energy_form, "Temperature", "K", temp_list)
+
+    else:
+        intensity = cal.intensity(gui.interp.freq_array,
+                              temp.generic(gui, galactic_file.file))
+        data_set = new_dataset(data_name, gui.energy_form,
+            "Flux", signal_units(gui), flux_dl(gui, intensity, spec_res))
 
     graph_obj.dataset_list.append(data_set)
 
@@ -157,10 +180,16 @@ def add_mirror (gui, graph_obj, metal_name, mirror_temp, constant, spec_res):
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
-    else: # temperature
+    elif gui.noise_what == 2: # temperature
         temp_list = graph_list(gui, temp.mirror(gui, mirror_temp, constant))
         data_set = new_dataset(data_name,
                 gui.energy_form, "Temperature", "K", temp_list)
+
+    else: # diffraction limited flux
+        intensity = cal.intensity(gui.interp.freq_array,
+                              temp.mirror(gui, mirror_temp, constant))
+        data_set = new_dataset(data_name, gui.energy_form,
+            "Flux", signal_units(gui), flux_dl(gui, intensity, spec_res))
 
     graph_obj.dataset_list.append(data_set)
 
@@ -180,10 +209,16 @@ def add_zodiac (gui, graph_obj, zodiac_file, spec_res):
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
-    else: # temperature
+    elif gui.noise_what == 2: # temperature
         temp_list = graph_list(gui, temp.generic(gui, zodiac_file.file))
         data_set = new_dataset(data_name,
                 gui.energy_form, "Temperature", "K", temp_list)
+
+    else: # diffraction limited flux
+        intensity = cal.intensity(gui.interp.freq_array,
+                              temp.generic(gui, zodiac_file.file))
+        data_set = new_dataset(data_name, gui.energy_form,
+            "Flux", signal_units(gui), flux_dl(gui, intensity, spec_res))
 
     graph_obj.dataset_list.append(data_set)
 
@@ -205,11 +240,17 @@ def add_cib (gui, graph_obj, spec_res):
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
-    else: # temperature
+    elif gui.noise_what == 2: # temperature
         temp_list = graph_list(gui,
             temp.generic(gui, "data/Backgrounds/CIB/cib.xlsx"))
         data_set = new_dataset(data_name, gui.energy_form,
                                "Temperature", "K", temp_list)
+
+    else: # diffraction limited flux
+        intensity = cal.intensity(gui.interp.freq_array,
+                         temp.generic(gui, "data/Backgrounds/CIB/cib.xlsx"))
+        data_set = new_dataset(data_name, gui.energy_form,
+            "Flux", signal_units(gui), flux_dl(gui, intensity, spec_res))
 
     graph_obj.dataset_list.append(data_set)
 
@@ -229,10 +270,15 @@ def add_cmb (gui, graph_obj, spec_res):
         data_set = new_dataset(data_name, gui.energy_form,
                                "Flux", flux_units(gui), flux_list)
 
-    else: # temperature
+    elif gui.noise_what == 2: # temperature
         temp_list = graph_list(gui, temp.cmb(gui))
         data_set = new_dataset(data_name, gui.energy_form,
                                "Temperature", "K", temp_list)
+
+    else: # diffraction limited flux
+        intensity = cal.intensity(gui.interp.freq_array, temp.cmb(gui))
+        data_set = new_dataset(data_name, gui.energy_form,
+            "Flux", signal_units(gui), flux_dl(gui, intensity, spec_res))
 
     graph_obj.dataset_list.append(data_set)
 
